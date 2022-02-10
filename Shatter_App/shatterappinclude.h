@@ -1,0 +1,10 @@
+//
+// Created by maybe on 2021/1/2.
+//
+
+#ifndef SHATTER_ENGINE_SHATTERAPPINCLUDE_H
+#define SHATTER_ENGINE_SHATTERAPPINCLUDE_H
+
+#include "shatterapp.h"
+
+#endif //SHATTER_ENGINE_SHATTERAPPINCLUDE_H
