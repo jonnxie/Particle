@@ -13,6 +13,7 @@
 #include ConfigCatalog
 #include "../Shatter_Mesh/line.h"
 #include "../Shatter_Mesh/plane.h"
+#include "../Shatter_Particle/particle.h"
 
 namespace shatter::app{
     bool app_created = false;
@@ -152,6 +153,20 @@ namespace shatter::app{
                     drawPlane = true;
                 }
             }
+
+            if(key == GLFW_KEY_F4)
+            {
+                static bool drawPoint = true;
+                if(drawPoint)
+                {
+                    drawPoint = false;
+                    appendListener("DrawPoint",new DrawPoint);
+                }else{
+                    deleteListener("DrawPoint");
+                    drawPoint = true;
+                }
+            }
+
         }
 
         if(action == GLFW_REPEAT)

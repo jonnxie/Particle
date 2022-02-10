@@ -387,7 +387,7 @@ struct Point3dUV1d{
 struct Point3dColorSize {
     glm::vec3 pos;
     glm::vec3 color;
-    int     size{4};
+    float     size{4};
 
     bool operator==(const Point3dColorSize& other) const{
         return pos == other.pos && color == other.color && size == other.size;
