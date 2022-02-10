@@ -166,7 +166,6 @@ namespace shatter::app{
                     drawPoint = true;
                 }
             }
-
         }
 
         if(action == GLFW_REPEAT)
