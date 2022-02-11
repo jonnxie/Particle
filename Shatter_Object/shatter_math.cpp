@@ -3,6 +3,7 @@
 //
 
 #include "shatter_math.h"
+#include "../Shatter_Item/shatter_enum.h"
 #include <random>
 
 std::default_random_engine rndEngine;
@@ -180,4 +181,24 @@ void setFromEulerAngleToQuaternion(const glm::vec3 &_angle, glm::vec4& _quaterni
     _quaternion.y = (cr * sp * cy + sr * cp * sy);
     _quaternion.z = (cr * cp * sy - sr * sp * cy);
     _quaternion.w = (cr * cp * cy + sr * sp * sy);
+}
+
+void genLocalCoordinateFromZ(const glm::vec3& _f,glm::vec3& _x,glm::vec3& _y,glm::vec3& _z) {
+    assert(glm::length(_z) <= float_limit);
+    _z = glm::normalize(_f);
+    glm::vec3 a;
+    if(_z.y >= float_limit || _z.z >= float_limit)
+    {
+        a = glm::vec3{1,0,0};
+    }else if(_z.x >= float_limit || _z.z >= float_limit)
+    {
+        a = glm::vec3{0,1,0};
+    }else if(_z.x >= float_limit || _z.y >= float_limit)
+    {
+        a = glm::vec3{0,0,1};
+    }else{
+        assert(0);
+    }
+    _x = glm::cross(a,_z) / glm::length(glm::cross(a,_z));
+    _y = glm::cross(_z,_x);
 }

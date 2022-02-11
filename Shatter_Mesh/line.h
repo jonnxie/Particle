@@ -17,7 +17,9 @@ using namespace glm;
 class GLine
 {
 public:
-    explicit GLine(const dvec3& _p0,const dvec3 & _p1);
+    explicit GLine(const
+    vec3& _p0,const
+    vec3 & _p1);
     ~GLine();
     GLine(const GLine&) = delete;
     GLine(GLine&&) = delete;
@@ -26,11 +28,13 @@ public:
 
     void draw();
     [[nodiscard]] std::vector<Plane> toPlanes() const;
-    [[nodiscard]] dvec3 dir() const;
+    [[nodiscard]]
+    vec3 dir() const;
 
 public:
     Lines* line{nullptr};
-    dvec3  p0, p1;
+
+    vec3  p0, p1;
     vec3   color{0.0f,0.5f,0.0f};
 };
 

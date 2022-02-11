@@ -11,7 +11,9 @@
 #include "../Shatter_Object/taskpool.h"
 #include "../Shatter_Buffer/shatterbufferinclude.h"
 
-GLine::GLine(const dvec3 &_p0, const dvec3 &_p1):p0(_p0),p1(_p1) {
+GLine::GLine(const
+vec3 &_p0, const
+vec3 &_p1):p0(_p0),p1(_p1) {
 //    assert(distance(_p0,_p1) > 0);
 }
 
@@ -19,17 +21,23 @@ GLine::~GLine() {
     delete line;
 }
 
-dvec3 GLine::dir() const {
-    dvec3 d = p0 - p1;
+
+vec3 GLine::dir() const {
+
+    vec3 d = p0 - p1;
     return normalize(d);
 }
 
 std::vector<Plane> GLine::toPlanes() const {
-    dvec3 d = dir();
 
-    dvec3 n0(-d.y, d.x, 0);
-    dvec3 n1(-d.z, 0, d.x);
-    dvec3 n2(0,-d.z,d.y);
+    vec3 d = dir();
+
+
+    vec3 n0(-d.y, d.x, 0);
+
+    vec3 n1(-d.z, 0, d.x);
+
+    vec3 n2(0,-d.z,d.y);
 
     std::vector<Plane> planes;
 

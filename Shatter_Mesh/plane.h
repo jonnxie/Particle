@@ -17,40 +17,36 @@ class Tris;
 
 class Plane {
 public:
-    dvec3 n;//plane normal
-    double d;//distance
-    dvec3  p;//any point in the plane
+    vec3 n;//plane normal
+    float d;//distance
+    vec3  p;//any point in the plane
     vec3   color{0.0f,0.5f,0.0f};
 
 
-    explicit Plane(const dvec3& _point = dvec3{0,0,0},
-                   const dvec3& _normal = dvec3{0,0,1});
+    explicit Plane(const vec3& _point = vec3{0,0,0},
+                   const vec3& _normal = vec3{0,0,1});
 
-    explicit Plane(const dvec3& _p0,
-                   const dvec3& _p1,
-                   const dvec3& _p2);
+    explicit Plane(const vec3& _p0,
+                   const vec3& _p1,
+                   const vec3& _p2);
 
-    explicit Plane(const std::vector<dvec3>& _samples);
-    ~Plane(){
-        delete line;
-        delete tri;
-    }
-
+    explicit Plane(const std::vector<vec3>& _samples);
+    ~Plane();
 
     void draw();
 
-    [[nodiscard]] double a() const { return n.x;}
-    [[nodiscard]] double b() const { return n.y;}
-    [[nodiscard]] double c() const { return n.z;}
+    [[nodiscard]] float a() const { return n.x;}
+    [[nodiscard]] float b() const { return n.y;}
+    [[nodiscard]] float c() const { return n.z;}
 
-    void setPlane(const dvec3& _point,
-                  const dvec3& _normal);
+    void setPlane(const vec3& _point,
+                  const vec3& _normal);
 
-    double operator[](const dvec3& _p) const;
+    float operator[](const vec3& _p) const;
 
-    [[nodiscard]] double pointPlaneDistSigned(const dvec3& _p)const;
-    [[nodiscard]] double pointPlaneDist(const dvec3& _p)const;
-    [[nodiscard]] dvec3 projectOnto(const dvec3& _p)const;
+    [[nodiscard]] float pointPlaneDistSigned(const vec3& _p)const;
+    [[nodiscard]] float pointPlaneDist(const vec3& _p)const;
+    [[nodiscard]] vec3 projectOnto(const vec3& _p)const;
 
     Lines* line{nullptr};
     Tris*  tri{nullptr};

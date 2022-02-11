@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include "../Shatter_Item/shatter_enum.h"
+#include "../Shatter_Object/shatter_math.h"
 
 #define RandomSend 007u
 
@@ -43,9 +44,21 @@ glm::vec3 randomDirection()
 /*
  * return a vector uniformly distributed about w with maximum deflection angle δ
  */
-glm::vec3 randomDirectionInRange(const glm::vec3& _average,const glm::vec3& _variance)
+glm::vec3 randomDirectionInRange(const glm::vec3& _average,float _angle)
 {
-
+    assert(glm::length(_average) <= float_limit);
+    glm::vec3 x,y,z;
+    genLocalCoordinateFromZ(_average,x,y,z);
+    glm::mat3 localCoordinate = glm::inverse(glm::mat3(x,y,z));//column major
+    float f = genRandomInRange(0.0f,1.0f);
+    float phi = glm::sqrt(f) * _angle;
+    float theta = genRandomInRange(-pai, pai);
+    glm::vec3 localDirection{
+            glm::cos(theta) * glm::sin(phi),
+            glm::sin(theta) * glm::sin(phi),
+            glm::cos(phi)
+    };
+    return localCoordinate * localDirection;
 }
 
 /*

@@ -35,4 +35,9 @@ void setFromEulerAngleToQuaternion(const glm::vec3& _angle,glm::vec4& _quaternio
 
 void invTransformAndRotate(const glm::mat4* _mat,const glm::vec3* _in,glm::vec3* _out);
 
+/*
+ * Right hand coordinate system
+ */
+void genLocalCoordinateFromZ(const glm::vec3& _f, glm::vec3& _x, glm::vec3& _y, glm::vec3& _z);
+
 #endif //SHATTER_ENGINE_SHATTER_MATH_H
