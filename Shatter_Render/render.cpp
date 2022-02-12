@@ -2084,177 +2084,78 @@ namespace shatter::render{
 
     void ShatterRender::draw() {
         static bool firstDraw = true;
-        VkSubmitInfo compute_submit_info ={
-                VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                nullptr,
-                0,
-                nullptr,
-                nullptr,
-                1,
-                &compute_buffer,
-                1,
-                &computeFinishedSemaphore
-        };
-        VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-        if(!firstDraw){
-            compute_submit_info.waitSemaphoreCount = 1;
-            compute_submit_info.pWaitSemaphores = &computeReadySemaphore;
-            compute_submit_info.pWaitDstStageMask = &computeWaitDstStageMask;
-        }else{
-            firstDraw = false;
-        }
-
-        VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &compute_submit_info, VK_NULL_HANDLE));
-//        vkQueueWaitIdle(compute_queue);
-        uint32_t imageIndex;
-        VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
-        setSwapChainIndex(int(imageIndex));
-        /*
-         * update multiple thread task
-         */
-//        updateGraphicsCommandBufferAsync(int(imageIndex));
-//        createNewGraphicsCommandBuffersMultiple();
-        if(guiChanged ||
-           offChanged ||
-           drawChanged ||
-           normalChanged ||
-           transChanged)
+        if(firstDraw)
         {
-            createNewGraphicsCommandBuffersMultiple();
-            guiChanged = offChanged = drawChanged = normalChanged = transChanged = false;
-//            updateNewGraphicsCommandBuffersMultiple(int(imageIndex));
+            computeSubmitInfo = {
+                    VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    nullptr,
+                    0,
+                    nullptr,
+                    nullptr,
+                    1,
+                    &compute_buffer,
+                    1,
+                    &computeFinishedSemaphore
+            };
+            static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+            computeSubmitInfo.waitSemaphoreCount = 1;
+            computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
+            computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
+            firstDraw = false;
+
+            uint32_t imageIndex;
+            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
+            setSwapChainIndex(int(imageIndex));
+
+            static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
+            static VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+            static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore,computeReadySemaphore};
+            graphicsSubmitInfo = {
+                    VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    nullptr,
+                    2,
+                    waitSemaphores,
+                    waitStages,
+                    1,
+                    &graphics_buffers[imageIndex],
+                    2,
+                    signalSemaphores
+            };
+
+            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
+//            VkPresentInfoKHR presentInfo = {};
+            presentInfo = {
+                    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                    nullptr,
+                    1,
+                    &renderFinishedSemaphore,
+                    1,
+                    &swapchain,
+                    &imageIndex,
+                    nullptr
+            };
+            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
+        }else{
+            VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+
+            uint32_t imageIndex;
+            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
+            setSwapChainIndex(int(imageIndex));
+
+            if(guiChanged || offChanged || drawChanged || normalChanged || transChanged)
+            {
+                createNewGraphicsCommandBuffersMultiple();
+                guiChanged = offChanged = drawChanged = normalChanged = transChanged = false;
+            }
+
+            graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
+            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
+
+            presentInfo.pImageIndices = &imageIndex;
+            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
         }
-
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 2;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
-
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphore,computeReadySemaphore};
-        submitInfo.signalSemaphoreCount = 2;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        if (vkQueueSubmit(graphics_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-            throw std::runtime_error("failed to submit draw command buffer!");
-        }
-
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &renderFinishedSemaphore;
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = &swapchain;
-        presentInfo.pImageIndices = &imageIndex;
-
-        VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
     }
-
-//    void ShatterRender::draw(){
-//        VkSemaphore cpSignalSemaphores[] = {computeFinishedSemaphore};
-//        VkSubmitInfo compute_submit_info
-//        {
-//                VK_STRUCTURE_TYPE_SUBMIT_INFO,
-//                nullptr,
-//                0,
-//                nullptr,
-//                nullptr,
-//                1,
-//                &compute_buffer,
-//                1,
-//                cpSignalSemaphores
-//        };
-//        VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &compute_submit_info, VK_NULL_HANDLE));
-//        vkQueueWaitIdle(compute_queue);
-//        uint32_t imageIndex;
-//        VkResult result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),
-//                                                imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-//        setSwapChainIndex(int(imageIndex));
-//        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-//            recreateSwapChain();
-//            return;
-//        } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-//            throw std::runtime_error("failed to acquire swap chain image1");
-//        }
-//        /*
-//         * update multiple thread task
-//         */
-//        {
-////        static bool build = false;
-////        if(!build)
-////        {
-////            updateCommandBuffers(swapChainFramebuffers[imageIndex],imageIndex);
-////            build = true;
-////        }
-////        updateGuiCommandBuffers(int(imageIndex));
-//        }
-//
-//        updateGraphicsCommandBufferAsync(imageIndex);
-//
-//        VkSubmitInfo submitInfo = {};
-//        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-//
-//        VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
-//        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-//        submitInfo.waitSemaphoreCount = 2;
-//        submitInfo.pWaitSemaphores = waitSemaphores;
-//        submitInfo.pWaitDstStageMask = waitStages;
-//
-//        submitInfo.commandBufferCount = 1;
-//        submitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
-//
-//        VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
-//        submitInfo.signalSemaphoreCount = 1;
-//        submitInfo.pSignalSemaphores = signalSemaphores;
-//
-//        if (vkQueueSubmit(graphics_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-//            throw std::runtime_error("failed to submit draw command buffer!");
-//        }
-//
-//        VkPresentInfoKHR presentInfo = {};
-//        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-//
-//        presentInfo.waitSemaphoreCount = 1;
-//        presentInfo.pWaitSemaphores = signalSemaphores;
-//
-//        VkSwapchainKHR swapChains[] = {swapchain};
-//        presentInfo.swapchainCount = 1;
-//        presentInfo.pSwapchains = swapChains;
-//
-//        presentInfo.pImageIndices = &imageIndex;
-//
-//        vkQueueWaitIdle(graphics_queue);
-//        result = vkQueuePresentKHR(present_queue, &presentInfo);
-//
-//        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-//            recreateSwapChain();
-//        } else if (result != VK_SUCCESS) {
-//            throw std::runtime_error("failed to present swap chain image!");
-//        }
-//
-//        vkQueueWaitIdle(present_queue);
-//
-////        auto threadObjectPool = getThreadObjectPool();
-////        for (uint32_t t = 0; t < std::thread::hardware_concurrency(); t++)
-////        {
-////            for(uint32_t i = 0; i < numObjectsPerThread; i++)
-////            {
-////                if((*threadObjectPool)[t].visibility[i])
-////                {
-////                    VK_CHECK_RESULT(vkResetCommandBuffer((*threadObjectPool)[t].buffers[i],VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT ));
-////                }
-////                if((*threadObjectPool)[t].off_visibility[i])
-////                {
-////                    VK_CHECK_RESULT(vkResetCommandBuffer((*threadObjectPool)[t].off_buffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT ));
-////                }
-////            }
-////        }
-//    }
 
     SwapChainSupportDetails ShatterRender::querySwapChainSupport(VkPhysicalDevice device){
         SwapChainSupportDetails details;
@@ -2520,6 +2421,7 @@ namespace shatter::render{
         setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
         app->recreateSwapChain();
+        app->windowUnChanged = false;
     }
 
     void ShatterRender::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){

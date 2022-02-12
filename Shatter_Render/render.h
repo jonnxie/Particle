@@ -278,6 +278,7 @@ namespace shatter{
             bool drawChanged = false;
             bool normalChanged = false;
             bool transChanged = false;
+            bool windowUnChanged = true;
             std::vector<VkCommandBuffer> pre_offscreen_buffers;
             std::vector<VkCommandBuffer> pre_shadow_buffers;
             std::vector<VkCommandBuffer> pre_buffers;
@@ -291,6 +292,9 @@ namespace shatter{
             VkSemaphore computeFinishedSemaphore{};
             VkSemaphore computeReadySemaphore{};
             std::vector<VkClearValue> clearValues{};
+            VkSubmitInfo computeSubmitInfo{};
+            VkSubmitInfo graphicsSubmitInfo{};
+            VkPresentInfoKHR presentInfo{};
         };
     };
 };
