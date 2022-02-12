@@ -145,19 +145,8 @@ void DObject::update() {
     {
         if(m_type == DType::Normal)
         {
-            auto buffer = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
-//            void *data;
-//            vkMapMemory(Device::getDevice()(),
-//                        buffer->getMemory(),
-//                        m_model_index * sizeof(glm::mat4),
-//                        sizeof(glm::mat4),
-//                        0, &data);
-//            memcpy(data, &m_matrix, sizeof(glm::mat4));
-//            vkUnmapMemory(Device::getDevice()(),
-//                          buffer->getMemory());
-            auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
-            ptr += m_model_index ;
-            memcpy(ptr,&m_matrix,one_matrix);
+            glm::mat4* ptr = SingleBPool.getModels();
+            memcpy(ptr + m_model_index,&m_matrix,one_matrix);
         }
         state_changed = false;
     }

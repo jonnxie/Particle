@@ -477,20 +477,17 @@ namespace animation {
             }
             m_world = m_translation * m_scale * m_rotate;
 
-            auto buffer = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
             auto dpool = MPool<DObject>::getPool();
             void *data;
             for(int index : m_dobjs)
             {
-                auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
-                ptr += (*dpool)[index]->m_model_index;
-                memcpy(ptr,&m_world,one_matrix);
+                glm::mat4* ptr = SingleBPool.getModels();
+                memcpy(ptr + (*dpool)[index]->m_model_index,&m_world,one_matrix);
             }
             int d = m_localCoordinate->m_dobjs[0];
             {
-                auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
-                ptr += (*dpool)[(*dpool)[d]->m_model_index]->m_model_index;
-                memcpy(ptr,&m_world,one_matrix);
+                glm::mat4* ptr = SingleBPool.getModels();
+                memcpy(ptr + (*dpool)[(*dpool)[d]->m_model_index]->m_model_index,&m_world,one_matrix);
             }
         });
     }

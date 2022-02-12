@@ -52,10 +52,8 @@ void Lines::constructD(){
                          s_vec);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("LinesBasic",id),[&,ms_index,d](float _abs_time){
-        auto buffer = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
-        auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
-        ptr += ms_index;
-        memcpy(ptr,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
 //    shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);

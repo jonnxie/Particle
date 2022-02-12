@@ -8,6 +8,7 @@
 #include "device.h"
 #include "mpool.h"
 #include "modelsetpool.h"
+#include "taskpool.h"
 #include UniformCatalog
 static bool created = false;
 static std::mutex pool_mutex;
@@ -252,13 +253,20 @@ void BPool::init() {
     for(auto i = 0 ; i < m_model_count ; i++){
         m_idle_model[i] = i;
     }
+    models = new glm::mat4[m_model_count];
+    model_size = m_model_count * sizeof(glm::mat4);
+    TaskPool::pushUpdateTask("ModelUpdate",[&](float _absTime){
+        memcpy(m_uniform_map["Model"]->mapped,models,model_size);
+    });
 }
 
 void BPool::release() {
-     for(auto &i:m_vertex_map)
-     {
-         delete i.second;
-     }
+    delete models;
+
+    for(auto &i:m_vertex_map)
+    {
+        delete i.second;
+    }
 
     for(auto &i:m_index_map)
     {
@@ -301,37 +309,21 @@ void BPool::freeModel(int _index) {
 }
 
 void BPool::reallocateModel() {
-//    std::lock_guard<std::mutex> guard_mutex2(m_mutex);
-    auto buffer = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
-
-    void *data;
-    vkMapMemory(Device::getDevice()(),
-                buffer->getMemory(),
-                0,
-                sizeof(glm::mat4) * m_model_count,
-                0, &data);
-
+    freeBuffer("Model",Buffer_Type::Uniform_Buffer);
     createUniformBuffer("Model",sizeof(glm::mat4) * 2 * m_model_count);
-    auto buffer2 = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
-    void *data2;
-    vkMapMemory(Device::getDevice()(),
-                buffer2->getMemory(),
-                0,
-                sizeof(glm::mat4) * m_model_count,
-                0, &data2);
-
-    memcpy(data2, data, sizeof(glm::mat4) * m_model_count);
-
-    vkUnmapMemory(Device::getDevice()(), buffer->getMemory());
-    vkUnmapMemory(Device::getDevice()(), buffer2->getMemory());
-    delete buffer;
+    auto buffer = BPool::getPool().getBuffer("Model", Buffer_Type::Uniform_Buffer);
+    buffer->map();
+    memcpy(buffer->mapped, models, sizeof(glm::mat4) * m_model_count);
 
     int old_num = m_model_count;
     m_model_count *= 2;
+    model_size *= 2;
     int num = m_model_count - old_num;
     for(auto i = 0; i < num; i++){
         m_idle_model.emplace_back(old_num++);
     }
+    delete models;
+    models = new glm::mat4[m_model_count];
 }
 
 size_t BPool::getSize(const B_id &_id) {

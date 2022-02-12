@@ -28,6 +28,11 @@ struct Particle{
 
 class ParticleList{
 public:
+    void testAndDeactivate();
+    void computeAcceleration();
+    void display();
+    void integrate();
+public:
     std::vector<Particle> particles;
 };
 

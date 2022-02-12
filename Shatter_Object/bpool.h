@@ -73,6 +73,8 @@ public:
 
     size_t getSize(const B_id& _id);
 
+    glm::mat4 * getModels(){return models;};
+
 private:
     friend class ModelSetPool;
 
@@ -105,8 +107,8 @@ private:
 
     std::vector<int> m_idle_model;
     int m_model_count = 20;
-//    std::mutex m_idle_mutex;
-//    std::mutex m_mutex;
+    size_t model_size;
+    glm::mat4 * models{nullptr};
 };
 
 #define SingleBPool BPool::getPool()

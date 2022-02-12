@@ -136,9 +136,6 @@ namespace shatter::render{
         vkDestroySemaphore(device, computeFinishedSemaphore, nullptr);
         vkDestroySemaphore(device, computeReadySemaphore, nullptr);
 
-        vkFreeCommandBuffers(device, compute_commandPool, 1,
-                             &compute_buffer);
-
         vkDestroyCommandPool(device, graphic_commandPool, nullptr);
         vkDestroyCommandPool(device, compute_commandPool, nullptr);
         vkDestroyCommandPool(device, transfer_commandPool, nullptr);
@@ -875,24 +872,6 @@ namespace shatter::render{
             attachments[AttachmentDepth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachments[AttachmentDepth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[AttachmentDepth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-//            // opaque
-//            attachments[AttachmentOpaque].format = opaqueAttachment->format = VK_FORMAT_R8G8B8A8_UNORM;
-//            attachments[AttachmentOpaque].samples = VK_SAMPLE_COUNT_1_BIT;
-//            attachments[AttachmentOpaque].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//            attachments[AttachmentOpaque].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//            attachments[AttachmentOpaque].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//            attachments[AttachmentOpaque].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//            attachments[AttachmentOpaque].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//            attachments[AttachmentOpaque].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//            // transparency
-//            attachments[AttachmentTransparency].format = transparencyAttachment->format = VK_FORMAT_R8G8B8A8_UNORM;
-//            attachments[AttachmentTransparency].samples = VK_SAMPLE_COUNT_1_BIT;
-//            attachments[AttachmentTransparency].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//            attachments[AttachmentTransparency].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//            attachments[AttachmentTransparency].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//            attachments[AttachmentTransparency].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//            attachments[AttachmentTransparency].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//            attachments[AttachmentTransparency].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
         std::array<VkSubpassDescription,3> subpassDescriptions{};
 
@@ -2000,7 +1979,11 @@ namespace shatter::render{
             SinglePPool.release();
             SinglePPool.init();
         }
+        createPrimaryBuffers();
+        createComputeCommandBuffer();
+        prepareCommandBuffer();
         createNewGraphicsCommandBuffersMultiple();
+        vkDeviceWaitIdle(device);
     }
 
     void ShatterRender::keyEventCallback(int key, int action){
@@ -2049,6 +2032,11 @@ namespace shatter::render{
 //            clearAttachment(transparencyAttachment);
         }
 
+        vkFreeCommandBuffers(device,graphic_commandPool,graphics_buffers.size(),graphics_buffers.data());
+        vkFreeCommandBuffers(device,graphic_commandPool,1,&gui_buffer);
+        vkFreeCommandBuffers(device,graphic_commandPool,offscreen_buffers.size(),offscreen_buffers.data());
+        vkFreeCommandBuffers(device,compute_commandPool,1,&compute_buffer);
+
 //        for (auto & swapChainFramebuffer : swapChainFramebuffers) {
 //            vkDestroyFramebuffer(device, swapChainFramebuffer, nullptr);
 //        }
@@ -2084,6 +2072,7 @@ namespace shatter::render{
 
     void ShatterRender::draw() {
         static bool firstDraw = true;
+        static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
         if(firstDraw)
         {
             computeSubmitInfo = {
@@ -2097,12 +2086,10 @@ namespace shatter::render{
                     1,
                     &computeFinishedSemaphore
             };
-            static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
             computeSubmitInfo.waitSemaphoreCount = 1;
             computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
             computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
-            firstDraw = false;
 
             uint32_t imageIndex;
             VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
@@ -2136,11 +2123,28 @@ namespace shatter::render{
                     nullptr
             };
             VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
+            firstDraw = false;
         }else{
-            VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+            if(!windowUnChanged)
+            {
+                vkDeviceWaitIdle(device);
+                computeSubmitInfo.waitSemaphoreCount = 0;
+                computeSubmitInfo.pWaitSemaphores = nullptr;
+                computeSubmitInfo.pWaitDstStageMask = nullptr;
+                VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+                windowUnChanged = true;
+                computeSubmitInfo.waitSemaphoreCount = 1;
+                computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
+                computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
+            }
 
             uint32_t imageIndex;
-            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
+//            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
+            auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+            if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
+                recreateSwapChain();
+                windowUnChanged = false;
+            }
             setSwapChainIndex(int(imageIndex));
 
             if(guiChanged || offChanged || drawChanged || normalChanged || transChanged)
@@ -2150,10 +2154,19 @@ namespace shatter::render{
             }
 
             graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
-            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
+            assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
 
             presentInfo.pImageIndices = &imageIndex;
-            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
+            auto result = vkQueuePresentKHR(present_queue, &presentInfo);
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+            {
+                recreateSwapChain();
+                windowUnChanged = false;
+            } else if(result != VK_SUCCESS)
+            {
+                VK_CHECK_RESULT(result);
+            }
+//            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
         }
     }
 
@@ -2420,8 +2433,8 @@ namespace shatter::render{
 
         setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
-        app->recreateSwapChain();
-        app->windowUnChanged = false;
+//        app->recreateSwapChain();
+//        app->windowUnChanged = false;
     }
 
     void ShatterRender::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
