@@ -120,11 +120,7 @@ namespace shatter{
 
             void prepareMultipleThreadDate();
 
-            void createGraphicsCommandBuffersMultiple();
-
             void createNewGraphicsCommandBuffersMultiple();
-
-            void updateGraphicsCommandBufferAsync(int _index);
 
             void updateNewGraphicsCommandBuffersMultiple(int _index);
 
@@ -244,8 +240,8 @@ namespace shatter{
             VkFormat swapchain_image_format;
             std::vector<VkImage> swapchain_images;
             VkExtent2D swapchain_extent{};
-            std::vector<VkImageView> swapChainImageviews;
-            std::vector<VkFramebuffer> swapChainFramebuffers;
+//            std::vector<VkImageView> swapChainImageviews;
+//            std::vector<VkFramebuffer> swapChainFramebuffers;
 
             VkRenderPass renderPass{};
 

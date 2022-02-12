@@ -482,34 +482,15 @@ namespace animation {
             void *data;
             for(int index : m_dobjs)
             {
-//                auto buffer = BPool::getPool().getBuffer("Model",Buffer_Type::Uniform_Buffer);
                 auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
                 ptr += (*dpool)[index]->m_model_index;
                 memcpy(ptr,&m_world,one_matrix);
-
-//                vkMapMemory(Device::getDevice()(),
-//                            buffer->getMemory(),
-//                            (*dpool)[index]->m_model_index * sizeof(glm::mat4),
-//                            sizeof(glm::mat4),
-//                            0, &data);
-//                memcpy(data, &m_world, sizeof(glm::mat4));
-//                vkUnmapMemory(Device::getDevice()(),
-//                              buffer->getMemory());
             }
             int d = m_localCoordinate->m_dobjs[0];
             {
                 auto* ptr = static_cast<glm::mat4 *>(buffer->mapped);
                 ptr += (*dpool)[(*dpool)[d]->m_model_index]->m_model_index;
                 memcpy(ptr,&m_world,one_matrix);
-
-//                vkMapMemory(Device::getDevice()(),
-//                            buffer->getMemory(),
-//                            (*dpool)[d]->m_model_index * sizeof(glm::mat4),
-//                            sizeof(glm::mat4),
-//                            0, &data);
-//                memcpy(data, &m_world, sizeof(glm::mat4));
-//                vkUnmapMemory(Device::getDevice()(),
-//                              buffer->getMemory());
             }
         });
     }

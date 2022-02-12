@@ -28,4 +28,22 @@ DrawPoint::DrawPoint() {
 }
 
 
+void Omnidirectional::generateParticles(ParticleList &_particleList,float _absTime) {
 
+}
+
+void Directed::generateParticles(ParticleList &_particleList,float _absTime) {
+
+}
+
+void FDisk::generateParticles(ParticleList &_particleList,float _absTime) {
+
+}
+
+void FTriangle::generateParticles(ParticleList &_particleList,float _absTime) {
+
+}
+
+void FSphere::generateParticles(ParticleList &_particleList,float _absTime) {
+
+}

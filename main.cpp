@@ -116,7 +116,7 @@ void initSet()
 
 void initTransparentSet()
 {
-    TaskPool::pushTask("UpdateGSet",[](){
+//    TaskPool::pushTask("UpdateGSet",[](){
         std::vector< VkDescriptorImageInfo> descriptorImageInfos = {
                 tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.positionAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
                 tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.normalAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
@@ -127,7 +127,7 @@ void initTransparentSet()
             writeDescriptorSets.push_back(tool::writeDescriptorSet(SingleSetPool["gBuffer"], VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, i, &descriptorImageInfos[i]));
         }
         vkUpdateDescriptorSets(SingleDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-    });
+//    });
 }
 
 int main() {

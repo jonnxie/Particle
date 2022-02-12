@@ -64,9 +64,20 @@ glm::vec3 randomDirectionInRange(const glm::vec3& _average,float _angle)
 /*
  * return a position uniformly distributed about a plane with a center point and a normal direction
  */
-glm::vec3 randomPosition(const glm::vec3& _center,const glm::vec3& _normal)
+glm::vec3 randomPosition(const glm::vec3& _center,const glm::vec3& _normal,float _radius)
 {
-
+    glm::vec3 x,y,z;
+    genLocalCoordinateFromZ(_normal,x,y,z);
+    glm::mat3 localCoordinate = glm::inverse(glm::mat3(x,y,z));//column major
+    float f = genRandomInRange(0.0f,1.0f);
+    float phi = glm::sqrt(f) * _radius;
+    float theta = genRandomInRange(-pai, pai);
+    glm::vec3 localDirection{
+            glm::sin(theta) * _radius,
+            glm::cos(theta) * _radius,
+            0
+    };
+    return _center + localCoordinate * localDirection;
 }
 
 

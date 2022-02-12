@@ -4,7 +4,7 @@
 
 #ifndef SHATTER_ENGINE_POOL_H
 #define SHATTER_ENGINE_POOL_H
-
+#include <cassert>
 #include<map>
 #include <mutex>
 
@@ -27,6 +27,7 @@ public:
         std::lock_guard<std::mutex> guard(m_mutex);
         for(auto & i : m_map){
             if(i.first == _id){
+                assert(0);
                 return false;
             }
         }

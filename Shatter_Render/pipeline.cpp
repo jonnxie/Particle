@@ -416,13 +416,18 @@ GP::GP() {
 
     m_defaultViewport.x = 0.0f;
     m_defaultViewport.y = 0.0f;
-    m_defaultViewport.width = (float)SingleRender.getExtent2D().width;
-    m_defaultViewport.height = (float)SingleRender.getExtent2D().height;
+    m_defaultViewport.width = (float)getViewPort().width;
+    m_defaultViewport.height = (float)getViewPort().height;
+
+//    m_defaultViewport.width = (float)SingleRender.getExtent2D().width;
+//    m_defaultViewport.height = (float)SingleRender.getExtent2D().height;
     m_defaultViewport.minDepth = 0.0f;
     m_defaultViewport.maxDepth = 1.0f;
 
-    m_defaultScissor.offset = {0, 0};
-    m_defaultScissor.extent = SingleRender.getExtent2D();
+    m_defaultScissor.offset = getScissor().offset;
+    m_defaultScissor.extent = getScissor().extent;
+//    m_defaultScissor.offset = {0, 0};
+//    m_defaultScissor.extent = SingleRender.getExtent2D();
 
     m_defaultViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     m_defaultViewportStateCreateInfo.viewportCount = 1;
@@ -579,7 +584,6 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
 
     switch (_passType) {
         case RenderPassType::Default:{
-//            setRenderPass(shatter::render::ShatterRender::getRender().getRenderPass());
             setRenderPass(shatter::render::ShatterRender::getRender().getNewRenderPass());
             break;
         }
