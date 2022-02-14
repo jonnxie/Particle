@@ -104,18 +104,11 @@ namespace shatter::app{
                 cameraChanged = true;
             }
             m_listener->handle(Event::SinglePress);
+            m_events.push_back(Event::SinglePress);
             if(key == GLFW_KEY_SPACE)
             {
                 SingleCamera.reset();
                 cameraChanged = true;
-                {
-//                  auto particle = Particle::createParticle(particle_count++);
-//                  m_dobjects.insert(m_dobjects.end(),particle->m_dobjs.begin(),particle->m_dobjs.end());
-//                  m_objs.push_back(particle);
-//                  render::ShatterRender::getRender().getDObjects()->insert(render::ShatterRender::getRender().getDObjects()->begin(),
-//                                                                           m_dobjects.begin(),
-//                                                                           m_dobjects.end());
-                }
             }
 
             if(key == GLFW_KEY_F1)
@@ -126,6 +119,7 @@ namespace shatter::app{
             if(key == GLFW_KEY_DELETE)
             {
                 m_listener->handle(Event::DeletePress);
+                m_events.push_back(Event::DeletePress);
             }
 
             if(key == GLFW_KEY_F2)
@@ -171,6 +165,7 @@ namespace shatter::app{
         if(action == GLFW_REPEAT)
         {
             m_listener->handle(Event::DoublePress);
+            m_events.push_back(Event::DoublePress);
         }
     }
 
@@ -178,6 +173,7 @@ namespace shatter::app{
         if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         {
             m_listener->handle(Event::SingleClick);
+            m_events.push_back(Event::SingleClick);
             std::for_each(m_otherListener.begin(),m_otherListener.end(),[]
             (std::pair<const std::basic_string<char>, Listener *>& m)
             {

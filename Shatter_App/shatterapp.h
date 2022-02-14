@@ -68,6 +68,7 @@ namespace shatter{
             std::vector<Object*> m_objs;
 
             std::vector<int> m_cobjects;
+            std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
 

@@ -165,5 +165,6 @@ void set##name(type _val){               \
      name = _val;                          \
 }
 
+#define Bit(x) (1 << x)
 
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H
