@@ -202,3 +202,58 @@ void genLocalCoordinateFromZ(const glm::vec3& _f,glm::vec3& _x,glm::vec3& _y,glm
     _x = glm::cross(a,_z) / glm::length(glm::cross(a,_z));
     _y = glm::cross(_z,_x);
 }
+
+void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm::vec3 &_rotation, glm::vec3 &_scale) {
+    glm::mat4 LocalMatrix(_transform);
+
+    if(glm::abs(LocalMatrix[3][3]) < float_limit) { assert(0);}
+
+    if(glm::abs(LocalMatrix[0][3]) >= float_limit ||
+       glm::abs(LocalMatrix[1][3]) >= float_limit ||
+       glm::abs(LocalMatrix[2][3]) >= float_limit)
+    {
+        LocalMatrix[0][3] = LocalMatrix[1][3] = LocalMatrix[1][3] = 0.0f;
+        LocalMatrix[3][3] = 1.0f;
+    }
+
+    _transition = glm::vec3(LocalMatrix[3]);
+    LocalMatrix[3] = glm::vec4(0, 0, 0, LocalMatrix[3].w);
+
+    glm::vec3 Row[3], Pdum3;
+
+    for(size_t i = 0; i < 3; i++)
+    {
+        for(size_t j = 0; j < 3; j++)
+        {
+            Row[i][j] = LocalMatrix[i][j];
+        }
+    }
+
+    _scale.x = glm::length(Row[0]);
+    Row[0] = glm::normalize(Row[0]);
+    _scale.y = glm::length(Row[1]);
+    Row[1] = glm::normalize(Row[1]);
+    _scale.z = glm::length(Row[2]);
+    Row[2] = glm::normalize(Row[2]);
+
+//    Pdum3 = glm::cross(Row[1], Row[2]);
+//    if (glm::dot(Row[0], Pdum3) < 0)
+//    {
+//        for (size_t i = 0; i < 3; i++)
+//        {
+//            _scale[i] *= -1.0f;
+//            Rowp[i] *= -1.0f;
+//        }
+//    }
+
+    _rotation.y = asin(-Row[0][2]);
+    if (cos(_rotation.y) != 0) {
+        _rotation.x = atan2(Row[1][2], Row[2][2]);
+        _rotation.z = atan2(Row[0][1], Row[0][0]);
+    }
+    else {
+        _rotation.x = atan2(-Row[2][0], Row[1][1]);
+        _rotation.z = 0;
+    }
+
+}

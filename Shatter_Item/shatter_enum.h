@@ -5,7 +5,7 @@
 #ifndef SHATTER_ENGINE_SHATTER_ENUM_H
 #define SHATTER_ENGINE_SHATTER_ENUM_H
 
-#include <glm.hpp>
+// #include <glm.hpp>
 #include <string>
 
 enum class ShaderName{
@@ -304,16 +304,16 @@ enum SubpassDependency{
 /*
  * custom color
  */
-const glm::vec3 RED_COLOR{1.0f,0.0f,0.0f};
-const glm::vec3 YELLOW_COLOR{1.0f,1.0f,0.0f};
-const glm::vec3 GREEN_COLOR{0.0f,0.5f,0.0f};
-const glm::vec3 PURPLE_COLOR{0.5f,0.0f,0.5f};
-const glm::vec3 BLUE_COLOR{0.0f,0.0f,1.0f};
-const glm::vec3 CYAN_COLOR{0.0f,1.0f,1.0f};
-const glm::vec3 GOLD_COLOR{1.0f,0.84f,0.0f};
-const glm::vec3 ORANGE_COLOR{1.0f,0.64f,0.0f};
-const glm::vec3 WHITE_COLOR{1.0f,1.0f,1.0f};
-const glm::vec3 BLACK_COLOR{0.0f,0.0f,0.0f};
+// const glm::vec3 RED_COLOR{1.0f,0.0f,0.0f};
+// const glm::vec3 YELLOW_COLOR{1.0f,1.0f,0.0f};
+// const glm::vec3 GREEN_COLOR{0.0f,0.5f,0.0f};
+// const glm::vec3 PURPLE_COLOR{0.5f,0.0f,0.5f};
+// const glm::vec3 BLUE_COLOR{0.0f,0.0f,1.0f};
+// const glm::vec3 CYAN_COLOR{0.0f,1.0f,1.0f};
+// const glm::vec3 GOLD_COLOR{1.0f,0.84f,0.0f};
+// const glm::vec3 ORANGE_COLOR{1.0f,0.64f,0.0f};
+// const glm::vec3 WHITE_COLOR{1.0f,1.0f,1.0f};
+// const glm::vec3 BLACK_COLOR{0.0f,0.0f,0.0f};
 
 
 #define pai 3.141592f
