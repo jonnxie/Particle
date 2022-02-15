@@ -15,5 +15,6 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
+#include <glm.hpp>
 
 #endif //PARTICLE_PRECOMPILED_H

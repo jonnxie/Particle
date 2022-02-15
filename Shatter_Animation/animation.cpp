@@ -453,7 +453,7 @@ namespace animation {
                          GREEN_COLOR}
                 },
         };
-        m_localCoordinate = new Lines(lines);
+        m_localCoordinate = new DLines(lines);
         m_localCoordinate->init();
         TaskPool::pushUpdateTask(tool::combine("Animation",m_id),[&](float _abs_time){
             animate(_abs_time);

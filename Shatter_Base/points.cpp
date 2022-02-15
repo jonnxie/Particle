@@ -15,22 +15,22 @@
 #include AppCatalog
 #include RenderCatalog
 
-Points::Points(size_t _initCount) {
+DPoints::DPoints(size_t _initCount) {
     points = std::vector<Point3dColorSize>(_initCount);
     id = mallocPointId();
 }
 
-Points::Points(const std::vector<Point3dColorSize> &_points) {
+DPoints::DPoints(const std::vector<Point3dColorSize> &_points) {
     points = _points;
     id = mallocPointId();
 }
 
-void Points::constructG() {
-    SingleBPool.createVertexHostBuffer(tool::combine("Points",id), Point3dColorSizeSize * points.size(),points.data());
-    SingleBPool.getBuffer(tool::combine("Points",id),Buffer_Type::Vertex_Host_Buffer)->map();
+void DPoints::constructG() {
+    SingleBPool.createVertexHostBuffer(tool::combine("DPoints",id), Point3dColorSizeSize * points.size(),points.data());
+    SingleBPool.getBuffer(tool::combine("DPoints",id),Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
-void Points::constructD() {
+void DPoints::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
@@ -42,7 +42,7 @@ void Points::constructD() {
                          ms_index,
                          DrawType::Vertex,
                          0,
-                         tool::combine("Points",id),
+                         tool::combine("DPoints",id),
                          points.size(),
                          "",
                          0,
@@ -57,10 +57,10 @@ void Points::constructD() {
     SingleRender.getNObjects()->push_back(d);
 }
 
-void Points::pushPoint(const Point3dColorSize &_point) {
+void DPoints::pushPoint(const Point3dColorSize &_point) {
     points.push_back(_point);
 }
 
-void Points::pushPoint(const std::vector<Point3dColorSize> &_points) {
+void DPoints::pushPoint(const std::vector<Point3dColorSize> &_points) {
     points.insert(points.end(),_points.begin(),_points.end());
 }

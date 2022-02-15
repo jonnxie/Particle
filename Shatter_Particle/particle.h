@@ -14,7 +14,7 @@ class DrawPoint : public Listener{
 public:
     DrawPoint();
 private:
-    std::deque<std::unique_ptr<Points>> points;
+    std::deque<std::unique_ptr<DPoints>> points;
 };
 
 struct Particle{

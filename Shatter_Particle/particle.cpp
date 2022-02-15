@@ -14,7 +14,7 @@ DrawPoint::DrawPoint() {
     m_action[Event::SingleClick] = [&]() {
         static glm::vec3 realPos;
         input::cursor(realPos, STATE_OUT);
-        auto point = std::make_unique<Points>(std::vector{
+        auto point = std::make_unique<DPoints>(std::vector{
                                                      Point3dColorSize{
                                                              realPos,
                                                              RED_COLOR,

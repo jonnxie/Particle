@@ -11,9 +11,9 @@
 
 using namespace glm;
 
-class Lines;
+class DLines;
 
-class Tris;
+class DTris;
 
 class Plane {
 public:
@@ -48,8 +48,8 @@ public:
     [[nodiscard]] float pointPlaneDist(const vec3& _p)const;
     [[nodiscard]] vec3 projectOnto(const vec3& _p)const;
 
-    Lines* line{nullptr};
-    Tris*  tri{nullptr};
+    DLines* line{nullptr};
+    DTris*  tri{nullptr};
 };
 
 std::ostream & operator<<(std::ostream& _in,const Plane& _plane);

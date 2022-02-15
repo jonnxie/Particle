@@ -5,92 +5,42 @@
 #ifndef CAD_MESH_H
 #define CAD_MESH_H
 
-#include <glm.hpp>
-#include <vector>
-#include "../Shatter_Object/listener.h"
+#include "../Shatter_Item/shatter_enum.h"
+#include PrecompiledCatalog
+#include AABBCatalog
 
-using namespace glm;
-
-class HalfEdge;
-
-struct FlowVertex{
-    vec3 pos;
-    HalfEdge& edge;
-};
-class FlowFace;
-
-struct HalfEdge{
-    HalfEdge* opp{nullptr};
-    FlowVertex   &end;
-    FlowFace     &left;
-    HalfEdge* next{nullptr};
-};
-
-struct FlowFace{
-    HalfEdge* edge;
-};
-
-class Mesh{
+class SpatialItem
+{
 public:
-    void pushVertex(const FlowVertex& _v)
-    {
-        vertices.push_back(_v);
-    }
+    explicit SpatialItem() {}
+    virtual ~SpatialItem() {}
+    size_t      id{};
+    AABB        aabb{};
+    SpatialType item_type = SpatialType::Abstract;
 
-    void pushEdge(HalfEdge& _h,HalfEdge& _g)
-    {
-        size_t hh = halfedges.size();
-        halfedges.push_back(_h);
-        size_t gg = halfedges.size();
-        halfedges.push_back(_g);
-        _h.opp = halfedges.data() + gg;
-        _g.opp = halfedges.data() + hh;
-    }
+    // given a point in space P, finds the point in the item that is closest to P
+    virtual glm::vec3 pointClosestTo(const glm::vec3 & p) const = 0;
 
-    void pushEdges(HalfEdge& _h){
-        pushEdge(_h,*_h.opp);
-    }
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    void pushFace(FlowFace& _f){
-        faces.push_back(_f);
-    }
+    virtual void barycentricCoordinates(const glm::vec3 & p, double bc[]) const = 0;
 
-    void popVertex(){
-        vertices.pop_back();
-    }
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    void popEdges(){
-        halfedges.pop_back();
-        halfedges.pop_back();
-    }
+    virtual void draw() = 0;
 
-    void popFace(){
-        faces.pop_back();
-    }
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    void normalizeBorder(){
-        borderHalfEdgesNum = 0;
-        borderEdgesNum = 0;
-        borderHalfEdges = halfedges.size();
-        size_t ll = 0;
+    double dist     (const glm::vec3 & p) const;
+    double distSqrd(const glm::vec3 & p) const;
 
-    }
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-protected:
-    void updateOpposite(size_t h){
-        halfedges[h].opp = halfedges.data() + h + 1;
-        halfedges[h + 1].opp = halfedges.data() + h;
-    }
-
-public:
-    std::vector<FlowVertex> vertices;
-    std::vector<HalfEdge>   halfedges;
-    std::vector<FlowFace>   faces;
-
-    size_t  borderHalfEdgesNum;
-    size_t  borderEdgesNum;
-    size_t  borderHalfEdges;
+    virtual bool contains           (const glm::vec3 & p, const bool strict) const = 0;
+    virtual bool intersectsTriangle(const glm::vec3 t[], const bool ignore_if_valid_complex) const = 0;
+    virtual bool intersectsRay     (const glm::vec3 & p, const glm::vec3 & dir, double & t, glm::vec3 & pos) const = 0;
 };
+
 
 
 

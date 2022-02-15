@@ -177,7 +177,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
         const float line_height = GetTextLineHeight();
         ImVec2 text_size(0, 0);
 
-        // Lines to skip (can't skip when logging text)
+        // DLines to skip (can't skip when logging text)
         ImVec2 pos = text_pos;
         if (!g.LogEnabled)
         {
@@ -199,7 +199,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
             }
         }
 
-        // Lines to render
+        // DLines to render
         if (line < text_end)
         {
             ImRect line_rect(pos, pos + ImVec2(FLT_MAX, line_height));

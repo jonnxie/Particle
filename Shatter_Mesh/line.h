@@ -11,7 +11,7 @@
 #include "plane.h"
 #include "../Shatter_Object/listener.h"
 
-class Lines;
+class DLines;
 using namespace glm;
 
 class GLine
@@ -32,7 +32,7 @@ public:
     vec3 dir() const;
 
 public:
-    Lines* line{nullptr};
+    DLines* line{nullptr};
 
     vec3  p0, p1;
     vec3   color{0.0f,0.5f,0.0f};

@@ -53,7 +53,7 @@ void GLine::draw() {
                      color}
             }
     };
-    line = new Lines(lines);
+    line = new DLines(lines);
     line->init();
 }
 
@@ -103,7 +103,7 @@ DrawLine::DrawLine() {
                 view /= view.w;
                 realPos = glm::inverse(SingleCamera.m_camera.view) * view;
 
-                auto buffer = SingleBPool.getBuffer(tool::combine("Lines", id), Buffer_Type::Vertex_Host_Buffer);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DLines", id), Buffer_Type::Vertex_Host_Buffer);
                 void* data;
                 vkMapMemory(localDevice, buffer->getMemory(), PointSize, PointSize,VK_PIPELINE_STAGE_HOST_BIT, &data);
                 Point point{};

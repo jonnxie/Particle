@@ -16,22 +16,22 @@
 #include RenderCatalog
 
 
-Lines::Lines(size_t _initCount){
+DLines::DLines(size_t _initCount){
     lines = std::vector<Line>(_initCount);
     id = mallocId();
 }
 
-Lines::Lines(const std::vector<Line>& _lines){
+DLines::DLines(const std::vector<Line>& _lines){
     lines = _lines;
     id = mallocId();
 }
 
-void Lines::constructG(){
-    SingleBPool.createVertexHostBuffer(tool::combine("Lines",id),LineSize * lines.size(),lines.data());
-    SingleBPool.getBuffer(tool::combine("Lines",id),Buffer_Type::Vertex_Host_Buffer)->map();
+void DLines::constructG(){
+    SingleBPool.createVertexHostBuffer(tool::combine("DLines",id),LineSize * lines.size(),lines.data());
+    SingleBPool.getBuffer(tool::combine("DLines",id),Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
-void Lines::constructD(){
+void DLines::constructD(){
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
@@ -43,7 +43,7 @@ void Lines::constructD(){
                          ms_index,
                          DrawType::Vertex,
                          0,
-                         tool::combine("Lines",id),
+                         tool::combine("DLines",id),
                          lines.size() * 2,
                          "",
                          0,
@@ -60,11 +60,11 @@ void Lines::constructD(){
 //    SingleRender.normalChanged = true;
 }
 
-void Lines::pushLine(const Line &_line) {
+void DLines::pushLine(const Line &_line) {
     lines.push_back(_line);
 }
 
-void Lines::pushLines(const std::vector<Line>& _lines) {
+void DLines::pushLines(const std::vector<Line>& _lines) {
     lines.insert(lines.end(),_lines.begin(),_lines.end());
 }
 

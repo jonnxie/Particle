@@ -24,10 +24,10 @@ static int mallocPointId()
     return initPointIdVal++;
 }
 
-class Points :public Object{
+class DPoints : public Object{
 public:
-    explicit Points(size_t _initCount);
-    explicit Points(const std::vector<Point3dColorSize>& _points);
+    explicit DPoints(size_t _initCount);
+    explicit DPoints(const std::vector<Point3dColorSize>& _points);
     void constructG() override;
     void constructD() override;
     void constructC() override{};

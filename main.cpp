@@ -179,7 +179,7 @@ int main() {
 //        std::vector<Tri> tris{
 //                t
 //        };
-//        auto tri = new Tris(tris,MeshDrawType::Face);
+//        auto tri = new DTris(tris,MeshDrawType::Face);
 //        tri->init();
     }
 
@@ -216,12 +216,12 @@ int main() {
                             GREEN_COLOR}
             },
     };
-    auto line = std::make_unique<Lines>(lines);
-//    auto line = new Lines(lines);
+    auto line = std::make_unique<DLines>(lines);
+//    auto line = new DLines(lines);
     line->init();
 
     TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
-        auto buffer = SingleBPool.getBuffer(tool::combine("Lines",line->id),Buffer_Type::Vertex_Host_Buffer);
+        auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
         auto target = SingleCamera.m_targetPlane;
         auto center = SingleCamera.center;
         std::array<Line,3> lines{

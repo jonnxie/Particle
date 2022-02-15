@@ -68,7 +68,7 @@ void Plane::draw(){
                      color}
             }
     };
-    line = new Lines(lines);
+    line = new DLines(lines);
     line->init();
 
     Point x0{},x1{},y0{},y1{},z0{},z1{};
@@ -108,7 +108,7 @@ void Plane::draw(){
             t0,
             t1
     };
-    tri = new Tris(tris,MeshDrawType::Face);
+    tri = new DTris(tris, MeshDrawType::Face);
     tri->init();
 }
 

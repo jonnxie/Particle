@@ -23,10 +23,10 @@ static int mallocTriId()
     return initTriIdVal++;
 }
 
-class Tris :public Object{
+class DTris : public Object{
 public:
-    explicit Tris(size_t _initCount,MeshDrawType _type = MeshDrawType::Line);
-    explicit Tris(const std::vector<Tri>& _tris,MeshDrawType _type = MeshDrawType::Line);
+    explicit DTris(size_t _initCount, MeshDrawType _type = MeshDrawType::Line);
+    explicit DTris(const std::vector<Tri>& _tris, MeshDrawType _type = MeshDrawType::Line);
     void constructG() override;
     void constructD() override;
     void constructC() override{};

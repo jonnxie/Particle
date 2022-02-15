@@ -1600,7 +1600,7 @@ static void ShowDemoWindowWidgets()
             average /= (float)IM_ARRAYSIZE(values);
             char overlay[32];
             sprintf(overlay, "avg %f", average);
-            ImGui::PlotLines("Lines", values, IM_ARRAYSIZE(values), values_offset, overlay, -1.0f, 1.0f, ImVec2(0, 80.0f));
+            ImGui::PlotLines("DLines", values, IM_ARRAYSIZE(values), values_offset, overlay, -1.0f, 1.0f, ImVec2(0, 80.0f));
         }
 
         // Use functions to generate output
@@ -1618,7 +1618,7 @@ static void ShowDemoWindowWidgets()
         ImGui::SameLine();
         ImGui::SliderInt("Sample count", &display_count, 1, 400);
         float (*func)(void*, int) = (func_type == 0) ? Funcs::Sin : Funcs::Saw;
-        ImGui::PlotLines("Lines", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
+        ImGui::PlotLines("DLines", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
         ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
         ImGui::Separator();
 
@@ -2680,7 +2680,7 @@ static void ShowDemoWindowLayout()
             ImGui::BulletText("Text baseline:");
             ImGui::SameLine(); HelpMarker(
                 "This is testing the vertical alignment that gets applied on text to keep it aligned with widgets. "
-                "Lines only composed of text or \"small\" widgets use less vertical space than lines with framed widgets.");
+                "DLines only composed of text or \"small\" widgets use less vertical space than lines with framed widgets.");
             ImGui::Indent();
 
             ImGui::Text("KO Blahblah"); ImGui::SameLine();
@@ -2916,7 +2916,7 @@ static void ShowDemoWindowLayout()
             "Horizontal scrolling for a window is enabled via the ImGuiWindowFlags_HorizontalScrollbar flag.\n\n"
             "You may want to also explicitly specify content width by using SetNextWindowContentWidth() before Begin().");
         static int lines = 7;
-        ImGui::SliderInt("Lines", &lines, 1, 15);
+        ImGui::SliderInt("DLines", &lines, 1, 15);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 1.0f));
         ImVec2 scrolling_child_size = ImVec2(0, ImGui::GetFrameHeightWithSpacing() * 7 + 30);
@@ -7004,7 +7004,7 @@ static void ShowExampleAppConstrainedResize(bool* p_open)
         ImGui::SetNextItemWidth(200);
         ImGui::Combo("Constraint", &type, test_desc, IM_ARRAYSIZE(test_desc));
         ImGui::SetNextItemWidth(200);
-        ImGui::DragInt("Lines", &display_lines, 0.2f, 1, 100);
+        ImGui::DragInt("DLines", &display_lines, 0.2f, 1, 100);
         ImGui::Checkbox("Auto-resize", &auto_resize);
         for (int i = 0; i < display_lines; i++)
             ImGui::Text("%*sHello, sailor! Making this line long enough for the example.", i * 4, "");

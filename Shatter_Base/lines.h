@@ -23,10 +23,10 @@ static int mallocId()
     return initIdVal++;
 }
 
-class Lines :public Object{
+class DLines : public Object{
 public:
-    explicit Lines(size_t _initCount);
-    explicit Lines(const std::vector<Line>& _lines);
+    explicit DLines(size_t _initCount);
+    explicit DLines(const std::vector<Line>& _lines);
     void constructG() override;
     void constructD() override;
     void constructC() override{};

@@ -18,7 +18,7 @@
 
 class Listener;
 
-class Lines;
+class DLines;
 
 namespace animation {
     class Animation;
@@ -203,7 +203,7 @@ namespace animation {
 
     private:
         int m_id;
-        Lines* m_localCoordinate;
+        DLines* m_localCoordinate;
     public:
         Header m_header;
         std::vector<Vertex> m_vertexes;
