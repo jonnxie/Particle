@@ -6,8 +6,8 @@
 #include <mutex>
 #include <array>
 #include <random>
-#include ConfigCatalog"Engine/Item/configs.h"
-#include TaskCatalog"taskpool.h"
+#include ConfigCatalog
+#include TaskCatalog
 
 LightManager& LightManager::getLight(){
     static bool ready = false;

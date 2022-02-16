@@ -6,7 +6,7 @@
 #define SHATTER_ENGINE_SHATTERBUFFER_H
 
 #include <vulkan/vulkan.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <memory>
 #include "Engine/Item/shatter_item.h"

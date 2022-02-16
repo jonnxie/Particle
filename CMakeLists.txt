@@ -4,6 +4,8 @@ project(Particle)
 set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB CORE
+        "src/*.cpp"
+        "src/*.h"
         "src/Engine/*/*.cpp"
         "src/Engine/*/*.h"
         "src/Platform/*/*.cpp"
@@ -62,7 +64,7 @@ include_directories(${TINY_GLTF_DIR})
 include_directories(external/vulkangltf/)
 
 ## GLFW
-set(GLFW_INCLUDE_DIRS external/glfw-3.3.4.bin.WIN64/include/GLFW/)
+set(GLFW_INCLUDE_DIRS external/glfw-3.3.4.bin.WIN64/include/)
 include_directories(${GLFW_INCLUDE_DIRS})
 
 target_link_libraries(Particle glfw3)

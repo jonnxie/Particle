@@ -3,12 +3,12 @@
 //
 
 #include "pipeline.h"
-#include DeviceCatalog"Engine/Object/device.h"
-#include SlbPoolCatalog"Engine/Object/slbpool.h"
+#include DeviceCatalog
+#include SlbPoolCatalog
 //#include RayCatalog
-#include OffScreenCatalog"Engine/Object/offscreen.h"
-#include InputTypeCatalog"Engine/Object/inputtype.h"
-#include RenderCatalog"shatter_render_include.h"
+#include OffScreenCatalog
+#include InputTypeCatalog
+#include RenderCatalog
 #include "render.h"
 
 VkPipelineInputAssemblyStateCreateInfo getAssemblyState(AssemState _state){

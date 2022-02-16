@@ -17,7 +17,7 @@
 //#include "imgui_impl_vulkan.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <array>
 #include <queue>

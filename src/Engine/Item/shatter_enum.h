@@ -393,7 +393,7 @@ enum SubpassDependency{
 #define MemPoolCatalog     "Engine/Object/mempool.hpp"
 #define InputTypeCatalog   "Engine/Object/inputtype.h"
 #define InputActionCatalog "Engine/Object/inputaction.h"
-#define PrecompiledCatalog "Engine/Object/precompiled.h"
+#define PrecompiledCatalog "precompiledhead.h"
 #define AABBCatalog        "Engine/Object/aabb.h"
 #define BufferCatalog   "Engine/Buffer/shatterbufferinclude.h"
 #define PipelineCatalog "Engine/Render/pipeline.h"

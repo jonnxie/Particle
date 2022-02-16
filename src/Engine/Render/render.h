@@ -9,7 +9,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
 #include <iostream>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
 //#include <gtx/hash.hpp>
 #include <vector>

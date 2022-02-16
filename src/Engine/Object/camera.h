@@ -6,7 +6,7 @@
 #define SHATTER_ENGINE_CAMERA_H
 
 #include <glm.hpp>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
 #include "bpool.h"
