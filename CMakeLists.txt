@@ -3,8 +3,12 @@ project(Particle)
 
 set(CMAKE_CXX_STANDARD 20)
 
-file(GLOB CORE "Shatter_*/*.cpp"
-        "Shatter_*/*.h")
+file(GLOB CORE
+        "src/Engine/*/*.cpp"
+        "src/Engine/*/*.h"
+        "src/Platform/*/*.cpp"
+        "src/Platform/*/*.h"
+        )
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/imgui-master
@@ -33,6 +37,10 @@ add_executable(Particle
         ${IMGUI}
         main.cpp
         )
+
+include_directories(src/)
+
+include_directories(external/ktx/include/)
 
 target_link_libraries(Particle ktx)
 
