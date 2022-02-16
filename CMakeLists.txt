@@ -34,6 +34,9 @@ set(KTX_SOURCES
 
 add_library(ktx STATIC ${KTX_SOURCES})
 
+option(SHATTER_PLATPORM_WINDOWS "Use Windows Platform" ON)
+option(SHATTER_BUILD_DLL "Build Shatter DLL" ON)
+
 add_executable(Particle
         ${CORE}
         ${IMGUI}
