@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2021/6/26.
 //
+#include "precompiledhead.h"
 
 #include "inputaction.h"
 

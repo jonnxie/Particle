@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/10/5.
 //
+#include "precompiledhead.h"
 
 #include "shadergrouppool.h"
 

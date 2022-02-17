@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2022/1/28.
 //
+#include "precompiledhead.h"
 
 #include "plane.h"
 #include "base.h"

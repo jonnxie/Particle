@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/9/29.
 //
+#include "precompiledhead.h"
 
 #include "GUI.h"
 #include <mutex>

@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2021/6/21.
 //
+#include "precompiledhead.h"
 
 #include "camera.h"
 //#include "../ShatterApp/shatter_app.h"

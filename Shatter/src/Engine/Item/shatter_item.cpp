@@ -1,6 +1,8 @@
 //
 // Created by maybe on 2020/11/24.
 //
+#include "precompiledhead.h"
+
 #include "shatter_item.h"
 #include <sstream>
 #include "Engine/Object/device.h"

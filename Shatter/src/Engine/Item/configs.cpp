@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/10/4.
 //
+#include "precompiledhead.h"
 
 #include "configs.h"
 #include "shatter_macro.h"

@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/11/19.
 //
+#include "precompiledhead.h"
 
 #include "listener.h"
 #include CameraCatalog

@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2021/6/2.
 //
+#include "precompiledhead.h"
 
 #include "line3d.h"
 

@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2022/1/7.
 //
+#include "precompiledhead.h"
 
 #include "pipeline.h"
 #include DeviceCatalog

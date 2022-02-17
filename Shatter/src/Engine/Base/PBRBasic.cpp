@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/11/6.
 //
+#include "precompiledhead.h"
 
 #include "PBRBasic.h"
 #include ModelSetCatalog

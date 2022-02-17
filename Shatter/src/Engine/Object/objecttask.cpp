@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2021/9/14.
 //
+#include "precompiledhead.h"
 
 #include "objecttask.h"
 #include "Engine/Item/shatter_item.h"

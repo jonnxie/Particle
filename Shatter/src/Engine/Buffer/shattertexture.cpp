@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2020/12/19.
 //
+#include "precompiledhead.h"
 
 #include "shattertexture.h"
 #define STB_IMAGE_IMPLEMENTATION

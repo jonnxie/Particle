@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/9/28.
 //
+#include "precompiledhead.h"
 
 #include "Skybox.h"
 #include ModelSetCatalog

@@ -5,9 +5,9 @@
 #ifndef VULKAN_TOTURIOL_SHATTER_RENDER_H
 #define VULKAN_TOTURIOL_SHATTER_RENDER_H
 
-#define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
+#include <vulkan/vulkan.h>
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>

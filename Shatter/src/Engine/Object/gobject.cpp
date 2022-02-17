@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2021/5/26.
 //
+#include "precompiledhead.h"
 
 #include "gobject.h"
 #include "aabb.h"

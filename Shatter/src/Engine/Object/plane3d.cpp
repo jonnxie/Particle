@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2021/6/28.
 //
+#include "precompiledhead.h"
 
 #include "plane3d.h"
 

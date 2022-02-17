@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2021/7/25.
 //
+#include "precompiledhead.h"
 
 #include "modelsetpool.h"
 #include "bpool.h"

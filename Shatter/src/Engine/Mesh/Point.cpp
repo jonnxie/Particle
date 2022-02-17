@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2022/2/15.
 //
+#include "precompiledhead.h"
 
 #include "Point.h"
 #include "predicates.h"

@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2021/6/5.
 //
+#include "precompiledhead.h"
 
 #include "idpool.h"
 #include <algorithm>

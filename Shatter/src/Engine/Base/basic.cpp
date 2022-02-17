@@ -1,6 +1,7 @@
 //
 // Created by jonnxie on 2021/10/25.
 //
+#include "precompiledhead.h"
 
 #include "basic.h"
 #include SetPoolCatalog

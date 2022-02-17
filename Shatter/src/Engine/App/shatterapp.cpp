@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2020/11/13.
 //
+#include "precompiledhead.h"
 
 #include "shatterapp.h"
 #include "Engine/Object/camera.h"
@@ -14,6 +15,7 @@
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
 #include "Engine/Particle/particle.h"
+#include "Engine/Object/threadpool.h"
 
 namespace shatter::app{
     bool app_created = false;
@@ -68,8 +70,20 @@ namespace shatter::app{
             timer::setTime( abs_time_s);
             glfwPollEvents();
 
-            TaskPool::updateMultiple(abs_time_s);
+//            for(auto& e : m_events)
+//            {
+//                ThreadPool::pool()->addTask([&,e](){
+//                    m_listener->handle(e);
+//                    for(auto& l : m_otherListener)
+//                    {
+//                        l.second->handle(e);
+//                    }
+//                });
+//            }
+//            ThreadPool::pool()->wait();
+
             TaskPool::executeMultiple();
+            TaskPool::updateMultiple(abs_time_s);
 
             for(auto& drawobj : m_dobjects){
                 (*dpool)[drawobj]->update();

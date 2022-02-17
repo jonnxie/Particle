@@ -1,4 +1,4 @@
-//#include "precompiledhead.h"
+#include "precompiledhead.h"
 //#include "Window.h"
 //
 //
