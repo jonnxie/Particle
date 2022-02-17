@@ -4,25 +4,26 @@ project(Particle)
 set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB CORE
-        "src/*.cpp"
-        "src/*.h"
-        "src/Engine/*/*.cpp"
-        "src/Engine/*/*.h"
-        "src/Platform/*/*.cpp"
-        "src/Platform/*/*.h"
+        "Shatter/src/*.cpp"
+        "Shatter/src/*.h"
+        "Shatter/src/Engine/*/*.cpp"
+        "Shatter/src/Engine/*/*.h"
+        "Shatter/src/Platform/*/*.cpp"
+        "Shatter/src/Platform/*/*.h"
         )
 
 include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/imgui-master
-        ${CMAKE_CURRENT_SOURCE_DIR}/imgui-master/backends
+        Shatter/vendor/imgui-master
+        Shatter/vendor/imgui-master/backends
 )
 
-file(GLOB IMGUI "external/imgui-master/*.cpp"
-        "external/imgui-master/backends/imgui_impl_glfw.*"
-        "external/imgui-master/backends/imgui_impl_vulkan.*"
-        "external/imgui-master/*.h")
+file(GLOB IMGUI
+        "Shatter/vendor/imgui-master/*.cpp"
+        "Shatter/vendor/imgui-master/backends/imgui_impl_glfw.*"
+        "Shatter/vendor/imgui-master/backends/imgui_impl_vulkan.*"
+        "Shatter/vendor/imgui-master/*.h")
 
-set(KTX_DIR external/ktx)
+set(KTX_DIR Shatter/vendor/ktx)
 set(KTX_SOURCES
         ${KTX_DIR}/lib/texture.c
         ${KTX_DIR}/lib/hashlist.c
@@ -43,37 +44,37 @@ add_executable(Particle
         main.cpp
         )
 
-include_directories(src/)
+include_directories(Shatter/src/)
 
-include_directories(external/ktx/include/)
+include_directories(Shatter/vendor/ktx/include/)
 
 target_link_libraries(Particle ktx)
 
 ## STB
-set(STB_INCLUDE_DIR external/stb-master/)
+set(STB_INCLUDE_DIR Shatter/vendor/stb-master/)
 include_directories(${STB_INCLUDE_DIR})
 
 ## TINY_OBJ
-set(TINY_OBJ_DIR external/tinyobjloader-master/)
+set(TINY_OBJ_DIR Shatter/vendor/tinyobjloader-master/)
 
 include_directories(${TINY_OBJ_DIR})
 
 #TINY_GLTF
-set(TINY_GLTF_DIR external/tinygltf/)
+set(TINY_GLTF_DIR Shatter/vendor/tinygltf/)
 
 include_directories(${TINY_GLTF_DIR})
 
-#vulkangltf
-include_directories(external/vulkangltf/)
+##vulkangltf
+#include_directories(external/vulkangltf/)
 
 ## GLFW
-set(GLFW_INCLUDE_DIRS external/glfw-3.3.4.bin.WIN64/include/)
+set(GLFW_INCLUDE_DIRS Shatter/vendor/glfw-3.3.4.bin.WIN64/include/)
 include_directories(${GLFW_INCLUDE_DIRS})
 
 target_link_libraries(Particle glfw3)
 
 ## GLM
-set(GLM_INCLUDE_DIRS external/glm/)
+set(GLM_INCLUDE_DIRS Shatter/vendor/glm/)
 include_directories(${GLM_INCLUDE_DIRS})
 
 ## VulKan
