@@ -27,7 +27,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-#define TINYGLTF_NO_STB_IMAGE_WRITE
+//#define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "tiny_gltf.h"
 
 #include "Engine/Item/shatter_item.h"
@@ -123,8 +123,8 @@ namespace vkglTF
 		std::string name;
 
 		struct UniformBuffer {
-			VkBuffer buffer;
-			VkDeviceMemory memory;
+			VkBuffer buffer = VK_NULL_HANDLE;
+			VkDeviceMemory memory = VK_NULL_HANDLE;
 			VkDescriptorBufferInfo descriptor;
 			VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 			void* mapped;

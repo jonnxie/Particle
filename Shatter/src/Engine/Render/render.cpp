@@ -185,6 +185,8 @@ namespace shatter::render{
         glfwSetCursorPosCallback(window, cursorPositionCallback);
 
         glfwSetScrollCallback(window, scrollCallback);
+
+        glfwSetCharCallback(window, keyTypeCallback);
     }
 
     void ShatterRender::initVulkan(){
@@ -2471,6 +2473,12 @@ namespace shatter::render{
         app::ShatterApp::getApp().cameraChanged = true;
     }
 
+    void ShatterRender::keyTypeCallback(GLFWwindow* window, unsigned int code)
+    {
+	    
+    }
+
+
     void ShatterRender::allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                                VkDescriptorSet* set){
         VkDescriptorSetAllocateInfo allocInfo = {};
@@ -2541,8 +2549,8 @@ namespace shatter::render{
 
     void ShatterRender::updateUI() {
         ImGuiIO& io = ImGui::GetIO();
-
-        io.DisplaySize = ImVec2((float)swapchain_extent.width,(float)swapchain_extent.height);
+        
+        io.DisplaySize = ImVec2((float)getViewPort().width,(float)getViewPort().height);
         io.DeltaTime = 1.0f;
 
         glm::vec2 pos;

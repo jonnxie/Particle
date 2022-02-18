@@ -6,7 +6,6 @@
 #include "Engine/Render/shatter_render_include.h"
 #include "Engine/App/shatterappinclude.h"
 #include "Engine/Item/shatter_item.h"
-
 #include "Engine/Object/slbpool.h"
 #include "Engine/Object/shaderpool.h"
 #include "Engine/Object/setpool.h"
@@ -145,6 +144,7 @@ int main() {
     auto& buffer_pool = SingleBPool;
     auto& model_pool = SingleModelSetPool;
     auto& light_manager = SingleLM;
+    auto& offScreen = SingleOffScreen;
 
     auto line_pool = MPool<Line3d>::getPool();
     auto& camera = Camera::getCamera();

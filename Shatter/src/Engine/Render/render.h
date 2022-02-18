@@ -7,7 +7,10 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
-#include <vulkan/vulkan.h>
+
+#ifndef  GLFW_INCLUDE_VULKAN
+          #define GLFW_INCLUDE_VULKAN
+#endif
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
@@ -202,6 +205,7 @@ namespace shatter{
             static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
             static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
             static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+            static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             std::vector<int>* getDObjects();
             std::vector<int>* getCObjects();
             std::vector<int>* getTObjects();

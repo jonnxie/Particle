@@ -79,9 +79,36 @@ public:
     }
 
     void release() {
-        std::lock_guard<std::mutex> guard_mutex(m_mutex);
-        delete[] m_ptr;
+        delete m_ptr;
         m_ptr = nullptr;
+        if constexpr (std::is_same_v<Object_Type,Line3d>)
+        {
+            delete m_line3d_pool;
+        }
+        else if constexpr (std::is_same_v<Object_Type,Plane3d>)
+        {
+            delete m_plane3d_pool;
+        }
+        else if constexpr (std::is_same_v<Object_Type,DObject>)
+        {
+            delete m_dobject_pool;
+        }
+        else if constexpr (std::is_same_v<Object_Type,GObject>)
+        {
+            delete m_gobject_pool;
+        }
+        else if constexpr (std::is_same_v<Object_Type,VkDescriptorSet>)
+        {
+            delete m_set_pool;
+        }
+        else if constexpr(std::is_same_v<Object_Type,CObject>)
+        {
+            delete m_cobject_pool;
+        }
+        else if constexpr(std::is_same_v<Object_Type,ObjectBox>)
+        {
+            delete m_object_pool;
+        }
     }
 
     Object_Type* operator[](int _index) {
@@ -112,7 +139,7 @@ public:
         Object_Type* new_ptr = new Object_Type[m_count*2];
         int old_num = m_count;
         memcpy(new_ptr,m_ptr,m_count);
-        delete[] m_ptr;
+        delete m_ptr;
         m_ptr = new_ptr;
         m_count *= 2;
         int num = m_count - old_num;

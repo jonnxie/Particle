@@ -8,10 +8,15 @@
 */
 #include "precompiledhead.h"
 
-#define TINYGLTF_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-//#define GLM_FORCE_RADIANS
+
+#ifndef TINYGLTF_IMPLEMENTATION
+    #define TINYGLTF_IMPLEMENTATION
+#endif
+
+#ifndef TINYGLTF_NO_STB_IMAGE_WRITE
+    #define TINYGLTF_NO_STB_IMAGE_WRITE
+#endif
+
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "VulkanglTFModels.h"
@@ -509,8 +514,15 @@ vkglTF::Mesh::Mesh(Device *device, glm::mat4 matrix) {
 };
 
 vkglTF::Mesh::~Mesh() {
-	vkDestroyBuffer(device->logicalDevice, uniformBuffer.buffer, nullptr);
-	vkFreeMemory(device->logicalDevice, uniformBuffer.memory, nullptr);
+    if(uniformBuffer.buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device->logicalDevice, uniformBuffer.buffer, nullptr);
+    }
+
+    if(uniformBuffer.memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device->logicalDevice, uniformBuffer.memory, nullptr);
+    }
 }
 
 /*

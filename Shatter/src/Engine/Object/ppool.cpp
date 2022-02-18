@@ -201,7 +201,7 @@ void PPool::release() {
     for(auto& i : m_map){
         delete i.second;
     }
-    m_map.clear();
+//    m_map.clear();
 }
 
 //void PPool::createGP(const P_id &_id, const std::vector<Input_Type> &_inputType,

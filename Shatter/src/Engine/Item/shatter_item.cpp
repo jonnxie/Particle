@@ -488,11 +488,11 @@ void printDeviceFeatures(){
 generatevk(VkPhysicalDeviceMemoryProperties);
 
 void getResult(int _key) {
-    std::cout << resultMap[_key] << std::endl;
+    std::cout << ResultMap::getResultMap()()[_key] << std::endl;
 }
 
 std::string getVkResult(int _key) {
-    return resultMap[_key];
+    return ResultMap::getResultMap()()[_key];
 }
 
 int patchNum(int _objectNum, int _thread) {
@@ -2002,5 +2002,50 @@ void Mat4::print_matrix(Mat4 m)
 }
 
 
+ResultMap &ResultMap::getResultMap() {
+    static ResultMap map;
+    return map;
+}
 
+ResultMap::ResultMap(){
+    m_map[0] = std::string("VK_SUCCESS");
+    m_map[1] = std::string("VK_NOT_READY");
+    m_map[2] = std::string("VK_TIMEOUT");
+    m_map[3] = std::string("VK_EVENT_SET");
+    m_map[4] = std::string("VK_EVENT_RESET");
+    m_map[5] = std::string("VK_INCOMPLETE");
+    m_map[-1] = std::string("VK_ERROR_OUT_OF_HOST_MEMORY");
+    m_map[-2] = std::string("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+    m_map[-3] = std::string("VK_ERROR_INITIALIZATION_FAILED");
+    m_map[-4] = std::string("VK_ERROR_DEVICE_LOST");
+    m_map[-5] = std::string("VK_ERROR_MEMORY_MAP_FAILED");
+    m_map[-6] = std::string("VK_ERROR_LAYER_NOT_PRESENT");
+    m_map[-7] = std::string("VK_ERROR_EXTENSION_NOT_PRESENT");
+    m_map[-8] = std::string("VK_ERROR_FEATURE_NOT_PRESENT");
+    m_map[-9] = std::string("VK_ERROR_INCOMPATIBLE_DRIVER");
+    m_map[-10] = std::string("VK_ERROR_TOO_MANY_OBJECTS");
+    m_map[-11] = std::string("VK_ERROR_FORMAT_NOT_SUPPORTED");
+    m_map[-12] = std::string("VK_ERROR_FRAGMENTED_POOL");
+    m_map[-13] = std::string("VK_ERROR_UNKNOWN");
+    m_map[-1000069000] = std::string("VK_ERROR_OUT_OF_POOL_MEMORY");
+    m_map[-1000072003] = std::string("VK_ERROR_INVALID_EXTERNAL_HANDLE");
+    m_map[-1000161000] = std::string("VK_ERROR_FRAGMENTATION");
+    m_map[-1000257000] = std::string("VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS");
+    m_map[-1000000000] = std::string("VK_ERROR_SURFACE_LOST_KHR");
+    m_map[-1000000001] = std::string("VK_ERROR_NATIVE_WINDOW_IN_USE_KHR");
+    m_map[-1000001003] = std::string("VK_SUBOPTIMAL_KHR");
+    m_map[-1000001004] = std::string("VK_ERROR_OUT_OF_DATE_KHR");
+    m_map[-1000003001] = std::string("VK_ERROR_INCOMPATIBLE_DISPLAY_KHR");
+    m_map[-1000011001] = std::string("VK_ERROR_VALIDATION_FAILED_EXT");
+    m_map[-1000012000] = std::string("VK_ERROR_INVALID_SHADER_NV");
+    m_map[-1000158000] = std::string("VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT");
+    m_map[-1000174001] = std::string("VK_ERROR_NOT_PERMITTED_EXT");
+    m_map[-1000255000] = std::string("VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT");
+    m_map[1000268000] = std::string("VK_THREAD_IDLE_KHR");
+    m_map[1000268001] = std::string("VK_THREAD_DONE_KHR");
+    m_map[1000268002] = std::string("VK_OPERATION_DEFERRED_KHR");
+    m_map[1000268003] = std::string("VK_OPERATION_NOT_DEFERRED_KHR");
+    m_map[1000297000] = std::string("VK_PIPELINE_COMPILE_REQUIRED_EXT");
+    m_map[0x7FFFFFFF] = std::string("VK_RESULT_MAX_ENUM");
+};
 
