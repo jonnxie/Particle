@@ -68,5 +68,4 @@ class FSphere : public ParticleGenerator{
 public:
     void generateParticles(ParticleList& _particleList,float _absTime) final;
 };
-
 #endif //PARTICLE_PARTICLE_H

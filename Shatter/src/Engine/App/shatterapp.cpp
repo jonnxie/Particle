@@ -70,36 +70,50 @@ namespace shatter::app{
             timer::setTime( abs_time_s);
             glfwPollEvents();
 
-//            for(auto& e : m_events)
-//            {
-//                ThreadPool::pool()->addTask([&,e](){
-//                    m_listener->handle(e);
-//                    for(auto& l : m_otherListener)
-//                    {
-//                        l.second->handle(e);
-//                    }
-//                });
-//            }
-//            ThreadPool::pool()->wait();
+            for(auto& e : m_events)
+            {
+                ThreadPool::pool()->addTask([&,e](){
+                    m_listener->handle(e);
+                    for(auto& l : m_otherListener)
+                    {
+                        l.second->handle(e);
+                    }
+                });
+            }
+            ThreadPool::pool()->wait();
+            m_events.clear();
 
             TaskPool::executeMultiple();
             TaskPool::updateMultiple(abs_time_s);
 
-            for(auto& drawobj : m_dobjects){
-                (*dpool)[drawobj]->update();
-            }
+            static auto dUpdateTask = [&](){
+                for(auto& drawobj : m_dobjects){
+                    (*dpool)[drawobj]->update();
+                }
+            };
+            ThreadPool::pool()->addTask(dUpdateTask);
 
-            for(auto& tObj : transparency_vec){
-                (*dpool)[tObj]->update();
-            }
+            static auto transUpdateTask = [&](){
+                for(auto& tObj : transparency_vec){
+                    (*dpool)[tObj]->update();
+                }
+            };
+            ThreadPool::pool()->addTask(transUpdateTask);
 
-            for(auto& nObj : normal_vec){
-                (*dpool)[nObj]->update();
-            }
+            static auto nUpdateTask = [&](){
+                for(auto& nObj : normal_vec){
+                    (*dpool)[nObj]->update();
+                }
+            };
+            ThreadPool::pool()->addTask(nUpdateTask);
 
-            for(auto& drawobj : m_offscreenobjects){
-                (*dpool)[drawobj]->update();
-            }
+            static auto offUpdateTask = [&](){
+                for(auto& drawobj : m_offscreenobjects){
+                    (*dpool)[drawobj]->update();
+                }
+            };
+            ThreadPool::pool()->addTask(offUpdateTask);
+            ThreadPool::pool()->wait();
 
             Camera::getCamera().update(cameraChanged);
             render::ShatterRender::getRender().loop();
@@ -117,7 +131,6 @@ namespace shatter::app{
             {
                 cameraChanged = true;
             }
-            m_listener->handle(Event::SinglePress);
             m_events.push_back(Event::SinglePress);
             if(key == GLFW_KEY_SPACE)
             {
@@ -132,7 +145,6 @@ namespace shatter::app{
 
             if(key == GLFW_KEY_DELETE)
             {
-                m_listener->handle(Event::DeletePress);
                 m_events.push_back(Event::DeletePress);
             }
 
@@ -178,7 +190,6 @@ namespace shatter::app{
 
         if(action == GLFW_REPEAT)
         {
-            m_listener->handle(Event::DoublePress);
             m_events.push_back(Event::DoublePress);
         }
     }
@@ -186,13 +197,7 @@ namespace shatter::app{
     void ShatterApp::mouse_event_callback(int button, int action, double xpos, double ypos){
         if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         {
-            m_listener->handle(Event::SingleClick);
             m_events.push_back(Event::SingleClick);
-            std::for_each(m_otherListener.begin(),m_otherListener.end(),[]
-            (std::pair<const std::basic_string<char>, Listener *>& m)
-            {
-                m.second->handle(Event::SingleClick);
-            });
         }
         if(button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE)
         {
