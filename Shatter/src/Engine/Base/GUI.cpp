@@ -23,9 +23,14 @@ GUI *GUI::getGUI() {
 //        for (uint32_t i = 0; i < MAX_LOD_LEVEL + 1; i++) {
 //            text("LOD %d: %d", i, ((IndirectDrawState*)getIndirectDrawState())->lodCount[i]);
 //        }
+
+        static char buf[32] = "1";
+        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
+
         if(ImGui::Button("captureScreenShot"))
         {
-            tool::saveScreenshot(tool::combine("screenshot",file_index++) + ".ppm");
+//            tool::saveScreenshot(tool::combine("screenshot",file_index++) + ".ppm");
+            tool::saveScreenshot(std::string(buf) + ".ppm");
             std::cout << "action!" << std::endl;
         }
         ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
@@ -38,6 +43,8 @@ GUI *GUI::getGUI() {
 //        ImGui::Checkbox("Display background", &uiSettings.displayBackground);
 //        ImGui::Checkbox("Animate light", &uiSettings.animateLight);
         ImGui::End();
+
+//        ImGui::ShowDemoWindow();
     });
     return gui;
 }

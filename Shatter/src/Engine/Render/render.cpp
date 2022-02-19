@@ -1550,10 +1550,10 @@ namespace shatter::render{
         }
     }
 
-    void ShatterRender::updateNewGraphicsCommandBuffersMultiple(int _index)
+    void ShatterRender::updateGraphicsCommandBuffersMultiple(int _index)
     {
         std::vector<VkCommandBuffer> commandBuffers;
-        commandBuffers.reserve(3);
+        commandBuffers.reserve(1);
 
         static VkCommandBufferBeginInfo cmdBufInfo{
                 VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -1624,18 +1624,20 @@ namespace shatter::render{
          * G
          */
         {
-            draw_index = 0;
-            std::vector<VkCommandBuffer> gBuffers(drawid_vec.size());
-            inheritanceInfo.subpass = SubpassG;
+            if(!drawid_vec.empty())
+            {
+                draw_index = 0;
+                std::vector<VkCommandBuffer> gBuffers;
 
-            gBuffers.resize(0);
-            auto begin = pre_g_buffers.begin();
-            auto end   = pre_g_buffers.begin();
-            std::advance(begin , _index * (drawid_vec.size()));
-            std::advance(end,(_index + 1) * (drawid_vec.size()));
-            gBuffers.insert(gBuffers.end(),begin,end);
+                gBuffers.reserve(drawid_vec.size());
+                auto begin = pre_g_buffers.begin();
+                auto end   = pre_g_buffers.begin();
+                std::advance(begin , _index * drawid_vec.size());
+                std::advance(end,(_index + 1) * drawid_vec.size());
+                gBuffers.insert(gBuffers.end(),begin,end);
 
-            vkCmdExecuteCommands(graphics_buffers[_index], gBuffers.size(), gBuffers.data());
+                vkCmdExecuteCommands(graphics_buffers[_index], gBuffers.size(), gBuffers.data());
+            }
         }
         vkCmdNextSubpass(graphics_buffers[_index], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1655,10 +1657,9 @@ namespace shatter::render{
             if(!normal_vec.empty())
             {
                 draw_index = 0;
-                std::vector<VkCommandBuffer> normalBuffers(normal_vec.size());
-                inheritanceInfo.subpass = SubpassTransparency;
+                std::vector<VkCommandBuffer> normalBuffers;
 
-                normalBuffers.resize(0);
+                normalBuffers.reserve(normal_vec.size());
                 auto begin = pre_n_buffers.begin();
                 auto end   = pre_n_buffers.begin();
                 std::advance(begin , _index * (normal_vec.size()));
@@ -1677,7 +1678,6 @@ namespace shatter::render{
             {
                 draw_index = 0;
                 std::vector<VkCommandBuffer> transparencyBuffers(transparency_vec.size());
-                inheritanceInfo.subpass = SubpassTransparency;
 
                 transparencyBuffers.resize(0);
                 auto begin = pre_trans_buffers.begin();
@@ -1686,61 +1686,25 @@ namespace shatter::render{
                 std::advance(end,(_index + 1) * (transparency_vec.size()));
                 transparencyBuffers.insert(transparencyBuffers.end(),begin,end);
 
-
                 vkCmdExecuteCommands(graphics_buffers[_index], transparencyBuffers.size(), transparencyBuffers.data());
             }
         }
 //            vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-        std::thread offscreen([&](bool config){
-            if(config)
-            {
-                VkCommandBufferBeginInfo commandBufferBeginInfo {};
-                commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
-                commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-                commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
-
-                VK_CHECK_RESULT(vkBeginCommandBuffer(offscreen_buffers[_index], &commandBufferBeginInfo));
-                VkViewport tmp = getViewPort();
-                vkCmdSetViewport(offscreen_buffers[_index],0,1,&tmp);
-
-                VkRect2D scissor = getScissor();
-                vkCmdSetScissor(offscreen_buffers[_index],0,1,&scissor);
-                VkDescriptorSet tmp_set = SingleSetPool["OffScreen"];
-                vkCmdBindDescriptorSets(offscreen_buffers[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipelineLayout(), 0, 1, &tmp_set, 0, nullptr);
-                vkCmdBindPipeline(offscreen_buffers[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipeline());
-                vkCmdDraw(offscreen_buffers[_index], 4, 1, 0, 0);
-                VK_CHECK_RESULT(vkEndCommandBuffer(offscreen_buffers[_index]));
-            }
-        },Config::getConfig("enableOffscreenDebug"));
-
-        std::thread gui_thread([&](bool config){
-            if(config)
-            {
-                VkCommandBufferBeginInfo commandBufferBeginInfo {};
-                commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
-                commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-                commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
-
-                VK_CHECK_RESULT(vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo));
-
-                imGui->drawFrame(gui_buffer);
-
-                VK_CHECK_RESULT(vkEndCommandBuffer(gui_buffer));
-            }
-        },Config::getConfig("enableScreenGui"));
-
-        offscreen.join();
-        if(Config::getConfig("enableOffscreenDebug"))
-        {
-            commandBuffers.push_back(offscreen_buffers[_index]);
-            pre_buffers.push_back(offscreen_buffers[_index]);
-        }
-        gui_thread.join();
         if(Config::getConfig("enableScreenGui"))
         {
+            VkCommandBufferBeginInfo commandBufferBeginInfo {};
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+
+            VK_CHECK_RESULT(vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo));
+
+            imGui->drawFrame(gui_buffer);
+
+            VK_CHECK_RESULT(vkEndCommandBuffer(gui_buffer));
+
             commandBuffers.push_back(gui_buffer);
         }
 
@@ -1954,14 +1918,14 @@ namespace shatter::render{
             VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
             firstDraw = false;
         }else{
-            if(!windowUnChanged)
+            if(!windowStill)
             {
                 vkDeviceWaitIdle(device);
                 computeSubmitInfo.waitSemaphoreCount = 0;
                 computeSubmitInfo.pWaitSemaphores = nullptr;
                 computeSubmitInfo.pWaitDstStageMask = nullptr;
                 VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
-                windowUnChanged = true;
+                windowStill = true;
                 computeSubmitInfo.waitSemaphoreCount = 1;
                 computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
                 computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
@@ -1972,7 +1936,7 @@ namespace shatter::render{
             auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
             if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
                 recreateSwapChain();
-                windowUnChanged = false;
+                windowStill = false;
             }
             setSwapChainIndex(int(imageIndex));
 
@@ -1980,6 +1944,8 @@ namespace shatter::render{
             {
                 createGraphicsCommandBuffersMultiple();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = false;
+            }else{
+                updateGraphicsCommandBuffersMultiple(imageIndex);
             }
 
             graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
@@ -1990,7 +1956,7 @@ namespace shatter::render{
             if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
             {
                 recreateSwapChain();
-                windowUnChanged = false;
+                windowStill = false;
             } else if(result != VK_SUCCESS)
             {
                 VK_CHECK_RESULT(result);
@@ -2263,7 +2229,7 @@ namespace shatter::render{
         setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
 //        app->recreateSwapChain();
-//        app->windowUnChanged = false;
+//        app->windowStill = false;
     }
 
     void ShatterRender::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){

@@ -124,7 +124,7 @@ namespace shatter{
 
             void createGraphicsCommandBuffersMultiple();
 
-            void updateNewGraphicsCommandBuffersMultiple(int _index);
+            void updateGraphicsCommandBuffersMultiple(int _index);
 
             void updateOffscreenBufferAsync(VkCommandBuffer _cb,int _imageIndex) const;
 
@@ -279,7 +279,7 @@ namespace shatter{
             bool drawChanged = false;
             bool normalChanged = false;
             bool transChanged = false;
-            bool windowUnChanged = true;
+            bool windowStill = true;
             std::vector<VkCommandBuffer> pre_offscreen_buffers;
             std::vector<VkCommandBuffer> pre_shadow_buffers;
             std::vector<VkCommandBuffer> pre_buffers;
