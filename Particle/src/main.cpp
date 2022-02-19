@@ -13,10 +13,10 @@
 #include "Engine/Object/bpool.h"
 #include "Engine/Object/mpool.h"
 #include "Engine/Object/line3d.h"
-#include "Engine/Object/threadpool.h"
+#include "Engine/Event/threadpool.h"
 #include "Engine/Object/modelsetpool.h"
 #include "Engine/Object/camera.h"
-#include "Engine/Object/taskpool.h"
+#include "Engine/Event/taskpool.h"
 #include "Engine/Object/VulkanglTFModels.h"
 #include "Engine/Object/shadergrouppool.h"
 #include "Engine/Object/offscreen.h"
@@ -309,6 +309,7 @@ int main() {
         delete glass;
         delete a;
         shatter::render::ShatterRender::getRender().cleanup();
+        SingleThreadPool->release();
     }
     catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

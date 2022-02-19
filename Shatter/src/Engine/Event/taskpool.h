@@ -18,6 +18,7 @@
 class TaskPool{
 public:
     static void pushTask(const Task_id& _id,std::function<void()> _task);
+    static void pushTask(std::function<void()> _task);
     static void pushUpdateTask(const Task_id& _id, std::function<void(float)> _task);
     static void pushBarrierTask(const Task_id& _id,std::function<void(VkCommandBuffer)> _task,InsertTaskState _state);
     static void pushComputeBarrierTask(const Task_id& _id,std::function<void(VkCommandBuffer)> _task,InsertTaskState _state);
@@ -41,6 +42,7 @@ public:
     static void computeBarrierReleaseMultiple(VkCommandBuffer _cb);
 
     static std::unordered_map<Task_id,std::function<void()>> m_tasks;
+    static std::vector<std::function<void()>> m_pure_task;
     static std::unordered_map<Task_id,std::function<void(float)>> m_update_tasks;
     static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_barrier_require_tasks;
     static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_barrier_release_tasks;

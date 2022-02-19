@@ -382,7 +382,7 @@ enum SubpassDependency{
 #define SetPoolCatalog     "Engine/Object/setpool.h"
 #define SlbPoolCatalog     "Engine/Object/slbpool.h"
 #define ModelSetCatalog    "Engine/Object/modelsetpool.h"
-#define TaskCatalog        "Engine/Object/taskpool.h"
+#define TaskCatalog        "Engine/Event/taskpool.h"
 #define ShaderCatalog      "Engine/Object/shaderpool.h"
 #define GLTFCatalog        "Engine/Object/VulkanglTFModels.h"
 #define CameraCatalog      "Engine/Object/camera.h"

@@ -16,13 +16,13 @@
 #include "Engine/Object/mpool.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/cobject.h"
-#include "Engine/Object/threadpool.h"
-#include "Engine/Object/objecttask.h"
+#include "Engine/Event/threadpool.h"
+#include "Engine/Event/objecttask.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/configs.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include "Engine/Base/GUI.h"
-#include "Engine/Object/taskpool.h"
+#include "Engine/Event/taskpool.h"
 #include "Engine/Object/offscreen.h"
 #include "Engine/Object/setpool.h"
 #include "Engine/Object/ppool.h"
@@ -1945,7 +1945,10 @@ namespace shatter::render{
                 createGraphicsCommandBuffersMultiple();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = false;
             }else{
-                updateGraphicsCommandBuffersMultiple(imageIndex);
+                if(Config::getConfig("enableScreenGui"))
+                {
+                    updateGraphicsCommandBuffersMultiple(imageIndex);
+                }
             }
 
             graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];

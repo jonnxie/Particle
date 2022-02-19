@@ -7,6 +7,7 @@
 #include "threadpool.h"
 
 std::unordered_map<Task_id,std::function<void()>> TaskPool::m_tasks = std::unordered_map<Task_id,std::function<void()>>();
+std::vector<std::function<void()>> TaskPool::m_pure_task = std::vector<std::function<void()>>();
 std::unordered_map<Task_id,std::function<void(float)>> TaskPool::m_update_tasks = std::unordered_map<Task_id,std::function<void(float)>>();
 std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_barrier_require_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
 std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_barrier_release_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
@@ -15,6 +16,8 @@ std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_com
 
 
 static std::mutex m_lock;
+
+static std::mutex m_pure_lock;
 
 static std::mutex m_update_lock;
 
@@ -31,6 +34,11 @@ void TaskPool::pushTask(const Task_id& _id,std::function<void()> _task)
     }else{
         m_tasks[_id] = std::move(_task);
     }
+}
+
+void TaskPool::pushTask(std::function<void()> _task) {
+    std::lock_guard<std::mutex> guard_lock(m_pure_lock);
+    m_pure_task.emplace_back(std::move(_task));
 }
 
 void TaskPool::pushUpdateTask(const Task_id &_id, std::function<void(float)> _task) {
@@ -103,6 +111,11 @@ void TaskPool::execute()
     {
         task();
     }
+
+    for(auto& t : m_pure_task)
+    {
+        t();
+    }
     m_tasks.clear();
 }
 
@@ -111,6 +124,12 @@ void TaskPool::executeMultiple() {
     {
         ThreadPool::pool()->addTask(task);
     }
+
+    for(auto& t : m_pure_task)
+    {
+        ThreadPool::pool()->addTask(t);
+    }
+
     ThreadPool::pool()->wait();
     m_tasks.clear();
 }
@@ -202,3 +221,4 @@ void TaskPool::computeBarrierReleaseMultiple(VkCommandBuffer _cb)
     }
     ThreadPool::pool()->wait();
 }
+

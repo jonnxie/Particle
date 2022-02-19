@@ -5,10 +5,10 @@
 
 #include "objecttask.h"
 #include "Engine/Item/shatter_item.h"
-#include "mpool.h"
-#include "dobject.h"
-#include "cobject.h"
-#include "device.h"
+#include "Engine/Object/mpool.h"
+#include "Engine/Object/dobject.h"
+#include "Engine/Object/cobject.h"
+#include "Engine/Object/device.h"
 
 void ObjectTask::graphicsTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex ,bool off) {
     auto threadPool = getThreadObjectPool();

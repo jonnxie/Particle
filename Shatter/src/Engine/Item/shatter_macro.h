@@ -167,4 +167,12 @@ void set##name(type _val){               \
 
 #define Bit(x) (1 << x)
 
+#define DefineUnCopy(Class) \
+Class(const Class&) = delete;\
+Class(Class&&) = delete;\
+Class& operator = (const Class&) = delete;\
+Class& operator = (Class&&) = delete
+
+
+
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H

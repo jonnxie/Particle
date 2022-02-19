@@ -8,14 +8,14 @@
 #include "Engine/Object/mpool.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/object.h"
-#include "Engine/Object/taskpool.h"
+#include "Engine/Event/taskpool.h"
 #include "Engine/Object/inputaction.h"
 #include ListenerCatalog
 #include ConfigCatalog
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
 #include "Engine/Particle/particle.h"
-#include "Engine/Object/threadpool.h"
+#include "Engine/Event/threadpool.h"
 
 namespace shatter::app{
     bool app_created = false;
@@ -24,21 +24,7 @@ namespace shatter::app{
 
     ShatterApp& ShatterApp::getApp(){
         static ShatterApp app;
-        if(!app_created) {
-            app_created = true;
-            if (!app.initApp()) {
-                throw std::runtime_error("create app error!");
-            }
-        }
         return app;
-    }
-
-    bool ShatterApp::initApp(){
-        bool val = false;
-        do{
-            val = true;
-        }while(false);
-        return val;
     }
 
     ShatterApp::ShatterApp():

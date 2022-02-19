@@ -37,7 +37,6 @@ namespace shatter{
             ShatterApp(const ShatterApp&) = delete;
             ShatterApp& operator=(const ShatterApp&)=delete;
             ~ShatterApp();
-            bool initApp();
         public:
             int getScreenWidth(){return m_width;};
             int getScreenHeight(){return m_height;};

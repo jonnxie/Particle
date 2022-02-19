@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <condition_variable>
 #include "Engine/Item/shatter_item.h"
+#include "Engine/Item/shatter_macro.h"
 
 
 class Thread
@@ -63,12 +64,14 @@ public:
 public:
     int m_index = 0;
     std::vector<Thread*> threads;
-private:
+public:
     ThreadPool();
     ~ThreadPool();
+    DefineUnCopy(ThreadPool);
+private:
     static ThreadPool *m_pool;
 };
 
-
+#define SingleThreadPool ThreadPool::pool()
 
 #endif //SHATTER_ENGINE_THREADPOOL_H
