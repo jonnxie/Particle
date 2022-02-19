@@ -122,11 +122,9 @@ namespace shatter{
 
             void prepareMultipleThreadDate();
 
-            void createNewGraphicsCommandBuffersMultiple();
+            void createGraphicsCommandBuffersMultiple();
 
             void updateNewGraphicsCommandBuffersMultiple(int _index);
-
-            void createOffscreenBuffers(VkCommandBuffer _cb, int _imageIndex);
 
             void updateOffscreenBufferAsync(VkCommandBuffer _cb,int _imageIndex) const;
 
@@ -134,7 +132,7 @@ namespace shatter{
 
             void createShadowGraphicsBuffers(VkCommandBuffer _cb, int _imageIndex);
 
-            void updateShadowGraphicsAsync(VkCommandBuffer _cb,int _imageIndex) const;
+            void updateShadowGraphicsAsync(VkCommandBuffer _cb,int _imageIndex);
 
             void createComputeCommandBuffer();
 
