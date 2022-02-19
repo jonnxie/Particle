@@ -6,7 +6,7 @@
 #include "taskpool.h"
 
 DelayEvent::DelayEvent() {
-    m_pool = std::make_unique<ThreadPool>();
+    m_pool = new ThreadPool(2);
 }
 
 DelayEvent& DelayEvent::getDelayEvent() {

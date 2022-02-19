@@ -5,6 +5,7 @@
 
 #include "GUI.h"
 #include <mutex>
+#include "Engine/Event/delayevent.h"
 
 GUI *GUI::gui = new GUI;
 
@@ -30,8 +31,13 @@ GUI *GUI::getGUI() {
         if(ImGui::Button("captureScreenShot"))
         {
 //            tool::saveScreenshot(tool::combine("screenshot",file_index++) + ".ppm");
-            tool::saveScreenshot(std::string(buf) + ".ppm");
-            std::cout << "action!" << std::endl;
+            PushDelayAction([=](){
+                tool::saveScreenshot(std::string(buf) + ".ppm");
+            },
+                            [](){
+                                std::cout << "action!" << std::endl;
+
+                            });
         }
         ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
         ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);

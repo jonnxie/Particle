@@ -10,13 +10,19 @@
 #include "Engine/Item/shatter_macro.h"
 
 class DelayEvent{
+public:
     static DelayEvent& getDelayEvent();
     void push(const std::function<void()>& _delayAction,const std::function<void()>& _doneAction);
+
+    void release(){
+        delete m_pool;
+    }
+
 private:
     DelayEvent();
     DefineUnCopy(DelayEvent);
 private:
-    std::unique_ptr<ThreadPool> m_pool;
+    ThreadPool* m_pool;
     std::unordered_map<uint32_t,std::function<void()>> m_reactions;
 };
 

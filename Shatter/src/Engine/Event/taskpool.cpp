@@ -117,6 +117,7 @@ void TaskPool::execute()
         t();
     }
     m_tasks.clear();
+    m_pure_task.clear();
 }
 
 void TaskPool::executeMultiple() {
@@ -132,6 +133,7 @@ void TaskPool::executeMultiple() {
 
     ThreadPool::pool()->wait();
     m_tasks.clear();
+    m_pure_task.clear();
 }
 
 void TaskPool::update(float _abs_time)

@@ -36,6 +36,7 @@
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
 #include "Engine/Animation/animation.h"
+#include "Engine/Event/delayevent.h"
 
 void initSet()
 {
@@ -310,6 +311,7 @@ int main() {
         delete a;
         shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
+        SingleDelaySystem.release();
     }
     catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

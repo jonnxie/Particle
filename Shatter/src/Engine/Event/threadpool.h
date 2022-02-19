@@ -65,6 +65,7 @@ public:
     int m_index = 0;
     std::vector<Thread*> threads;
 public:
+    explicit ThreadPool(uint32_t count);
     ThreadPool();
     ~ThreadPool();
     DefineUnCopy(ThreadPool);

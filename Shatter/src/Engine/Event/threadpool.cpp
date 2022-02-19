@@ -59,15 +59,21 @@ void Thread::wait() {
 
 ThreadPool* ThreadPool::m_pool = new ThreadPool;
 
+ThreadPool::ThreadPool(uint32_t count) {
+    setThreadCount(count);
+}
+
 ThreadPool::ThreadPool() {
     setThreadCount();
 }
 
 ThreadPool::~ThreadPool() {
+    std::cout << "ThreadPool destruct" << std::endl;
     for(auto& thread: threads)
     {
         delete thread;
     }
+    std::cout << "Done" << std::endl;
 }
 
 ThreadPool* ThreadPool::pool(){
