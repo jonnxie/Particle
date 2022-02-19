@@ -16,5 +16,6 @@ add_subdirectory(Shatter)
 add_subdirectory(Particle)
 
 set(CMAKE_C_FLAGS "-static")
+#set(CMAKE_LINK_LIBRARY_FLAG "-static")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 set(CMAKE_EXE_LINKER_FLAGS "-static")

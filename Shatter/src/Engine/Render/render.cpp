@@ -1993,11 +1993,15 @@ namespace shatter::render{
 //        for(auto& obj : input_vec){
 //            obj->keyEventCallback(key,action);
 //        }
+        ImGuiIO& io = ImGui::GetIO();
+
         if(action == GLFW_PRESS)
         {
             pressKey(key);
+            io.KeysDown[key] =  true;
         }else if(action == GLFW_RELEASE)
         {
+            io.KeysDown[key] =  false;
             releaseKey(key);
         }
         app::ShatterApp::getApp().key_event_callback(key, action);
@@ -2475,9 +2479,12 @@ namespace shatter::render{
 
     void ShatterRender::keyTypeCallback(GLFWwindow* window, unsigned int code)
     {
-	    
+        ImGuiIO& io = ImGui::GetIO();
+        if(code > 0 && code < 0x10000)
+        {
+            io.AddInputCharacter((unsigned short)code);
+        }
     }
-
 
     void ShatterRender::allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                                VkDescriptorSet* set){
@@ -2557,8 +2564,12 @@ namespace shatter::render{
         input::cursorWindow(pos,STATE_OUT);
         io.MousePos = ImVec2(pos.x, pos.y);
 
+        io.MouseWheelH += getScrollPos().x;
+        io.MouseWheel += getScrollPos().y;
+
         io.MouseDown[0] = checkMouse(GLFW_MOUSE_BUTTON_LEFT);
         io.MouseDown[1] = checkMouse(GLFW_MOUSE_BUTTON_RIGHT);
+        io.MouseDown[2] = checkMouse(GLFW_MOUSE_BUTTON_MIDDLE);
     }
 }
 
