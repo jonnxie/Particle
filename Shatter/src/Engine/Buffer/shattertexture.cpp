@@ -18,7 +18,7 @@
 
 using namespace std;
 
-namespace shatter::buffer{
+namespace Shatter::buffer{
 
     static std::once_flag stage_flag;
 

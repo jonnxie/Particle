@@ -131,11 +131,11 @@ void initTransparentSet()
 }
 
 int main() {
-    shatter::app::ShatterApp& app = shatter::app::ShatterApp::getApp();
+    Shatter::app::ShatterApp& app = Shatter::app::ShatterApp::getApp();
     /*
      * render
      */
-    shatter::render::ShatterRender& render = shatter::render::ShatterRender::getRender();
+    Shatter::render::ShatterRender& render = Shatter::render::ShatterRender::getRender();
 
     auto& slb_pool = SingleSLBPool;
     auto& shader_pool = SingleShaderPool;
@@ -309,7 +309,7 @@ int main() {
         delete build;
         delete glass;
         delete a;
-        shatter::render::ShatterRender::getRender().cleanup();
+        Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
         SingleDelaySystem.release();
     }

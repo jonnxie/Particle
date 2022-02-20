@@ -18,7 +18,7 @@ public:
         delete m_pool;
     }
 
-private:
+  private:
     DelayEvent();
     DefineUnCopy(DelayEvent);
 private:

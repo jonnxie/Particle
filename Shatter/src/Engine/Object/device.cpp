@@ -12,7 +12,7 @@
 static std::mutex device_mutex;
 static bool if_geted = false;
 
-using namespace shatter::render;
+using namespace Shatter::render;
 
 Device &Device::getDevice() {
     static Device device;

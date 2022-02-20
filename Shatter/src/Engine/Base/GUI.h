@@ -24,9 +24,9 @@
 #include DeviceCatalog
 #include ShaderCatalog
 
-using namespace shatter::buffer;
+using namespace Shatter::buffer;
 
-using namespace shatter::render;
+using namespace Shatter::render;
 
 static struct UISettings {
     bool displayModels = true;

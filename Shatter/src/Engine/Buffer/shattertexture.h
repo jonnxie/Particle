@@ -11,7 +11,7 @@
 #include <string>
 #include <fstream>
 
-namespace shatter {
+namespace Shatter {
     namespace buffer {
 
         class ShatterTexture : public ShatterBuffer {

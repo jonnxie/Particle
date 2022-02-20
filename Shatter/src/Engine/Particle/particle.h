@@ -10,7 +10,7 @@
 #include "Engine/Base/points.h"
 #include "Engine/Object/listener.h"
 
-class DrawPoint : public Listener{
+class DrawPoint : public Shatter::Listener{
 public:
     DrawPoint();
 private:

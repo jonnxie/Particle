@@ -1,48 +1,50 @@
 #pragma once
 
-//#include <sstream>
-//#include <iostream>
-//#include <functional>
-//
-//#include "Engine/Item/shatter_enum.h"
-//
-//namespace Shatter {
-//
-//	struct WindowProps
-//	{
-//		std::string Title;
-//		uint32_t Width;
-//		uint32_t Height;
-//
-//		WindowProps(const std::string& title = "Shatter Engine",
-//			        uint32_t width = 1600,
-//			        uint32_t height = 900)
-//			: Title(title), Width(width), Height(height)
-//		{
-//		}
-//	};
-//
-//	// Interface representing a desktop system based Window
-//	class Window
-//	{
-//	public:
-//		using EventCallbackFn = std::function<void(Event&)>;
-//
-//		virtual ~Window() = default;
-//
-//		virtual void OnUpdate() = 0;
-//
-//		virtual uint32_t GetWidth() const = 0;
-//		virtual uint32_t GetHeight() const = 0;
-//
-//		// Window attributes
-//		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
-//		virtual void SetVSync(bool enabled) = 0;
-//		virtual bool IsVSync() const = 0;
-//
-//		virtual void* GetNativeWindow() const = 0;
-//
-//		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
-//	};
-//
-//}
+#include <utility>
+#include "Core.h"
+#include "precompiledhead.h"
+#include "Engine/Item/shatter_enum.h"
+#include "Engine/Item/configs.h"
+
+namespace Shatter {
+
+	struct WindowProps
+	{
+		std::string m_title;
+		uint32_t m_width;
+		uint32_t m_height;
+
+		WindowProps(uint32_t _width,
+			        uint32_t _height,
+                    std::string  _title = "Shatter Engine")
+			: m_title(std::move(_title)), m_width(_width), m_height(_height)
+		{
+		}
+        WindowProps(std::string _title = "Shatter Engine")
+        : m_title(std::move(_title))
+        {
+            m_width = Config::getConfig("width");
+            m_height = Config::getConfig("height");
+        }
+	};
+
+	// Interface representing a desktop system based Window
+    class Window
+    {
+    public:
+        virtual ~Window() = default;
+
+        void setEventCallback(eventCallback _callback);
+
+        virtual void update() = 0;
+
+        virtual bool closed() = 0;
+
+        virtual void* getNativeWindow() const = 0;
+    public:
+        std::unique_ptr<Window> createWindow(const WindowProps& props = WindowProps());
+    protected:
+        std::unordered_map<WindowEvent,std::function<void()>> m_callbacks;
+    };
+
+}

@@ -10,11 +10,11 @@
 #include <memory>
 #include <string>
 
-namespace shatter::buffer{
+namespace Shatter::buffer{
     class ShatterBuffer;
 };
 
-using namespace shatter::buffer;
+using namespace Shatter::buffer;
 
 class Device {
 public:

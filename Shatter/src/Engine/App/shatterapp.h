@@ -9,6 +9,7 @@
 //#include "../Shatter_Asset/shatterasset.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
+#include "Engine/Item/shatter_macro.h"
 #include <iostream>
 #include <memory>
 #include <map>
@@ -18,7 +19,7 @@
 #include <iomanip>
 #include <unordered_map>
 
-//namespace shatter::camera{
+//namespace Shatter::camera{
 //    class ShatterCamera;
 //}
 
@@ -26,17 +27,18 @@ class Camera;
 
 class Object;
 
-class Listener;
 
-namespace shatter{
+namespace Shatter{
+    class Listener;
+
+
     namespace app{
 
         class ShatterApp : public std::enable_shared_from_this<ShatterApp>{
         public:
             static ShatterApp& getApp();
-            ShatterApp(const ShatterApp&) = delete;
-            ShatterApp& operator=(const ShatterApp&)=delete;
             ~ShatterApp();
+            DefineUnCopy(ShatterApp);
         public:
             int getScreenWidth(){return m_width;};
             int getScreenHeight(){return m_height;};
@@ -47,7 +49,6 @@ namespace shatter{
             std::vector<int>* getOffDObjects();
             std::vector<int>* getNObjects();
             std::vector<int>* getTObjects();
-            std::vector<Object*>* getObjects();
             void key_event_callback(int key, int action);
             void mouse_event_callback(int button, int action, double xpos, double ypos);
             void listener(Listener* _listener);
@@ -64,7 +65,6 @@ namespace shatter{
             std::vector<int> m_offscreenobjects;
             std::vector<int> transparency_vec;
             std::vector<int> normal_vec;
-            std::vector<Object*> m_objs;
 
             std::vector<int> m_cobjects;
             std::vector<Event> m_events;

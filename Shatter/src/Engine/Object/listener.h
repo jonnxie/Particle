@@ -10,44 +10,46 @@
 #include MacroCatalog
 #include <unordered_map>
 
+namespace Shatter{
 
-class Listener {
-public:
-    Listener(){
-        m_map = std::unordered_map<Event,bool>(int(Event::Count));
-        m_action = std::unordered_map<Event,std::function<void()>>(int(Event::Count));
-        for(int i = 0; i < int(Event::Count); i++)
-        {
-            m_action[Event(i)] = [i](){
-//                tool::printNum(i);
-                return;
-            };
+    class Listener {
+    public:
+        Listener(){
+            m_map = std::unordered_map<Event,bool>(int(Event::Count));
+            m_action = std::unordered_map<Event,std::function<void()>>(int(Event::Count));
+            for(int i = 0; i < int(Event::Count); i++)
+            {
+                m_action[Event(i)] = [i](){
+                    return;
+                };
+            }
         }
-    }
-    virtual void handle(Event _event){
-        m_map[_event] = true;
-        m_action[_event]();
+        virtual void handle(Event _event){
+            m_map[_event] = true;
+            m_action[_event]();
+        };
+    protected:
+        std::unordered_map<Event,bool> m_map;
+        std::unordered_map<Event,std::function<void()>> m_action;
     };
-protected:
-    std::unordered_map<Event,bool> m_map;
-    std::unordered_map<Event,std::function<void()>> m_action;
-};
 
-class DeleteObject : public Listener{
-public:
-    DeleteObject();
-};
+    class DeleteObject : public Listener{
+    public:
+        DeleteObject();
+    };
 
 
-class OutputPoint : public Listener{
-public:
-    OutputPoint();
-};
+    class OutputPoint : public Listener{
+    public:
+        OutputPoint();
+    };
 
-class OutputLine : public Listener{
-public:
-    OutputLine();
-};
+    class OutputLine : public Listener{
+    public:
+        OutputLine();
+    };
 
+
+}
 
 #endif //SHATTER_ENGINE_LISTENER_H

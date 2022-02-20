@@ -56,7 +56,7 @@ void DLines::constructD(){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
-//    shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
+//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);
 //    SingleRender.normalChanged = true;
 }

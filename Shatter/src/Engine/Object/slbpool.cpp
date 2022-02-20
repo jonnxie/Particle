@@ -7,7 +7,7 @@
 #include "Engine/Render/shatter_render_include.h"
 #include "device.h"
 #include <mutex>
-using namespace shatter::render;
+using namespace Shatter::render;
 
 static bool created = false;
 static std::mutex pool_mutex;

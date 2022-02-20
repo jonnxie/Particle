@@ -31,7 +31,7 @@ static const bool enableValidationLayers = false;
 static const bool enableValidationLayers = true;
 #endif
 
-namespace shatter::buffer{
+namespace Shatter::buffer{
     class ShatterTexture;
 }
 
@@ -43,7 +43,7 @@ struct QueueFamilyIndices;
 
 struct FrameBufferAttachment;
 
-namespace shatter{
+namespace Shatter{
     namespace render {
 
         static void check_vk_result(VkResult err);
@@ -300,7 +300,7 @@ namespace shatter{
     };
 };
 
-#define SingleRender shatter::render::ShatterRender::getRender()
+#define SingleRender Shatter::render::ShatterRender::getRender()
 
 #endif //VULKAN_TOTURIOL_SHATTER_RENDER_H
 

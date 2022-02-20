@@ -117,7 +117,7 @@ glfwCreateWindow, which returns a handle to the created combined window and
 context object
 
 @code
-GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+GLFWwindow* window = glfwCreateWindow(640, 480, "My m_title", NULL, NULL);
 if (!window)
 {
     // Window or OpenGL context creation failed
@@ -143,7 +143,7 @@ for OpenGL 3.x and 4.x.
 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+GLFWwindow* window = glfwCreateWindow(640, 480, "My m_title", NULL, NULL);
 if (!window)
 {
     // Window or context creation failed

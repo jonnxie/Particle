@@ -12,7 +12,7 @@
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 
-namespace shatter {
+namespace Shatter {
     namespace buffer {
         class ShatterBuffer : public std::enable_shared_from_this<ShatterBuffer> {
         public:

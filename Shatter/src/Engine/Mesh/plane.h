@@ -59,7 +59,7 @@ std::ostream & operator<<(std::ostream& _in,const Plane& _plane);
 #include "Engine/Object/inputaction.h"
 #include "Engine/Render/shatter_render_include.h"
 
-class DrawPlane : public Listener{
+class DrawPlane : public Shatter::Listener{
 public:
     DrawPlane();
 private:

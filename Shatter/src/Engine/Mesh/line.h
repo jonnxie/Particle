@@ -14,6 +14,8 @@
 class DLines;
 using namespace glm;
 
+using namespace Shatter;
+
 class GLine
 {
 public:
@@ -38,7 +40,7 @@ public:
     vec3   color{0.0f,0.5f,0.0f};
 };
 
-class DrawLine : public Listener{
+class DrawLine : public Shatter::Listener{
 public:
     DrawLine();
 private:

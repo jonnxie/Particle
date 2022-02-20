@@ -33,7 +33,7 @@ glfwCreateWindow, which returns a handle to the created window object.  For
 example, this creates a 640 by 480 windowed mode window:
 
 @code
-GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+GLFWwindow* window = glfwCreateWindow(640, 480, "My m_title", NULL, NULL);
 @endcode
 
 If window creation fails, `NULL` will be returned, so it is necessary to check
@@ -51,7 +51,7 @@ should use.  In most cases, the user's primary monitor is a good choice.
 For more information about retrieving monitors, see @ref monitor_monitors.
 
 @code
-GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", glfwGetPrimaryMonitor(), NULL);
+GLFWwindow* window = glfwCreateWindow(640, 480, "My m_title", glfwGetPrimaryMonitor(), NULL);
 @endcode
 
 Full screen windows cover the entire display area of a monitor, have no border
@@ -109,7 +109,7 @@ glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "My Title", monitor, NULL);
+GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "My m_title", monitor, NULL);
 @endcode
 
 This also works for windowed mode windows that are made full screen.

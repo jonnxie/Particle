@@ -585,7 +585,7 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
 
     switch (_passType) {
         case RenderPassType::Default:{
-            setRenderPass(shatter::render::ShatterRender::getRender().getNewRenderPass());
+            setRenderPass(Shatter::render::ShatterRender::getRender().getNewRenderPass());
             break;
         }
         case RenderPassType::OffScreen:{

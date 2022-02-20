@@ -17,7 +17,7 @@
 #include "Engine/Particle/particle.h"
 #include "Engine/Event/threadpool.h"
 
-namespace shatter::app{
+namespace Shatter::app{
     bool app_created = false;
 
     static int particle_count = 1;
@@ -31,7 +31,7 @@ namespace shatter::app{
     lastTime(0.0),
     showFPS(false)
     {
-        m_listener = new Listener;
+        m_listener = new Shatter::Listener;
         m_width = Config::getConfig("width");
         m_height = Config::getConfig("height");
     }
@@ -210,10 +210,6 @@ namespace shatter::app{
 
     std::vector<int> *ShatterApp::getCObjects() {
         return &m_cobjects;
-    }
-
-    std::vector<Object *> *ShatterApp::getObjects() {
-        return &m_objs;
     }
 
     std::vector<int> *ShatterApp::getDObjects() {

@@ -28,7 +28,7 @@
 #include "Engine/Object/ppool.h"
 #include "pipeline.h"
 
-namespace shatter::render{
+namespace Shatter::render{
     bool render_created = false;
 
     static int min_image_count = 0;

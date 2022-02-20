@@ -13,7 +13,7 @@
 
 #include "Engine/Object/device.h"
 
-namespace shatter::buffer{
+namespace Shatter::buffer{
 
     ShatterBuffer::ShatterBuffer():
     m_buffer{VK_NULL_HANDLE},

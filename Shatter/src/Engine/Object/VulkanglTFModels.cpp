@@ -170,7 +170,7 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
         VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 
 //        VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-        VkCommandBuffer copyCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+        VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 
         VkImageSubresourceRange subresourceRange = {};
         subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -212,14 +212,14 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
             vkCmdPipelineBarrier(copyCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         }
 
-        shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 //        device->flushCommandBuffer(copyCmd, copyQueue, true);
 
         vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);
         vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
 
         // Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
-        VkCommandBuffer blitCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+        VkCommandBuffer blitCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
         for (uint32_t i = 1; i < mipLevels; i++) {
             VkImageBlit imageBlit{};
 
@@ -284,7 +284,7 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
             imageMemoryBarrier.subresourceRange = subresourceRange;
             vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         }
-        shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
+        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
 //        device->flushCommandBuffer(blitCmd, copyQueue, true);
     }
     else {
@@ -328,7 +328,7 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
         VkFormatProperties formatProperties;
         vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
 
-        VkCommandBuffer copyCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();;
+        VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();;
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingMemory;
@@ -402,7 +402,7 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
         vkCmdCopyBufferToImage(copyCmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
         tool::setLayout(copyCmd, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                         subresourceRange);
-        shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 //        device->flushCommandBuffer(copyCmd, copyQueue);
         this->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -709,14 +709,14 @@ void vkglTF::Model::createEmptyTexture(VkQueue transferQueue)
 	subresourceRange.layerCount = 1;
 
 //	VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    VkCommandBuffer copyCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+    VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
     tool::setImageLayout(copyCmd, emptyTexture.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     subresourceRange);
 	vkCmdCopyBufferToImage(copyCmd, stagingBuffer, emptyTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopyRegion);
     tool::setImageLayout(copyCmd, emptyTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
 //	device->flushCommandBuffer(copyCmd, transferQueue);
-    shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+    Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 
     emptyTexture.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1619,7 +1619,7 @@ void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue t
 
 	// Copy from staging buffers
 //	VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    VkCommandBuffer copyCmd  = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+    VkCommandBuffer copyCmd  = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 
 	VkBufferCopy copyRegion = {};
 
@@ -1629,7 +1629,7 @@ void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue t
 	copyRegion.size = indexBufferSize;
 	vkCmdCopyBuffer(copyCmd, indexStaging.buffer, indices.buffer, 1, &copyRegion);
 
-    shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+    Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 //    device->flushCommandBuffer(copyCmd, transferQueue, true);
 
 	vkDestroyBuffer(device->logicalDevice, vertexStaging.buffer, nullptr);
@@ -2126,7 +2126,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 //
 ////		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-//        VkCommandBuffer copyCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+//        VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 //
 //        VkImageSubresourceRange subresourceRange = {};
 //		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2168,7 +2168,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //			vkCmdPipelineBarrier(copyCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 //		}
 //
-//        shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 //
 ////        device->flushCommandBuffer(copyCmd, copyQueue, true);
 //
@@ -2176,7 +2176,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //		vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
 //
 //		// Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
-//		VkCommandBuffer blitCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+//		VkCommandBuffer blitCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 //		for (uint32_t i = 1; i < mipLevels; i++) {
 //			VkImageBlit imageBlit{};
 //
@@ -2242,7 +2242,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //			vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 //		}
 //
-//        shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
+//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
 //    }
 //	else {
 //		// Texture is stored in an external ktx file
@@ -2285,7 +2285,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //		VkFormatProperties formatProperties;
 //		vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
 //
-//		VkCommandBuffer copyCmd = shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+//		VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 //		VkBuffer stagingBuffer;
 //		VkDeviceMemory stagingMemory;
 //		VkBufferCreateInfo bufferCreateInfo = tool::getBufferCreateInfo();
@@ -2356,7 +2356,7 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 //		vkCmdCopyBufferToImage(copyCmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 //		tool::setImageLayout(copyCmd, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
 ////		device->flushCommandBuffer(copyCmd, copyQueue);
-//        shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 //
 //        this->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 //

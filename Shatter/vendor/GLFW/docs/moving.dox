@@ -115,12 +115,12 @@ a newly created window is returned by @ref glfwCreateWindow (formerly
 
 @par Old syntax
 @code
-glfwSetWindowTitle("New Window Title");
+glfwSetWindowTitle("New Window m_title");
 @endcode
 
 @par New syntax
 @code
-glfwSetWindowTitle(window, "New Window Title");
+glfwSetWindowTitle(window, "New Window m_title");
 @endcode
 
 

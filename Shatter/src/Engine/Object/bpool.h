@@ -14,14 +14,14 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace shatter::buffer{
+namespace Shatter::buffer{
     class ShatterBuffer;
     class ShatterTexture;
 }
 
 class ModelSetPool;
 
-using namespace shatter::buffer;
+using namespace Shatter::buffer;
 
 class BPool {
 public:

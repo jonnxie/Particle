@@ -12,7 +12,7 @@
 #include "mpool.h"
 
 
-using namespace shatter::render;
+using namespace Shatter::render;
 static std::mutex pool_mutex;
 static bool created = false;
 

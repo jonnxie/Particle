@@ -14,8 +14,8 @@
 #include "device.h"
 #include <mutex>
 
-using namespace shatter::app;
-using namespace shatter::render;
+using namespace Shatter::app;
+using namespace Shatter::render;
 
 static std::mutex static_mutex;
 static bool if_get = false;

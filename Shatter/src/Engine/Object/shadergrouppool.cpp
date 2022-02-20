@@ -17,7 +17,7 @@
 #include <mutex>
 
 
-using namespace shatter::render;
+using namespace Shatter::render;
 
 static bool if_created = false;
 static std::mutex pool_mutex;
