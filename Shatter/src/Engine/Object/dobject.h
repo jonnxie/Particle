@@ -17,6 +17,7 @@
 #include <type_traits>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
+#include "bpool.h"
 
 template<class CommandBuffer>
 class DObjectBase{
@@ -41,7 +42,17 @@ public:
     ~DObjectBase() = default;
 public:
     virtual void draw(CommandBuffer _cb,int _imageIndex){};
-    virtual void update(){};
+    void update(){
+        if(state_changed)
+        {
+            if(m_type == DType::Normal)
+            {
+                glm::mat4* ptr = SingleBPool.getModels();
+                memcpy(ptr + m_model_index,&m_matrix,one_matrix);
+            }
+            state_changed = false;
+        }
+    };
 
     void insertPre(const std::function<void(CommandBuffer)>& _func)
     {
