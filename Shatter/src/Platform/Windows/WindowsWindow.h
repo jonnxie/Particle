@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Window.h"
-
+#include "Engine/Item/shatter_macro.h"
 #include <GLFW/glfw3.h>
 
 namespace Shatter {
@@ -11,6 +11,7 @@ namespace Shatter {
 	public:
 		explicit WindowsWindow(WindowProps  props);
 		~WindowsWindow() override;
+        DefineUnCopy(WindowsWindow);
 
         void init();
         void release();

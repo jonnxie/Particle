@@ -19,7 +19,7 @@ namespace Shatter {
 		virtual ~Application();
 
         DefineUnCopy(Application);
-
+    public:
         void update();
 
         void pushObject(DrawObjectType _type,uint32_t _id);
@@ -29,6 +29,22 @@ namespace Shatter {
         void pushCObject(uint32_t _id);
 
         void pushCObjects(const std::vector<uint32_t>& _ids);
+
+        void appendListener(const std::string& _name,Listener* _listener);
+
+        void deleteListener(const std::string& _name);
+    public:
+        void resizeCallback(int _width,int _height);
+
+        void keyCallback(int _key,int _action);
+
+        void charCallback(int _keycode);
+
+        void mouseCallback(int _button,int _action,double _xPos,double _yPos);
+
+        void scrollCallback(double _xOffset,double yOffset);
+
+        void cursorCallback(double _xPos,double _yPos);
     private:
         Application();
     private:
@@ -38,7 +54,7 @@ namespace Shatter {
         std::vector<uint32_t> m_normalObjects{};
         std::vector<uint32_t> m_computeObjects{};
         std::vector<Event> m_events{};
-        std::unordered_map<std::string,Listener> m_listeners;
+        std::unordered_map<std::string,Listener*> m_listeners;
     private:
 		std::unique_ptr<Window> m_window{};
         std::unique_ptr<Render> m_render{};

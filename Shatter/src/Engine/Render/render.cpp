@@ -1800,7 +1800,7 @@ namespace Shatter::render{
         if(action == GLFW_PRESS)
         {
             pressMouse(button);
-            glm::vec2 tmp(xpos/getExtent2D().width,ypos/getExtent2D().height);
+            glm::vec2 tmp(xpos/getViewPort().width,ypos/getViewPort().height);
             tmp *= 2.0f;
             tmp -= 1.0f;
             updateCursorPressPos(tmp);

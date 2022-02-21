@@ -13,5 +13,9 @@ namespace Shatter {
         #endif
     }
 
+    void Window::setApplication(Application* _application) {
+        m_application = _application;
+    }
+
 
 }

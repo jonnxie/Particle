@@ -8,6 +8,8 @@
 
 namespace Shatter {
 
+    class Application;
+
 	struct WindowProps
 	{
 		std::string m_title;
@@ -36,6 +38,8 @@ namespace Shatter {
 
         void setEventCallback(eventCallback _callback);
 
+        void setApplication(Application* _application);
+
         virtual void update() = 0;
 
         virtual bool closed() = 0;
@@ -45,6 +49,7 @@ namespace Shatter {
         std::unique_ptr<Window> createWindow(const WindowProps& props = WindowProps());
     protected:
         std::unordered_map<WindowEvent,std::function<void()>> m_callbacks;
+        Application* m_application;
     };
 
 }

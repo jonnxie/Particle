@@ -5,7 +5,7 @@
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Base/GUI.h"
 #include "Engine/Object/inputaction.h"
-
+#include "Engine/Core/Application.h"
 
 namespace Shatter {
 
@@ -28,7 +28,6 @@ namespace Shatter {
 	}
 
     void WindowsWindow::init() {
-
         if (s_GLFWWindowCount == 0)
         {
             int success = glfwInit();
@@ -53,7 +52,7 @@ namespace Shatter {
 
         glfwSetWindowUserPointer(m_Window, this);
 
-        // Set GLFW callbacks
+        //full
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
         {
             if(width == 0 || height == 0) return;
@@ -67,6 +66,7 @@ namespace Shatter {
             app->m_callbacks[WindowEvent::Resize]();
         });
 
+        //undone
         glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             ImGuiIO& io = ImGui::GetIO();
@@ -82,10 +82,10 @@ namespace Shatter {
             }
 
             auto *app = reinterpret_cast<WindowsWindow *>(glfwGetWindowUserPointer(window));
-
-            app->m_callbacks[WindowEvent::Key]();
+            app->m_application->keyCallback(key,action);
         });
 
+        //done
         glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
         {
             ImGuiIO& io = ImGui::GetIO();
@@ -97,12 +97,27 @@ namespace Shatter {
             app->m_callbacks[WindowEvent::Char]();
         });
 
+
         glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
         {
+            if(action == GLFW_PRESS)
+            {
+                double xpos, ypos;
+                glfwGetCursorPos(window,&xpos,&ypos);
+                pressMouse(button);
+                glm::vec2 tmp(xpos/getViewPort().width, ypos/getViewPort().height);
+                tmp *= 2.0f;
+                tmp -= 1.0f;
+                updateCursorPressPos(tmp);
+            }else if(action == GLFW_RELEASE)
+            {
+                releaseMouse(button);
+            }
             auto *app = reinterpret_cast<WindowsWindow *>(glfwGetWindowUserPointer(window));
             app->m_callbacks[WindowEvent::MouseButton]();
         });
 
+        //done
         glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
         {
             updateScrollPos(glm::vec2(xOffset,yOffset));
@@ -110,6 +125,7 @@ namespace Shatter {
             app->m_callbacks[WindowEvent::Scroll]();
         });
 
+        //done
         glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
         {
             glm::vec2 cursor(xPos,yPos);
