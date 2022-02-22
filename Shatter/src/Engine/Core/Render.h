@@ -10,6 +10,20 @@
 
 class Render {
 public:
+    Render() = default;
+    ~Render() = default;
+
+    DefineUnCopy(Render);
+public:
+    virtual void init();
+
+    virtual void update();
+
+    virtual void cleanup();
+
+    virtual void cleanupObject();
+
+public:
     SyncContainerOperation(offscreen);
     SyncContainerOperation(default);
     SyncContainerOperation(trans);

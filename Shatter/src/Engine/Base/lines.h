@@ -25,8 +25,7 @@ static int mallocId()
 
 class DLines : public Object{
 public:
-    explicit DLines(size_t _initCount);
-    explicit DLines(const std::vector<Line>& _lines);
+    explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true);
     void constructG() override;
     void constructD() override;
     void constructC() override{};
@@ -36,6 +35,7 @@ public:
 
 public:
     std::vector<Line>   lines;
+    bool                updateFunc;
     bool                changed = true;
     int                 id;
 };

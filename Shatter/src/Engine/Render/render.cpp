@@ -441,6 +441,13 @@ namespace Shatter::render{
         swapchain_images.resize(imageCount);
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchain_images.data());
 
+        pre_offscreen_buffer.resize(imageCount);
+        pre_shadow_buffer.resize(imageCount);
+        pre_g_buffer.resize(imageCount);
+        pre_norm_buffer.resize(imageCount);
+        pre_trans_buffer.resize(imageCount);
+        pre_compute_buffer.resize(imageCount);
+
         swapchain_image_format = surfaceFormat.format;
         swapchain_extent = extent;
         depthFormat = findDepthFormat();
@@ -1024,12 +1031,14 @@ namespace Shatter::render{
 
         if(!offdrawid_vec.empty())
         {
-            vkCmdExecuteCommands(_cb,offdrawid_vec.size(),&pre_offscreen_buffers[offdrawid_vec.size() * _imageIndex]);
+            vkCmdExecuteCommands(_cb, offdrawid_vec.size(), pre_offscreen_buffer[_imageIndex].data());
+
+//            vkCmdExecuteCommands(_cb,offdrawid_vec.size(),&pre_offscreen_buffers[offdrawid_vec.size() * _imageIndex]);
         }
         SingleOffScreen.endRenderPass(_cb);
     }
 
-    void ShatterRender::createNewOffScreenBuffers(VkCommandBuffer _cb, int _imageIndex){
+    void ShatterRender::createOffScreenBuffers(VkCommandBuffer _cb, int _imageIndex){
         auto threadCommandPool = getThreadCommandPool();
         SingleOffScreen.beginRenderPass(_cb, true);
         auto threadPool = ThreadPool::pool();
@@ -1053,6 +1062,8 @@ namespace Shatter::render{
         {
             vkCmdExecuteCommands(_cb, commandBuffers.size(), commandBuffers.data());
         }
+        pre_offscreen_buffer[_imageIndex].clear();
+        pre_offscreen_buffer[_imageIndex].insert(pre_offscreen_buffer[_imageIndex].end(),commandBuffers.begin(),commandBuffers.end());
         SingleOffScreen.endRenderPass(_cb);
     }
 
@@ -1072,7 +1083,7 @@ namespace Shatter::render{
                 for (int j = 0; j < numObjectsPerThread; j++)
                 {
                     if(draw_index >= drawid_vec.size()) break;
-                    (*threadPool).threads[t]->addTask([&] {
+                    (*threadPool).threads[t]->addTask([&,draw_index] {
                         VkCommandBuffer *cb = &depthBuffer[draw_index];
                         ObjectTask::shadowDepthTask(t,drawid_vec[draw_index],SingleCascade.inheritInfo,cb);
                     });
@@ -1080,9 +1091,11 @@ namespace Shatter::render{
                 }
                 if(draw_index >= drawid_vec.size()) break;
             }
-            pre_shadow_buffers.insert(pre_shadow_buffers.end(),depthBuffer.begin(),depthBuffer.end());
             (*threadPool).wait();
             vkCmdExecuteCommands(_cb, depthBuffer.size(), depthBuffer.data());
+//            pre_shadow_buffers.insert(pre_shadow_buffers.end(),depthBuffer.begin(),depthBuffer.end());
+            pre_shadow_buffer[_imageIndex].clear();
+            pre_shadow_buffer[_imageIndex].insert(pre_shadow_buffer[_imageIndex].end(), depthBuffer.begin(), depthBuffer.end());
             SingleCascade.endRenderPass(_cb);
         }
     }
@@ -1092,8 +1105,8 @@ namespace Shatter::render{
         size_t draw_index;
         auto threadPool = ThreadPool::pool();
         auto dPool = SingleDPool;
-        auto begin = pre_shadow_buffers.begin();
-        auto end = pre_shadow_buffers.begin();
+        auto begin = pre_shadow_buffer[_imageIndex].begin();
+        auto end = pre_shadow_buffer[_imageIndex].begin();
         std::advance(end,drawid_vec.size());
         for(size_t index = 0; index < SHADOW_MAP_CASCADE_COUNT; index++)
         {
@@ -1136,7 +1149,7 @@ namespace Shatter::render{
         }
 
         pre_offscreen_buffers.reserve(offdrawid_vec.size() * graphics_buffers.size());
-        pre_buffers.reserve((drawid_vec.size() + 1) * graphics_buffers.size());
+//        pre_buffers.reserve((drawid_vec.size() + 1) * graphics_buffers.size());
     }
 
     void ShatterRender::cleanupObject()
@@ -1257,11 +1270,11 @@ namespace Shatter::render{
 
 //        TaskPool::barrierRequire(graphics_buffers[_index]);
 
-        commandBuffers.insert(commandBuffers.begin(), pre_buffers.begin(), pre_buffers.end());
+        commandBuffers.insert(commandBuffers.begin(), pre_compute_buffers.begin(), pre_compute_buffers.end());
 
         VkCommandBuffer* cb;
 
-        int draw_index = pre_buffers.size();
+        int draw_index = pre_compute_buffers.size();
 
         for (int t = 0; t < std::thread::hardware_concurrency(); t++)
         {
@@ -1340,7 +1353,7 @@ namespace Shatter::render{
 
             if(Config::getConfig("enableOffscreenDebug"))
             {
-                createNewOffScreenBuffers(graphics_buffers[i], int(i));
+                createOffScreenBuffers(graphics_buffers[i], int(i));
             }
 
             if(Config::getConfig("enableShadowMap"))
@@ -1379,9 +1392,11 @@ namespace Shatter::render{
                     if(draw_index >= drawid_vec.size()) break;
                 }
                 (*threadPool).wait();
-                pre_g_buffers.insert(pre_g_buffers.end(),gBuffers.begin(),gBuffers.end());
                 vkCmdExecuteCommands(graphics_buffers[i], gBuffers.size(), gBuffers.data());
-           }
+//                pre_g_buffers.insert(pre_g_buffers.end(),gBuffers.begin(),gBuffers.end());
+                pre_g_buffer[i].clear();
+                pre_g_buffer[i].insert(pre_g_buffer[i].end(),gBuffers.begin(),gBuffers.end());
+            }
             vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
             /*
@@ -1446,8 +1461,10 @@ namespace Shatter::render{
                     }
 
                     (*threadPool).wait();
-                    pre_n_buffers.insert(pre_n_buffers.end(),normalBuffers.begin(),normalBuffers.end());
                     vkCmdExecuteCommands(graphics_buffers[i], normalBuffers.size(), normalBuffers.data());
+//                    pre_n_buffers.insert(pre_n_buffers.end(),normalBuffers.begin(),normalBuffers.end());
+                    pre_norm_buffer[i].clear();
+                    pre_norm_buffer[i].insert(pre_norm_buffer[i].end(),normalBuffers.begin(),normalBuffers.end());
                 }
             }
 
@@ -1478,8 +1495,10 @@ namespace Shatter::render{
                     }
 
                     (*threadPool).wait();
-                    pre_trans_buffers.insert(pre_trans_buffers.end(),transparencyBuffers.begin(),transparencyBuffers.end());
                     vkCmdExecuteCommands(graphics_buffers[i], transparencyBuffers.size(), transparencyBuffers.data());
+//                    pre_trans_buffers.insert(pre_trans_buffers.end(),transparencyBuffers.begin(),transparencyBuffers.end());
+                    pre_trans_buffer[i].clear();
+                    pre_trans_buffer[i].insert(pre_trans_buffer[i].end(),transparencyBuffers.begin(),transparencyBuffers.end());
                 }
             }
 //            vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
@@ -1528,7 +1547,7 @@ namespace Shatter::render{
             if(Config::getConfig("enableOffscreenDebug"))
             {
                 commandBuffers.push_back(offscreen_buffers[i]);
-                pre_buffers.push_back(offscreen_buffers[i]);
+//                pre_buffers.push_back(offscreen_buffers[i]);
             }
             gui_thread.join();
             if(Config::getConfig("enableScreenGui"))
@@ -1618,25 +1637,25 @@ namespace Shatter::render{
         int draw_index = 0;
 
         /*
-         * depth pass
-         */
-        /*
          * G
          */
         {
             if(!drawid_vec.empty())
             {
-                draw_index = 0;
-                std::vector<VkCommandBuffer> gBuffers;
 
-                gBuffers.reserve(drawid_vec.size());
-                auto begin = pre_g_buffers.begin();
-                auto end   = pre_g_buffers.begin();
-                std::advance(begin , _index * drawid_vec.size());
-                std::advance(end,(_index + 1) * drawid_vec.size());
-                gBuffers.insert(gBuffers.end(),begin,end);
+                vkCmdExecuteCommands(graphics_buffers[_index], drawid_vec.size(), pre_g_buffer[_index].data());
 
-                vkCmdExecuteCommands(graphics_buffers[_index], gBuffers.size(), gBuffers.data());
+
+//                std::vector<VkCommandBuffer> gBuffers;
+//
+//                gBuffers.reserve(drawid_vec.size());
+//                auto begin = pre_g_buffers.begin();
+//                auto end   = pre_g_buffers.begin();
+//                std::advance(begin , _index * drawid_vec.size());
+//                std::advance(end,(_index + 1) * drawid_vec.size());
+//                gBuffers.insert(gBuffers.end(),begin,end);
+//
+//                vkCmdExecuteCommands(graphics_buffers[_index], gBuffers.size(), gBuffers.data());
             }
         }
         vkCmdNextSubpass(graphics_buffers[_index], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
@@ -1651,22 +1670,23 @@ namespace Shatter::render{
 
 
         /*
-     * normal object pass
-     */
+         * normal object pass
+         */
         {
             if(!normal_vec.empty())
             {
-                draw_index = 0;
-                std::vector<VkCommandBuffer> normalBuffers;
+                vkCmdExecuteCommands(graphics_buffers[_index], normal_vec.size(), pre_norm_buffer[_index].data());
 
-                normalBuffers.reserve(normal_vec.size());
-                auto begin = pre_n_buffers.begin();
-                auto end   = pre_n_buffers.begin();
-                std::advance(begin , _index * (normal_vec.size()));
-                std::advance(end,(_index + 1) * (normal_vec.size()));
-                normalBuffers.insert(normalBuffers.end(),begin,end);
-
-                vkCmdExecuteCommands(graphics_buffers[_index], normalBuffers.size(), normalBuffers.data());
+//                std::vector<VkCommandBuffer> normalBuffers;
+//
+//                normalBuffers.reserve(normal_vec.size());
+//                auto begin = pre_n_buffers.begin();
+//                auto end   = pre_n_buffers.begin();
+//                std::advance(begin , _index * (normal_vec.size()));
+//                std::advance(end,(_index + 1) * (normal_vec.size()));
+//                normalBuffers.insert(normalBuffers.end(),begin,end);
+//
+//                vkCmdExecuteCommands(graphics_buffers[_index], normalBuffers.size(), normalBuffers.data());
             }
         }
 
@@ -1676,20 +1696,20 @@ namespace Shatter::render{
         {
             if(!transparency_vec.empty())
             {
-                draw_index = 0;
-                std::vector<VkCommandBuffer> transparencyBuffers(transparency_vec.size());
+                vkCmdExecuteCommands(graphics_buffers[_index], transparency_vec.size(), pre_trans_buffer[_index].data());
 
-                transparencyBuffers.resize(0);
-                auto begin = pre_trans_buffers.begin();
-                auto end   = pre_trans_buffers.begin();
-                std::advance(begin , _index * (transparency_vec.size()));
-                std::advance(end,(_index + 1) * (transparency_vec.size()));
-                transparencyBuffers.insert(transparencyBuffers.end(),begin,end);
-
-                vkCmdExecuteCommands(graphics_buffers[_index], transparencyBuffers.size(), transparencyBuffers.data());
+//                std::vector<VkCommandBuffer> transparencyBuffers(transparency_vec.size());
+//
+//                transparencyBuffers.resize(0);
+//                auto begin = pre_trans_buffers.begin();
+//                auto end   = pre_trans_buffers.begin();
+//                std::advance(begin , _index * (transparency_vec.size()));
+//                std::advance(end,(_index + 1) * (transparency_vec.size()));
+//                transparencyBuffers.insert(transparencyBuffers.end(),begin,end);
+//
+//                vkCmdExecuteCommands(graphics_buffers[_index], transparencyBuffers.size(), transparencyBuffers.data());
             }
         }
-//            vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         if(Config::getConfig("enableScreenGui"))
         {

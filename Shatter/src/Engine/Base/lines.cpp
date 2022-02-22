@@ -17,12 +17,7 @@
 #include RenderCatalog
 
 
-DLines::DLines(size_t _initCount){
-    lines = std::vector<Line>(_initCount);
-    id = mallocId();
-}
-
-DLines::DLines(const std::vector<Line>& _lines){
+DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
     lines = _lines;
     id = mallocId();
 }
@@ -52,10 +47,13 @@ void DLines::constructD(){
                          "Polyline",
                          s_vec);
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("LinesBasic",id),[&,ms_index,d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
-    });
+    if(updateFunc)
+    {
+        TaskPool::pushUpdateTask(tool::combine("LinesBasic",id),[&,ms_index,d](float _abs_time){
+            glm::mat4* ptr = SingleBPool.getModels();
+            memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        });
+    }
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);
 //    SingleRender.normalChanged = true;

@@ -128,7 +128,7 @@ namespace Shatter{
 
             void updateOffscreenBufferAsync(VkCommandBuffer _cb,int _imageIndex) const;
 
-            void createNewOffScreenBuffers(VkCommandBuffer _cb, int _imageIndex);
+            void createOffScreenBuffers(VkCommandBuffer _cb, int _imageIndex);
 
             void createShadowGraphicsBuffers(VkCommandBuffer _cb, int _imageIndex);
 
@@ -286,6 +286,14 @@ namespace Shatter{
             std::vector<VkCommandBuffer> pre_n_buffers{};
             std::vector<VkCommandBuffer> pre_trans_buffers{};
             std::vector<VkCommandBuffer> pre_compute_buffers;
+
+            std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{};
+            std::vector<std::vector<VkCommandBuffer>> pre_shadow_buffer{};
+            std::vector<std::vector<VkCommandBuffer>> pre_g_buffer{};
+            std::vector<std::vector<VkCommandBuffer>> pre_norm_buffer{};
+            std::vector<std::vector<VkCommandBuffer>> pre_trans_buffer{};
+
+            std::vector<std::vector<VkCommandBuffer>> pre_compute_buffer{};
 
             VkSemaphore imageAvailableSemaphore{};
             VkSemaphore renderFinishedSemaphore{};

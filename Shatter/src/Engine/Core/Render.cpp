@@ -3,3 +3,19 @@
 //
 #include "precompiledhead.h"
 #include "Render.h"
+
+void Render::init() {
+
+}
+
+void Render::update() {
+
+}
+
+void Render::cleanup() {
+
+}
+
+void Render::cleanupObject() {
+
+}
