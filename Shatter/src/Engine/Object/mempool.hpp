@@ -120,6 +120,11 @@ public:
         m_capacity = m_count * sizeof(ObjectType);
         m_ptr = new ObjectType[_num];
     }
+    ~BigPool()
+    {
+        release();
+    }
+    DefineUnCopy(BigPool);
     void get(int _index,ObjectType& _val){
         _val = m_ptr[_index];
     }
