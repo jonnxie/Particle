@@ -174,5 +174,23 @@ Class& operator = (const Class&) = delete;\
 Class& operator = (Class&&) = delete
 
 
+#define SyncContainerOperation(vec) \
+    std::mutex vec##_lock;               \
+    void vec##Push(uint32_t _id){     \
+        std::lock_guard<std::mutex> guardLock(vec##_lock); \
+        m_##vec##_id_vec.push_back(_id);   \
+        m_##vec##_changed = true;\
+    }                               \
+    \
+    void vec##Release(uint32_t _id){                                   \
+        auto index = std::find(m_offscreen_id_vec.begin(), m_offscreen_id_vec.end(),_id);\
+        if(index != m_offscreen_id_vec.end())\
+        {\
+            m_offscreen_id_vec.erase(index);\
+        }                           \
+    }
+
+
+
 
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H

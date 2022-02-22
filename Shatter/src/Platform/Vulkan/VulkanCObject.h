@@ -17,7 +17,7 @@
 
 class VulkanCObject : public CObjectBase<VkCommandBuffer>{
 public:
-    void compute(VkCommandBuffer _cb){
+    void compute(VkCommandBuffer _cb) final {
         std::vector<VkDescriptorSet> set_vec;
         loopPre(_cb);
         for(auto i = 0 ; i < m_cps.size() ; i++)

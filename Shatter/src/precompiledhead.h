@@ -15,6 +15,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <mutex>
 
 #ifdef SHATTER_PLATPORM_WINDOWS
 		  #include <Windows.h>

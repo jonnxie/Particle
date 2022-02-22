@@ -116,37 +116,15 @@ private:
 template<class ObjectType>
 class BigPool{
 public:
-//    static BigPool<ObjectType>* getAnimationPool()
-//    {
-//        if constexpr(std::is_same_v<ObjectType,Avec2>)
-//        {
-//            static BigPool<Avec2> val(Config::getConfig("AVec2InitialCount"));
-//            return &val;
-//        } else if constexpr(std::is_same_v<ObjectType,Avec3>)
-//        {
-//            static BigPool<Avec3> val(Config::getConfig("AVec3InitialCount"));
-//            return &val;
-//        } else if constexpr(std::is_same_v<ObjectType,Avec4>)
-//        {
-//            static BigPool<Avec4> val(Config::getConfig("AVec4InitialCount"));
-//            return &val;
-//        } else if constexpr(std::is_same_v<ObjectType,Amat4>)
-//        {
-//            static BigPool<Amat4> val(Config::getConfig("AMat4InitialCount"));
-//            return &val;
-//        }
-//    };
     explicit BigPool(int _num):m_count(_num){
         m_capacity = m_count * sizeof(ObjectType);
         m_ptr = new ObjectType[_num];
     }
     void get(int _index,ObjectType& _val){
-        std::lock_guard<std::mutex> lockGuard(m_mutex);
         _val = m_ptr[_index];
     }
     void set(int _index,const ObjectType& _val)
     {
-        std::lock_guard<std::mutex> lockGuard(m_mutex);
         m_ptr[_index] = _val;
     }
     void interpolateA(int _left,int _right,float _alpha,int _dest)
@@ -159,9 +137,7 @@ public:
     }
     void copy(int _des,int _src)
     {
-        std::lock_guard<std::mutex> lockGuard(m_mutex);
         memcpy(&m_ptr[_des], &m_ptr[_src], sizeof(ObjectType));
-//        m_ptr[_des] = m_ptr[_src];
     }
     int malloc(int _count){
         assert(_count > 0);
@@ -201,11 +177,5 @@ private:
 #define Avec4Pool _animation->m_vec4Pool
 
 #define Amat4Pool _animation->m_mat4Pool
-
-//#define Avec3Pool BigPool<Avec3>::getAnimationPool()
-//
-//#define Avec4Pool BigPool<Avec4>::getAnimationPool()
-//
-//#define Amat4Pool BigPool<Amat4>::getAnimationPool()
 
 #endif //SHATTER_ENGINE_MEMPOOL_HPP

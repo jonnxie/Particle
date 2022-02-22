@@ -185,7 +185,6 @@ namespace Shatter{
 
             [[maybe_unused]] void addDObject(int _drawId);
             void addCObject(int _computeId);
-            void addTex(buffer::ShatterTexture* tex);
             void createCommandBuffer();
             [[nodiscard]] GLFWwindow* getWindow() const{return window;};
         public:

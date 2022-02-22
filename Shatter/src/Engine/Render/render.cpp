@@ -2290,10 +2290,6 @@ namespace Shatter::render{
         }
     }
 
-    void ShatterRender::addTex(buffer::ShatterTexture* tex){
-        tex_vec.emplace_back(tex);
-    }
-
     void ShatterRender::createCommandBuffer(){
         if(Config::getConfig("enableMultipleComputeQueue"))
         {
