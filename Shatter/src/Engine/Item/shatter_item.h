@@ -1171,5 +1171,7 @@ void transitionImageLayout(
         VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
+void testSIMD();
+
 
 #endif //SHATTER_ENGINE_SHATTER_ITEM_H

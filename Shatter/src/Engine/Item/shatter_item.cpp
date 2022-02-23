@@ -1774,3 +1774,8 @@ ResultMap::ResultMap(){
     m_map[0x7FFFFFFF] = std::string("VK_RESULT_MAX_ENUM");
 };
 
+void testSIMD() {
+#if GLM_ARCH & GLM_ARCH_SSE2_BIT
+    std::cout << "glm simd true" << std::endl;
+#endif
+}

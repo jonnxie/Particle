@@ -40,25 +40,6 @@ void genRotateFromQuaternion(const glm::vec4 *_in, glm::mat4 *_out) {
     (*_out)[3][2] = 0.0f;
     (*_out)[3][3] = 1.0f;
 
-//    (*_out)[0][0] = (1.0f - 2.0f * y * y - 2.0f * z * z);
-//    (*_out)[1][0] = (2.0f * (x * y + w * z));
-//    (*_out)[2][0] = (2.0f * (x * z - w * y));
-//    (*_out)[3][0] = 0.0f;
-//
-//    (*_out)[0][1] = (2.0f * (x * y - w * z));
-//    (*_out)[1][1] = (1.0f - 2.0f * x * x - 2.0f * z * z);
-//    (*_out)[2][1] = (2.0f * (y * z + w * x));
-//    (*_out)[3][1] = 0.0f;
-//
-//    (*_out)[0][2] = (2.0f * (x * z + w * y));
-//    (*_out)[1][2] = (2.0f * (y * z - w * x));
-//    (*_out)[2][2] = (1.0f - 2.0f * x * x - 2.0f * y * y);
-//    (*_out)[3][2] = 0.0f;
-//
-//    (*_out)[0][3] = 0.0f;
-//    (*_out)[1][3] = 0.0f;
-//    (*_out)[2][3] = 0.0f;
-//    (*_out)[3][3] = 1.0f;
 
 }
 
@@ -75,15 +56,7 @@ void genRotateFromEulerAngle(glm::vec3* _angle,glm::mat4* _matrix){
     double srsp = sr * sp;
     double crsp = cr * sp;
     setIdentity(_matrix);
-//    (*_matrix)[0][0] = (float) (cp * cy);
-//    (*_matrix)[0][1] = (float) (cp * sy);
-//    (*_matrix)[0][2] = (float) (-sp);
-//    (*_matrix)[0][1] = (float) (srsp * cy - cr * sy);
-//    (*_matrix)[1][1] = (float) (srsp * sy + cr * cy);
-//    (*_matrix)[2][1] = (float) (sr * cp);
-//    (*_matrix)[0][2] = (float) (crsp * cy + sr * sy);
-//    (*_matrix)[1][2] = (float) (crsp * sy - sr * cy);
-//    (*_matrix)[2][2] = (float) (cr * cp);
+
     (*_matrix)[0][0] = (float) (cp * cy);
     (*_matrix)[0][1] = (float) (cp * sy);
     (*_matrix)[0][2] = (float) (-sp);
@@ -96,22 +69,47 @@ void genRotateFromEulerAngle(glm::vec3* _angle,glm::mat4* _matrix){
 }
 
 void interpolate(const glm::vec4 *_inA, const glm::vec4 *_inB, float _alpha, glm::vec4 *_out) {
-    double dot = 0, s1, s2, om, sinom;
+    float dot = 0, s1, s2, om, sinom;
+#ifdef SHATTER_SIMD
+    const auto& inA = reinterpret_cast<const __m128&>(*_inA);
+    const auto& inB = reinterpret_cast<const __m128&>(*_inB);
+    __m128 mul = _mm_mul_ps(inA, inB);
+    dot = mul[0] + mul[1] + mul[2] + mul[3];
+
+    __m128 C = inA;
+    if (dot < 0) {
+        C = -inA;
+        dot = -dot;
+    }
+    if (dot > 0.999999) {
+        s1 = 1.0 - _alpha;
+        s2 = _alpha;
+    } else {
+        om = acos(dot);
+        sinom = sin(om);
+        s1 = sin((1.0 - _alpha) * om) / sinom;
+        s2 = sin(_alpha * om) / sinom;
+    }
+
+    float simdS1[4] = {s1,s1,s1,s1};
+    float simdS2[4] = {s2,s2,s2,s2};
+    __m128 S1 = _mm_load_ps(simdS1);
+    __m128 S2 = _mm_load_ps(simdS2);
+    __m128 mul1 = _mm_mul_ps(C, S1);
+    __m128 mul2 = _mm_mul_ps(inB, S2);
+    __m128 add = _mm_add_ps(mul1, mul2);
+    *_out = reinterpret_cast<glm::vec4&>(add);
+#else
     for (int i = 0; i < 4; i++) {
         dot += (*_inA)[i] * (*_inB)[i];
     }
+
     glm::vec4 C;
     if (dot < 0) {
-        C[0] = -(*_inA)[0];
-        C[1] = -(*_inA)[1];
-        C[2] = -(*_inA)[2];
-        C[3] = -(*_inA)[3];
+        C = -(*_inA);
         dot = -dot;
     } else {
-        C[0] = (*_inA)[0];
-        C[1] = (*_inA)[1];
-        C[2] = (*_inA)[2];
-        C[3] = (*_inA)[3];
+        C = *_inA;
     }
     if (dot > 0.999999) {
         s1 = 1.0 - _alpha;
@@ -126,6 +124,7 @@ void interpolate(const glm::vec4 *_inA, const glm::vec4 *_inB, float _alpha, glm
     (*_out)[1] = (float) (s1 * C[1] + s2 * (*_inB)[1]);
     (*_out)[2] = (float) (s1 * C[2] + s2 * (*_inB)[2]);
     (*_out)[3] = (float) (s1 * C[3] + s2 * (*_inB)[3]);
+#endif
 }
 
 void interpolate(const glm::vec3 *_inA, const glm::vec3 *_inB, float _alpha, glm::vec3 *_out) {
@@ -258,3 +257,10 @@ void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm
     }
 
 }
+
+#ifdef SHATTER_SIMD
+void SIMDMatrixMultipleVec(__m128 matrix[4],__m128 vector){
+
+}
+#endif
+

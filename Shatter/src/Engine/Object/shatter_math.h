@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <glm.hpp>
+#include <simd/platform.h>
+#include <xmmintrin.h>
 //
 //template<class T>
 //void swap(T& _left, T _right){
@@ -41,5 +43,9 @@ void invTransformAndRotate(const glm::mat4* _mat,const glm::vec3* _in,glm::vec3*
 void genLocalCoordinateFromZ(const glm::vec3& _f, glm::vec3& _x, glm::vec3& _y, glm::vec3& _z);
 
 void decomposeTransform(const glm::mat4& _transform,glm::vec3& _transition,glm::vec3& _rotation,glm::vec3& _scale);
+
+#ifdef SHATTER_SIMD
+    void SIMDMatrixMultipleVec(__m128 matrix[4],__m128 vector);
+#endif
 
 #endif //SHATTER_ENGINE_SHATTER_MATH_H

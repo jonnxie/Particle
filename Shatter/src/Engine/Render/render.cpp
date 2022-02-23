@@ -199,16 +199,13 @@ namespace Shatter::render{
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
-//        createImageViews();
-//        createRenderPass();
-        createNewRenderPass();
+        createRenderPass();
         createGraphicsCommandPool();
         createComputeCommandPool();
         createTransferCommandPool();
         prepareImGui();
         createDepthResources();
-//        createFramebuffers();
-        createNewFramebuffers();
+        createFramebuffers();
         createPrimaryBuffers();
         prepareMultipleThreadDate();
         createDescriptorPool();
@@ -453,38 +450,6 @@ namespace Shatter::render{
         depthFormat = findDepthFormat();
     }
 
-    void ShatterRender::createImageViews(){
-//        swapChainImageviews.resize(swapchain_images.size());
-//        for (size_t i = 0; i < swapchain_images.size(); i++) {
-//            swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, swapchain_images[i], swapchain_image_format,
-//                                                                              VK_IMAGE_ASPECT_COLOR_BIT);
-//        }
-    }
-
-    void ShatterRender::createFramebuffers(){
-//        swapChainFramebuffers.resize(swapChainImageviews.size());
-//
-//        for (size_t i = 0; i < swapChainImageviews.size(); i++) {
-//            std::array<VkImageView, 2> attachments = {
-//                    swapChainImageviews[i],
-//                    depthImageView
-//            };
-//
-//            VkFramebufferCreateInfo framebufferInfo = {};
-//            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-//            framebufferInfo.renderPass = renderPass;
-//            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-//            framebufferInfo.pAttachments = attachments.data();
-//            framebufferInfo.width = swapchain_extent.width;
-//            framebufferInfo.height = swapchain_extent.height;
-//            framebufferInfo.layers = 1;
-//
-//            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-//                throw std::runtime_error("failed to create framebuffer!");
-//            }
-//        }
-    }
-
     void ShatterRender::createAttachmentResources()
     {
         /*
@@ -546,7 +511,7 @@ namespace Shatter::render{
 
     }
 
-    void ShatterRender::createNewFramebuffers(){
+    void ShatterRender::createFramebuffers(){
         createAttachmentResources();
         new_swapChainFramebuffers.resize(new_swapChainImageviews.size());
 
@@ -766,78 +731,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createRenderPass(){
-//        VkAttachmentDescription colorAttachment = {};
-//        colorAttachment.format = swapchain_image_format;
-//        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-//        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-//        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-//
-//        VkAttachmentDescription depthAttachment = {};
-//        depthFormat = findDepthFormat();
-//        depthAttachment.format = depthFormat;
-//        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-//        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-//
-//        VkAttachmentReference colorAttachmentRef = {};
-//        colorAttachmentRef.attachment = 0;
-//        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//
-//        VkAttachmentReference depthAttachmentRef = {};
-//        depthAttachmentRef.attachment = 1;
-//        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-//
-//        VkSubpassDescription subpass = {};
-//        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-//        subpass.colorAttachmentCount = 1;
-//        subpass.pColorAttachments = &colorAttachmentRef;
-//        subpass.pDepthStencilAttachment = &depthAttachmentRef;
-//
-//        std::array<VkSubpassDependency,2> dependency;
-//        dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-//        dependency[0].dstSubpass = 0;
-//        dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-//        dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT  |
-////                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
-//                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-//        dependency[0].srcAccessMask = 0;
-//        dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-//        dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-//
-//        dependency[1].srcSubpass = 0;
-//        dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-//        dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT  |
-//                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT ;
-////                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-//        dependency[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-//        dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-//        dependency[1].dstAccessMask = 0;
-//        dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-//
-//        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
-//        VkRenderPassCreateInfo renderPassInfo = {};
-//        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-//        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-//        renderPassInfo.pAttachments = attachments.data();
-//        renderPassInfo.subpassCount = 1;
-//        renderPassInfo.pSubpasses = &subpass;
-//        renderPassInfo.dependencyCount = 2;
-//        renderPassInfo.pDependencies = dependency.data();
-//
-//        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-//            throw std::runtime_error("failed to create render pass!");
-//        }
-    }
-
-    void ShatterRender::createNewRenderPass(){
         std::array<VkAttachmentDescription,AttachmentCount> attachments{};
         {
             //Color attachment
@@ -1571,7 +1464,6 @@ namespace Shatter::render{
     void ShatterRender::updateGraphicsCommandBuffersMultiple(int _index)
     {
         std::vector<VkCommandBuffer> commandBuffers;
-        commandBuffers.reserve(1);
 
         static VkCommandBufferBeginInfo cmdBufInfo{
                 VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -1603,18 +1495,16 @@ namespace Shatter::render{
         }
 
         VK_CHECK_RESULT(vkBeginCommandBuffer(graphics_buffers[_index], &cmdBufInfo));
-        auto threadObjectPool = getThreadObjectPool();
-        auto threadPool = ThreadPool::pool();
         // Inheritance info for the secondary command buffers
         static VkCommandBufferInheritanceInfo inheritanceInfo
-                {
-                        VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
-                        VK_NULL_HANDLE,
-                        newRenderPass,
-                        0,
-                        new_swapChainFramebuffers[_index],
-                        false
-                };
+        {
+                VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+                VK_NULL_HANDLE,
+                newRenderPass,
+                0,
+                new_swapChainFramebuffers[_index],
+                false
+        };
 
         inheritanceInfo.renderPass = newRenderPass;
         inheritanceInfo.framebuffer = new_swapChainFramebuffers[_index];
@@ -1628,51 +1518,39 @@ namespace Shatter::render{
         #ifdef SHATTER_SHADOW
             updateShadowGraphicsAsync(graphics_buffers[_index], int(_index));
         #endif
-        auto dPool = SingleDPool;
 
         vkCmdBeginRenderPass(graphics_buffers[_index], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-        int draw_index = 0;
 
         /*
          * G
          */
+        if(!drawid_vec.empty())
         {
-            if(!drawid_vec.empty())
-            {
-
-                vkCmdExecuteCommands(graphics_buffers[_index], drawid_vec.size(), pre_g_buffer[_index].data());
-
-            }
+            vkCmdExecuteCommands(graphics_buffers[_index], drawid_vec.size(), pre_g_buffer[_index].data());
         }
         vkCmdNextSubpass(graphics_buffers[_index], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         /*
          * Light
          */
-        {
-            vkCmdExecuteCommands(graphics_buffers[_index], 1, &composite_buffers[_index]);
-        }
+        vkCmdExecuteCommands(graphics_buffers[_index], 1, &composite_buffers[_index]);
         vkCmdNextSubpass(graphics_buffers[_index], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
 
         /*
          * normal object pass
          */
+        if(!normal_vec.empty())
         {
-            if(!normal_vec.empty())
-            {
-                vkCmdExecuteCommands(graphics_buffers[_index], normal_vec.size(), pre_norm_buffer[_index].data());
-            }
+            vkCmdExecuteCommands(graphics_buffers[_index], normal_vec.size(), pre_norm_buffer[_index].data());
         }
 
         /*
          * transparency pass
          */
+        if(!transparency_vec.empty())
         {
-            if(!transparency_vec.empty())
-            {
-                vkCmdExecuteCommands(graphics_buffers[_index], transparency_vec.size(), pre_trans_buffer[_index].data());
-            }
+            vkCmdExecuteCommands(graphics_buffers[_index], transparency_vec.size(), pre_trans_buffer[_index].data());
         }
 
         if(Config::getConfig("enableScreenGui"))
@@ -1744,9 +1622,9 @@ namespace Shatter::render{
         vkDeviceWaitIdle(device);
         cleanupSwapChain();
         createSwapChain();
-        createNewRenderPass();
+        createRenderPass();
         createDepthResources();
-        createNewFramebuffers();
+        createFramebuffers();
 
         {
             SinglePPool.release();

@@ -87,18 +87,12 @@ namespace Shatter{
 
             void createSwapChain();
 
-            void createImageViews();
-
-            void createRenderPass();
-
             /*
              * new render pass
              */
-            void createNewRenderPass();
+            void createRenderPass();
 
             void createFramebuffers();
-
-            void createNewFramebuffers();
 
             void clearAttachment(FrameBufferAttachment* _attachment);
 
