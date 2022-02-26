@@ -14,6 +14,26 @@ Skybox::Skybox(const std::vector<std::string>& _files){
     m_model = new vkglTF::Model;
     m_cube = _files;
     m_model->loadFromFileDefault(tool::combineModel("cube.gltf"), &Device::getDevice(), VkQueue{},m_point,m_index);
+    size_t count = m_point.size();
+    std::vector<glm::vec3> pos_vec(count);
+    std::vector<glm::vec3> normal_vec(count);
+    std::vector<glm::vec2> uv_vec(count);
+
+    for(size_t index = 0; index < count; index++)
+    {
+        pos_vec[index] = m_point[index].pos;
+        normal_vec[index] = m_point[index].normal;
+        uv_vec[index] = m_point[index].uv;
+    }
+    std::vector<void*> data_vec{pos_vec.data(), normal_vec.data(), uv_vec.data()};
+//    m_model->writeFile("writeTest.gltf",
+//                       m_point.size(),
+//                       data_vec,
+//                       m_index,
+//                       std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+//                                                            vkglTF::VertexComponent::Normal,
+//                                                            vkglTF::VertexComponent::UV}
+//                       );
     init();
 }
 

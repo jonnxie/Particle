@@ -357,6 +357,7 @@ const glm::vec3 BLACK_COLOR{0.0f,0.0f,0.0f};
 #define float_limit 0.000001f
 
 #define one_byte 1
+#define one_vec2 8
 #define one_vec3 12
 #define one_vec4 16
 #define one_matrix 64

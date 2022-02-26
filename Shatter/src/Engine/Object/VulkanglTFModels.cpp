@@ -2028,373 +2028,290 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 	}
 }
 
-//void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, Device *device, VkQueue copyQueue)
-//{
-//	this->device = device;
-//
-//	bool isKtx = false;
-//	// Image points to an external ktx file
-//	if (gltfimage.uri.find_last_of(".") != std::string::npos) {
-//		if (gltfimage.uri.substr(gltfimage.uri.find_last_of(".") + 1) == "ktx") {
-//			isKtx = true;
-//		}
-//	}
-//
-//	VkFormat format;
-//
-//	if (!isKtx) {
-//		// Texture was loaded using STB_Image
-//
-//		unsigned char* buffer = nullptr;
-//		VkDeviceSize bufferSize = 0;
-//		bool deleteBuffer = false;
-//		if (gltfimage.component == 3) {
-//			// Most devices don't support RGB only on Vulkan so convert if necessary
-//			// TODO: Check actual format support and transform only if required
-//			bufferSize = gltfimage.width * gltfimage.height * 4;
-//			buffer = new unsigned char[bufferSize];
-//			unsigned char* rgba = buffer;
-//			unsigned char* rgb = &gltfimage.image[0];
-//			for (size_t i = 0; i < gltfimage.width * gltfimage.height; ++i) {
-//				for (int32_t j = 0; j < 3; ++j) {
-//					rgba[j] = rgb[j];
-//				}
-//				rgba += 4;
-//				rgb += 3;
-//			}
-//			deleteBuffer = true;
-//		}
-//		else {
-//			buffer = &gltfimage.image[0];
-//			bufferSize = gltfimage.image.size();
-//		}
-//
-//		format = VK_FORMAT_R8G8B8A8_UNORM;
-//
-//		VkFormatProperties formatProperties;
-//
-//		width = gltfimage.width;
-//		height = gltfimage.height;
-//		mipLevels = static_cast<uint32_t>(floor(log2(std::max(width, height))) + 1.0);
-//
-//		vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
-//		assert(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT);
-//		assert(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT);
-//
-//		VkMemoryAllocateInfo memAllocInfo{};
-//		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-//		VkMemoryRequirements memReqs{};
-//
-//		VkBuffer stagingBuffer;
-//		VkDeviceMemory stagingMemory;
-//
-//		VkBufferCreateInfo bufferCreateInfo{};
-//		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-//		bufferCreateInfo.size = bufferSize;
-//		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-//		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//		VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
-//		vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
-//		memAllocInfo.allocationSize = memReqs.size;
-//		memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-//		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-//		VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
-//
-//		uint8_t* data;
-//		VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void**)&data));
-//		memcpy(data, buffer, bufferSize);
-//		vkUnmapMemory(device->logicalDevice, stagingMemory);
-//
-//		VkImageCreateInfo imageCreateInfo{};
-//		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-//		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-//		imageCreateInfo.format = format;
-//		imageCreateInfo.mipLevels = mipLevels;
-//		imageCreateInfo.arrayLayers = 1;
-//		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-//		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-//		imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-//		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//		imageCreateInfo.extent = { width, height, 1 };
-//		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-//		VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
-//		vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
-//		memAllocInfo.allocationSize = memReqs.size;
-//		memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-//		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-//		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
-//
-////		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-//        VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
-//
-//        VkImageSubresourceRange subresourceRange = {};
-//		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//		subresourceRange.levelCount = 1;
-//		subresourceRange.layerCount = 1;
-//
-//		{
-//			VkImageMemoryBarrier imageMemoryBarrier{};
-//			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-//			imageMemoryBarrier.srcAccessMask = 0;
-//			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-//			imageMemoryBarrier.image = image;
-//			imageMemoryBarrier.subresourceRange = subresourceRange;
-//			vkCmdPipelineBarrier(copyCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//		}
-//
-//		VkBufferImageCopy bufferCopyRegion = {};
-//		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//		bufferCopyRegion.imageSubresource.mipLevel = 0;
-//		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-//		bufferCopyRegion.imageSubresource.layerCount = 1;
-//		bufferCopyRegion.imageExtent.width = width;
-//		bufferCopyRegion.imageExtent.height = height;
-//		bufferCopyRegion.imageExtent.depth = 1;
-//
-//		vkCmdCopyBufferToImage(copyCmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopyRegion);
-//
-//		{
-//			VkImageMemoryBarrier imageMemoryBarrier{};
-//			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-//			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-//			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-//			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-//			imageMemoryBarrier.image = image;
-//			imageMemoryBarrier.subresourceRange = subresourceRange;
-//			vkCmdPipelineBarrier(copyCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//		}
-//
-//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
-//
-////        device->flushCommandBuffer(copyCmd, copyQueue, true);
-//
-//		vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);
-//		vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
-//
-//		// Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
-//		VkCommandBuffer blitCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
-//		for (uint32_t i = 1; i < mipLevels; i++) {
-//			VkImageBlit imageBlit{};
-//
-//			imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//			imageBlit.srcSubresource.layerCount = 1;
-//			imageBlit.srcSubresource.mipLevel = i - 1;
-//			imageBlit.srcOffsets[1].x = int32_t(width >> (i - 1));
-//			imageBlit.srcOffsets[1].y = int32_t(height >> (i - 1));
-//			imageBlit.srcOffsets[1].z = 1;
-//
-//			imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//			imageBlit.dstSubresource.layerCount = 1;
-//			imageBlit.dstSubresource.mipLevel = i;
-//			imageBlit.dstOffsets[1].x = int32_t(width >> i);
-//			imageBlit.dstOffsets[1].y = int32_t(height >> i);
-//			imageBlit.dstOffsets[1].z = 1;
-//
-//			VkImageSubresourceRange mipSubRange = {};
-//			mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//			mipSubRange.baseMipLevel = i;
-//			mipSubRange.levelCount = 1;
-//			mipSubRange.layerCount = 1;
-//
-//			{
-//				VkImageMemoryBarrier imageMemoryBarrier{};
-//				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-//				imageMemoryBarrier.srcAccessMask = 0;
-//				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-//				imageMemoryBarrier.image = image;
-//				imageMemoryBarrier.subresourceRange = mipSubRange;
-//				vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//			}
-//
-//			vkCmdBlitImage(blitCmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
-//
-//			{
-//				VkImageMemoryBarrier imageMemoryBarrier{};
-//				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-//				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-//				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-//				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-//				imageMemoryBarrier.image = image;
-//				imageMemoryBarrier.subresourceRange = mipSubRange;
-//				vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//			}
-//		}
-//
-//		subresourceRange.levelCount = mipLevels;
-//		imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//
-//		{
-//			VkImageMemoryBarrier imageMemoryBarrier{};
-//			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-//			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-//			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-//			imageMemoryBarrier.image = image;
-//			imageMemoryBarrier.subresourceRange = subresourceRange;
-//			vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//		}
-//
-//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
-//    }
-//	else {
-//		// Texture is stored in an external ktx file
-//		std::string filename = path + "/" + gltfimage.uri;
-//
-//		ktxTexture* ktxTexture;
-//
-//		ktxResult result = KTX_SUCCESS;
-//#if defined(__ANDROID__)
-//		AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-//		if (!asset) {
-//			vks::tools::exitFatal("Could not load texture from " + filename + "\n\nThe file may be part of the additional asset pack.\n\nRun \"download_assets.py\" in the repository root to download the latest version.", -1);
-//		}
-//		size_t size = AAsset_getLength(asset);
-//		assert(size > 0);
-//		ktx_uint8_t* textureData = new ktx_uint8_t[size];
-//		AAsset_read(asset, textureData, size);
-//		AAsset_close(asset);
-//		result = ktxTexture_CreateFromMemory(textureData, size, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
-//		delete[] textureData;
-//#else
-//		if (!fileExists(filename)) {
-//			throw std::runtime_error("Could not load texture from " + filename + "\n\nThe file may be part of the additional asset pack.\n\nRun \"download_assets.py\" in the repository root to download the latest version.");
-//		}
-//		result = ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
-//#endif
-//		assert(result == KTX_SUCCESS);
-//
-//		this->device = device;
-//		width = ktxTexture->baseWidth;
-//		height = ktxTexture->baseHeight;
-//		mipLevels = ktxTexture->numLevels;
-//
-//		ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
-//		ktx_size_t ktxTextureSize = ktxTexture_GetSize(ktxTexture);
-//		// @todo: Use ktxTexture_GetVkFormat(ktxTexture)
-//		format = VK_FORMAT_R8G8B8A8_UNORM;
-//
-//		// Get device properties for the requested texture format
-//		VkFormatProperties formatProperties;
-//		vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
-//
-//		VkCommandBuffer copyCmd = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
-//		VkBuffer stagingBuffer;
-//		VkDeviceMemory stagingMemory;
-//		VkBufferCreateInfo bufferCreateInfo = tool::getBufferCreateInfo();
-//		bufferCreateInfo.size = ktxTextureSize;
-//		// This buffer is used as a transfer source for the buffer copy
-//		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-//		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//		VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
-//
-//		VkMemoryAllocateInfo memAllocInfo = tool::memoryAllocateInfo();
-//		VkMemoryRequirements memReqs;
-//		vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
-//		memAllocInfo.allocationSize = memReqs.size;
-//		memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-//		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-//		VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
-//
-//		uint8_t* data;
-//		VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void**)&data));
-//		memcpy(data, ktxTextureData, ktxTextureSize);
-//		vkUnmapMemory(device->logicalDevice, stagingMemory);
-//
-//		std::vector<VkBufferImageCopy> bufferCopyRegions;
-//		for (uint32_t i = 0; i < mipLevels; i++)
-//		{
-//			ktx_size_t offset;
-//			KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, i, 0, 0, &offset);
-//			assert(result == KTX_SUCCESS);
-//			VkBufferImageCopy bufferCopyRegion = {};
-//			bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//			bufferCopyRegion.imageSubresource.mipLevel = i;
-//			bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-//			bufferCopyRegion.imageSubresource.layerCount = 1;
-//			bufferCopyRegion.imageExtent.width = std::max(1u, ktxTexture->baseWidth >> i);
-//			bufferCopyRegion.imageExtent.height = std::max(1u, ktxTexture->baseHeight >> i);
-//			bufferCopyRegion.imageExtent.depth = 1;
-//			bufferCopyRegion.bufferOffset = offset;
-//			bufferCopyRegions.push_back(bufferCopyRegion);
-//		}
-//
-//		// Create optimal tiled target image
-//		VkImageCreateInfo imageCreateInfo = tool::imageCreateInfo();
-//		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-//		imageCreateInfo.format = format;
-//		imageCreateInfo.mipLevels = mipLevels;
-//		imageCreateInfo.arrayLayers = 1;
-//		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-//		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-//		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//		imageCreateInfo.extent = { width, height, 1 };
-//		imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-//		VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
-//
-//		vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
-//		memAllocInfo.allocationSize = memReqs.size;
-//		memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-//		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-//		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
-//
-//		VkImageSubresourceRange subresourceRange = {};
-//		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//		subresourceRange.baseMipLevel = 0;
-//		subresourceRange.levelCount = mipLevels;
-//		subresourceRange.layerCount = 1;
-//
-//		tool::setImageLayout(copyCmd, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subresourceRange);
-//		vkCmdCopyBufferToImage(copyCmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
-//		tool::setImageLayout(copyCmd, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
-////		device->flushCommandBuffer(copyCmd, copyQueue);
-//        Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
-//
-//        this->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//
-//		vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);
-//		vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
-//
-//		ktxTexture_Destroy(ktxTexture);
-//	}
-//
-//	VkSamplerCreateInfo samplerInfo{};
-//	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-//	samplerInfo.magFilter = VK_FILTER_LINEAR;
-//	samplerInfo.minFilter = VK_FILTER_LINEAR;
-//	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-//	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-//	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-//	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-//	samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-//	samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-//	samplerInfo.maxAnisotropy = 1.0;
-//	samplerInfo.anisotropyEnable = VK_FALSE;
-//	samplerInfo.maxLod = (float)mipLevels;
-//	samplerInfo.maxAnisotropy = 8.0f;
-//	samplerInfo.anisotropyEnable = VK_TRUE;
-//	VK_CHECK_RESULT(vkCreateSampler(device->logicalDevice, &samplerInfo, nullptr, &sampler));
-//
-//	VkImageViewCreateInfo viewInfo{};
-//	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-//	viewInfo.image = image;
-//	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-//	viewInfo.format = format;
-//	viewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-//	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//	viewInfo.subresourceRange.layerCount = 1;
-//	viewInfo.subresourceRange.levelCount = mipLevels;
-//	VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewInfo, nullptr, &view));
-//
-//	descriptor.sampler = sampler;
-//	descriptor.imageView = view;
-//	descriptor.imageLayout = imageLayout;
-//}
+std::pair<glm::vec3,glm::vec3> getExtremeVec3(void * _data,size_t _count)
+{
+    auto ptr = static_cast<glm::vec3*>(_data);
+    glm::vec3 min(std::numeric_limits<float>::max()),max(std::numeric_limits<float>::min());
+    for(size_t index = 0; index < _count; index++)
+    {
+        if(min.x > ptr[index].x) min.x = ptr[index].x;
+        if(min.y > ptr[index].y) min.y = ptr[index].y;
+        if(min.z > ptr[index].z) min.z = ptr[index].z;
+
+        if(max.x < ptr[index].x) max.x = ptr[index].x;
+        if(max.y < ptr[index].y) max.y = ptr[index].y;
+        if(max.z < ptr[index].z) max.z = ptr[index].z;
+    }
+    return std::pair<glm::vec3,glm::vec3>{min, max};
+}
+
+std::pair<glm::vec2,glm::vec2> getExtremeVec2(void * _data,size_t _count)
+{
+    auto ptr = static_cast<glm::vec2*>(_data);
+    glm::vec2 min(std::numeric_limits<float>::max()),max(std::numeric_limits<float>::min());
+    for(size_t index = 0; index < _count; index++)
+    {
+        if(min.x > ptr[index].x) min.x = ptr[index].x;
+        if(min.y > ptr[index].y) min.y = ptr[index].y;
+
+        if(max.x < ptr[index].x) max.x = ptr[index].x;
+        if(max.y < ptr[index].y) max.y = ptr[index].y;
+    }
+    return std::pair<glm::vec2,glm::vec2>{min, max};
+}
+
+std::pair<glm::vec4,glm::vec4> getExtremeVec4(void * _data,size_t _count)
+{
+    auto ptr = static_cast<glm::vec4*>(_data);
+    glm::vec4 min(std::numeric_limits<float>::max()),max(std::numeric_limits<float>::min());
+    for(size_t index = 0; index < _count; index++)
+    {
+        if(min.x > ptr[index].x) min.x = ptr[index].x;
+        if(min.y > ptr[index].y) min.y = ptr[index].y;
+        if(min.z > ptr[index].z) min.z = ptr[index].z;
+        if(min.w > ptr[index].w) min.w = ptr[index].w;
+
+        if(max.x < ptr[index].x) max.x = ptr[index].x;
+        if(max.y < ptr[index].y) max.y = ptr[index].y;
+        if(max.z < ptr[index].z) max.z = ptr[index].z;
+        if(max.w < ptr[index].w) max.w = ptr[index].w;
+    }
+    return std::pair<glm::vec4,glm::vec4>{min, max};
+}
+
+
+void vkglTF::Model::writeFile(const std::string& _filename,
+                              size_t _count,
+                              std::vector<void*> _points,
+                              std::vector<uint32_t> _indices,
+                              std::vector<VertexComponent> _components) {
+    tinygltf::Model m;
+    tinygltf::Scene scene;
+    tinygltf::Mesh mesh;
+    tinygltf::Primitive primitive;
+    tinygltf::Node node;
+    tinygltf::Buffer index_buffer;
+    tinygltf::BufferView index_view;
+    tinygltf::Accessor index_access;
+    tinygltf::Asset asset;
+
+    size_t index_size = _indices.size() * sizeof(uint32_t);
+    index_buffer.data.resize(index_size);
+    memcpy(index_buffer.data.data(), _indices.data(), index_size);
+
+    index_view.buffer = 0;
+    index_view.byteOffset = 0;
+    index_view.byteLength = index_size;
+    index_view.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+
+    index_access.bufferView = 0;
+    index_access.byteOffset = 0;
+    index_access.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+    index_access.count = _indices.size();
+    index_access.type = TINYGLTF_TYPE_SCALAR;
+    index_access.maxValues = {static_cast<double>(_count - 1)};
+    index_access.minValues = {0};
+
+    primitive.indices = 0;                 // The index of the accessor for the vertex indices
+    primitive.material = 0;
+    primitive.mode = TINYGLTF_MODE_TRIANGLES;
+
+    m.buffers.push_back(index_buffer);
+    m.bufferViews.push_back(index_view);
+    m.accessors.push_back(index_access);
+
+    for(size_t index = 0; index < _components.size(); index++)
+    {
+        tinygltf::Buffer buffer;
+        tinygltf::BufferView view;
+        tinygltf::Accessor access;
+        switch (_components[index]) {
+            case VertexComponent::Position:
+            {
+                primitive.attributes["POSITION"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec3);
+                auto pair = getExtremeVec3(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec3);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec3;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC3;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z};
+                break;
+            }
+            case VertexComponent::Normal:
+            {
+                primitive.attributes["NORMAL"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec3);
+                auto pair = getExtremeVec3(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec3);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec3;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC3;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z};
+                break;
+            }
+
+            case VertexComponent::UV:
+            {
+                primitive.attributes["TEXCOORD_0"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec2);
+                auto pair = getExtremeVec2(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec2);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec2;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC2;
+                access.maxValues = {pair.second.x, pair.second.y};
+                access.minValues = {pair.first.x, pair.first.y};
+                break;
+            }
+
+            case VertexComponent::Color:
+            {
+                primitive.attributes["COLOR_0"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Tangent:
+            {
+                primitive.attributes["TANGENT"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Joint0:
+            {
+                primitive.attributes["JOINTS_0"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Weight0:
+            {
+                primitive.attributes["WEIGHTS_0"] = index + 1;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index + 1;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index + 1;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+            default:{
+                break;
+            }
+
+        }
+        m.buffers.push_back(buffer);
+        m.bufferViews.push_back(view);
+        m.accessors.push_back(access);
+    }
+
+    mesh.primitives.push_back(primitive);
+
+    // Other tie ups
+    node.mesh = 0;
+    scene.nodes.push_back(0); // Default scene
+
+    // Define the asset. The version is required
+    asset.version = "2.0";
+    asset.generator = "tinygltf";
+
+    // Now all that remains is to tie back all the loose objects into the
+    // our single model.
+    m.scenes.push_back(scene);
+    m.meshes.push_back(mesh);
+    m.nodes.push_back(node);
+
+    m.asset = asset;
+
+    // Create a simple material
+    tinygltf::Material mat;
+    mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 0.9f, 0.9f, 1.0f};
+    mat.doubleSided = true;
+    m.materials.push_back(mat);
+
+    // Save it to a file
+    tinygltf::TinyGLTF gltf;
+    gltf.WriteGltfSceneToFile(&m, _filename,
+                              true, // embedImages
+                              true, // embedBuffers
+                              true, // pretty print
+                              false); // write binary
+
+
+}

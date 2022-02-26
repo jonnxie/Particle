@@ -110,6 +110,7 @@ public:
         io.DisplaySize = ImVec2(width, height);
         io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;

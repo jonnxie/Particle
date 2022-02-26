@@ -50,7 +50,7 @@ GUI *GUI::getGUI() {
 //        ImGui::Checkbox("Animate light", &uiSettings.animateLight);
         ImGui::End();
 
-//        ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
     });
     return gui;
 }
