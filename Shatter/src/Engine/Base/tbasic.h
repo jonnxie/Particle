@@ -27,10 +27,6 @@ public:
 
 private:
     vkglTF::Model*  m_model;
-    glm::mat4       m_world{};
-    glm::mat4       m_scale{};
-    glm::mat4       m_rotate{};
-    glm::mat4       m_translation{};
     int             m_id;
 };
 

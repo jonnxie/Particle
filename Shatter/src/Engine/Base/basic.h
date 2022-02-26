@@ -16,7 +16,14 @@
 
 class Basic : public Object{
 public:
-    explicit Basic(const std::string& _files,glm::vec3 _pos,glm::vec3 _rotationAxis,float _angle,glm::vec3 _scale,int _id);
+    explicit Basic(const std::string& _files,
+                   glm::vec3 _pos,
+                   glm::vec3 _rotationAxis,
+                   float _angle,
+                   glm::vec3 _scale,
+                   int _id,
+                   std::string  _pipeline = "Build",
+                   std::vector<std::string>  _sets = {"Camera"});
     Basic(Basic&&) = delete;
     Basic(const Basic&) = delete;
     Basic& operator&(const Basic&) = delete;
@@ -30,12 +37,11 @@ public:
     void update(float) override {};
 
 private:
-    vkglTF::Model*  m_model;
-    glm::mat4       m_world{};
-    glm::mat4       m_scale{};
-    glm::mat4       m_rotate{};
-    glm::mat4       m_translation{};
-    int             m_id;
+    vkglTF::Model*              m_model;
+    std::string                 m_pipeline;
+    std::vector<std::string>    m_sets;
+
+    int                         m_id;
 };
 
 

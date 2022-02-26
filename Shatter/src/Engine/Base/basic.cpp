@@ -4,6 +4,8 @@
 #include "precompiledhead.h"
 
 #include "basic.h"
+
+#include <utility>
 #include SetPoolCatalog
 #include PPoolCatalog
 #include TaskCatalog
@@ -14,16 +16,24 @@
 #include MathCatalog
 #include OffScreenCatalog
 
-Basic::Basic(const std::string& _files,glm::vec3 _pos,glm::vec3 _rotationAxis,float _angle,glm::vec3 _scale,int _id)
+Basic::Basic(const std::string& _files,
+             glm::vec3 _pos,
+             glm::vec3 _rotationAxis,
+             float _angle,
+             glm::vec3 _scale,
+             int _id,
+             std::string  _pipeline,
+             std::vector<std::string>  _sets):
+             m_pipeline(std::move(_pipeline)),
+             m_sets{std::move(_sets)}
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
     m_model->loadFromFile(_files,&SingleDevice,VkQueue{},glTFLoadingFlags);
-    glm::mat4 s = glm::scale(glm::mat4(1.0f),_scale);
-    glm::mat4 r;
-    r = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
-    glm::mat4 t = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = t * s * r;
+    m_scale = glm::scale(glm::mat4(1.0f),_scale);
+    m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
+    m_translation = glm::translate(glm::mat4(1.0f), _pos);
+    m_world = m_translation * m_scale * m_rotate;
     m_id = _id;
     init();
 }
@@ -50,11 +60,14 @@ void Basic::constructD()
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         auto set_pool = MPool<VkDescriptorSet>::getPool();
-        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex]),
-                                          SingleSetPool["Camera"]};
+        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
+        for(auto & s: m_sets)
+        {
+            sets.emplace_back(SingleSetPool[s]);
+        }
         vkCmdBindDescriptorSets(_cb,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                PPool::getPool()["Build"]->getPipelineLayout(),
+                                PPool::getPool()[m_pipeline]->getPipelineLayout(),
                                 0,
                                 sets.size(),
                                 sets.data(),
@@ -62,7 +75,7 @@ void Basic::constructD()
                                 VK_NULL_HANDLE);
 
         // Mesh containing the LODs
-        vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()["Build"]->getPipeline());
+        vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
         m_model->draw(_cb);
     };
     insertDObject(d);

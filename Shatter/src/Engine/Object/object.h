@@ -30,6 +30,11 @@ public:
     virtual void constructG(){};
     virtual void constructD(){};
     virtual void constructC(){};
+protected:
+    glm::mat4                   m_world{};
+    glm::mat4                   m_scale{};
+    glm::mat4                   m_rotate{};
+    glm::mat4                   m_translation{};
 };
 
 

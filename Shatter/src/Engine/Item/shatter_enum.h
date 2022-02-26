@@ -348,6 +348,12 @@ const glm::vec3 ORANGE_COLOR{1.0f,0.64f,0.0f};
 const glm::vec3 WHITE_COLOR{1.0f,1.0f,1.0f};
 const glm::vec3 BLACK_COLOR{0.0f,0.0f,0.0f};
 
+const glm::vec3 UpDirection{0.0f, 0.0f, 1.0f};
+const glm::vec3 DownDirection{0.0f, 0.0f, -1.0f};
+const glm::vec3 LeftDirection{-1.0f, 0.0f, 0.0f};
+const glm::vec3 RightDirection{1.0f, 0.0f, 1.0f};
+const glm::vec3 ForwardDirection{0.0f, 1.0f, 0.0f};
+const glm::vec3 BackDirection{0.0f, -1.0f, 1.0f};
 
 #define pai 3.141592f
 #define two_pai 6.283184f
