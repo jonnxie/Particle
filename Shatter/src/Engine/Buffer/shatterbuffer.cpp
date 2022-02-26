@@ -39,6 +39,10 @@ namespace Shatter::buffer{
                 }
                 break;
             }
+            case Buffer_Type::Index_Host_Buffer:{
+                buffer->createIndexHostBuffer(_size,_data);
+                break;
+            }
             case Buffer_Type::Uniform_Buffer:{
                 if(!buffer->createUniformBuffer(_size)){
                     throw std::runtime_error("create uniform buffer error!");
@@ -114,19 +118,19 @@ namespace Shatter::buffer{
         return val;
     }
 
-    bool ShatterBuffer::createIndexBuffer(VkDeviceSize _size, void* _data){
-        bool val = false;
-        do{
-            VkBuffer stagingBuffer;
-            VkDeviceMemory stagingBufferMemory;
-            createBuffer(_size,
-                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         stagingBuffer,
-                         stagingBufferMemory);
+    bool ShatterBuffer::createIndexHostBuffer(VkDeviceSize _size, void* _data){
+        createBuffer(_size,
+                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     m_buffer,
+                     m_memory);
+        if(_data)
+        {
             void *data;
             vkMapMemory(*render::ShatterRender::getRender().getDevice(),
-                        stagingBufferMemory,
+                        m_memory,
                         0,
                         _size,
                         0,
@@ -135,20 +139,42 @@ namespace Shatter::buffer{
             memcpy(data,
                    _data,
                    _size);
-            vkUnmapMemory(*render::ShatterRender::getRender().getDevice(), stagingBufferMemory);
+            vkUnmapMemory(*render::ShatterRender::getRender().getDevice(), m_memory);
+        }
+        return true;
+    }
 
-            createBuffer(_size,
-                         VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                         m_buffer,
-                         m_memory);
-            copyBuffer(stagingBuffer, m_buffer, _size);
+    bool ShatterBuffer::createIndexBuffer(VkDeviceSize _size, void* _data){
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        createBuffer(_size,
+                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     stagingBuffer,
+                     stagingBufferMemory);
+        void *data;
+        vkMapMemory(*render::ShatterRender::getRender().getDevice(),
+                    stagingBufferMemory,
+                    0,
+                    _size,
+                    0,
+                    &data);
+        memset(data,0,(size_t)_size);
+        memcpy(data,
+               _data,
+               _size);
+        vkUnmapMemory(*render::ShatterRender::getRender().getDevice(), stagingBufferMemory);
 
-            vkDestroyBuffer(*render::ShatterRender::getRender().getDevice(), stagingBuffer, nullptr);
-            vkFreeMemory(*render::ShatterRender::getRender().getDevice(), stagingBufferMemory, nullptr);
-            val = true;
-        }while(false);
-        return val;
+        createBuffer(_size,
+                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                     m_buffer,
+                     m_memory);
+        copyBuffer(stagingBuffer, m_buffer, _size);
+
+        vkDestroyBuffer(*render::ShatterRender::getRender().getDevice(), stagingBuffer, nullptr);
+        vkFreeMemory(*render::ShatterRender::getRender().getDevice(), stagingBufferMemory, nullptr);
+        return true;
     }
 
     bool ShatterBuffer::createStorageBuffer(VkDeviceSize _size, void* _data){

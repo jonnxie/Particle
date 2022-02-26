@@ -90,6 +90,13 @@ void BPool::createVSBuffer(const B_id& _id,VkDeviceSize _size,void* _data) {
     m_size_map[_id] = _size;
 }
 
+void BPool::createIndexHostBuffer(const B_id& _id,VkDeviceSize _size,void* _data){
+    std::lock_guard<std::mutex> guard(m_i_mutex);
+    checkMapPrint(m_index_map)
+    m_index_map[_id] = ShatterBuffer::createBuffer(_size, Buffer_Type::Index_Host_Buffer, _data);
+    m_size_map[_id] = _size;
+}
+
 
 void BPool::createIndexBuffer(const B_id& _id, VkDeviceSize _size, void *_data) {
     std::lock_guard<std::mutex> guard(m_i_mutex);
@@ -166,6 +173,7 @@ ShatterBuffer* BPool::getBuffer(const B_id& _id, Buffer_Type _type){
             findMap(m_vertex_map);
             return m_vertex_map[_id];
         }
+        case Buffer_Type::Index_Host_Buffer:
         case Buffer_Type::Index_Buffer:{
             findMap(m_index_map);
             return m_index_map[_id];

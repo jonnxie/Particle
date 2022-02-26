@@ -13,7 +13,15 @@
 #include DObjectCatalog
 #include MPoolCatalog
 #include DeviceCatalog
-#include "TerrainFace.h"
+
+static int initPlanetIdVal = 0;
+static std::mutex idPlanetLock;
+
+static int mallocPlanetId()
+{
+    std::lock_guard<std::mutex> lockGuard(idPlanetLock);
+    return initPlanetIdVal++;
+}
 
 class Planet : public Object{
 public:
@@ -22,9 +30,8 @@ public:
            glm::vec3 _rotationAxis,
            float _angle,
            glm::vec3 _scale,
-           uint32_t _id,
-           std::string _pipeline = "Planet",
-           std::vector<std::string> _sets = {"Camera"});
+           std::string  _pipeline = "Planet_Face",
+           std::vector<std::string>  _sets = {"Camera"});
     ~Planet();
     DefineUnCopy(Planet);
     void generateMesh();
@@ -35,9 +42,12 @@ public:
 
     uint32_t       m_id;
     uint32_t  m_resolution{};
+    std::string                 m_pipeline{};
+    std::vector<std::string>    m_sets{};
     std::vector<glm::vec3> m_points{};
     std::vector<glm::vec3> m_normals{};
     std::vector<glm::vec2> m_coordinates{};
+    std::vector<uint32_t>  m_indices{};
     std::vector<TerrainFace>  m_faces{};
 };
 

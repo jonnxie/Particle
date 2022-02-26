@@ -45,6 +45,8 @@ public:
 
     void createVSBuffer(const B_id& _id,VkDeviceSize _size,void* _data);
 
+    void createIndexHostBuffer(const B_id& _id,VkDeviceSize _size,void* _data);
+
     void createIndexBuffer(const B_id& _id,VkDeviceSize _size,void* _data);
 
     void createStorageBuffer(const B_id& _id,VkDeviceSize _size,void* _data);

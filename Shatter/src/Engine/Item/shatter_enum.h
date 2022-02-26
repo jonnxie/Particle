@@ -88,6 +88,7 @@ enum class Input_Type{
 
 enum class Buffer_Type{
     Vertex_Buffer = 0,
+    Index_Host_Buffer,
     Index_Buffer,
     Uniform_Buffer,
     Storage_Buffer,

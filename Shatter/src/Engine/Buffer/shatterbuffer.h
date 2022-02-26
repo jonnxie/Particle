@@ -26,6 +26,8 @@ namespace Shatter {
 
             bool createVertexBuffer(VkDeviceSize _size,void* _data);
 
+            bool createIndexHostBuffer(VkDeviceSize _size, void* _data);
+
             bool createIndexBuffer(VkDeviceSize _size,void* _data);
 
             bool createStorageBuffer(VkDeviceSize _size,void* _data);

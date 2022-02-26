@@ -38,6 +38,8 @@
 #include "Engine/Animation/animation.h"
 #include "Engine/Event/delayevent.h"
 
+#include "Engine/Planets/Planet.h"
+
 void initSet()
 {
     TaskPool::pushTask("UpdateOffScreenSets",[](){
@@ -221,6 +223,13 @@ int main() {
 //    auto line = new DLines(lines);
     line->init();
 
+    auto planet = new Planet(20,
+                             glm::vec3(0.0f),
+                             glm::vec3(1.0f,0.0f,0.0f),
+                             -half_pai,
+                             glm::vec3(1.0f));
+
+
     TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
         auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
         auto target = SingleCamera.m_targetPlane;
@@ -295,6 +304,7 @@ int main() {
     thread_pool->wait();
     app.listener(new OutputPoint);
 
+
     try {
         app.update();
         line_pool->release();
@@ -309,6 +319,7 @@ int main() {
         delete build;
         delete glass;
         delete a;
+        delete planet;
         Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
         SingleDelaySystem.release();
