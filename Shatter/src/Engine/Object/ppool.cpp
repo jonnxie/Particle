@@ -144,13 +144,13 @@ void PPool::init() {
         createGP("Planet_Face",
                  std::vector<Input_Type>{Input_Type::Point3d},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("planet_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                                                              ShaderPool::getPool().Get("planet_fs")},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
+                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Default,
                  SubpassTransparency
         );
@@ -158,13 +158,13 @@ void PPool::init() {
         createGP("Planet_Line",
                  std::vector<Input_Type>{Input_Type::Point3d},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("planet_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                                                              ShaderPool::getPool().Get("planet_fs")},
                  AssemState::Triangle_List,
                  RasterState::TriangleLine,
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
+                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Default,
                  SubpassTransparency
         );

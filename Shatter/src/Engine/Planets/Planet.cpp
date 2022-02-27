@@ -18,8 +18,13 @@
 #include AppCatalog
 #include RenderCatalog
 
-Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle, glm::vec3 _scale,
-               std::string  _pipeline, std::vector<std::string>  _sets) : m_pipeline(std::move(_pipeline)), m_sets(std::move(_sets)){
+Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle, glm::vec3 _scale, float _radius,
+               glm::vec3 _color,
+               std::string  _pipeline, std::vector<std::string>  _sets) :
+               m_pipeline(std::move(_pipeline)),
+               m_sets(std::move(_sets)),
+               m_radius(_radius),
+               m_color(_color){
     m_resolution = _resolution;
     m_scale = glm::scale(glm::mat4(1.0f),_scale);
     m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
@@ -34,11 +39,13 @@ Planet::~Planet() {
 }
 
 void Planet::generateMesh() {
+    m_points.clear();
+    m_indices.clear();
     for(auto& face : m_faces)
     {
         std::vector<glm::vec3> pos;
         std::vector<uint32_t> indices;
-        face.generateMesh(pos, m_coordinates, indices);
+        face.generateMesh(pos, m_coordinates, indices, m_radius);
         m_points.insert(m_points.end(), pos.begin(), pos.end());
         m_indices.insert(m_indices.end(), indices.begin(), indices.end());
     }
@@ -57,6 +64,30 @@ void Planet::generateMesh() {
 
     SingleBPool.createIndexHostBuffer(tool::combine("Planet",m_id),sizeof(uint32_t) * m_indices.size(), m_indices.data());
     SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Index_Host_Buffer)->map();
+
+    {
+        SingleBPool.createUniformBuffer(tool::combine("Planet",m_id),one_vec3);
+        SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Uniform_Buffer)->map();
+
+        memcpy(SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Uniform_Buffer)->mapped, &m_color, one_vec3);
+
+        VkDescriptorBufferInfo buffer_info{};
+        buffer_info.buffer = SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Uniform_Buffer)->Get_Buffer();
+        buffer_info.offset = 0;
+        buffer_info.range = one_vec3;
+
+        VkWriteDescriptorSet planet_write = tool::writeDescriptorSet(SingleSetPool["Planet"],
+                                                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                                     0,
+                                                                     &buffer_info);
+
+        vkUpdateDescriptorSets(SingleDevice(),
+                               1,
+                               &planet_write,
+                               0,
+                               nullptr);
+    }
+
 }
 
 void Planet::constructG() {

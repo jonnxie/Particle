@@ -184,6 +184,14 @@ void SlbPool::init(){
                         VK_SHADER_STAGE_FRAGMENT_BIT,
                         2),
         };
+
+        m_map["Planet"] = std::vector<VkDescriptorSetLayoutBinding>{
+                tool::descriptorSetLayoutBinding(
+                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        0)
+        };
+
     }
 
     for(auto &i:m_map){

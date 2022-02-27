@@ -30,18 +30,22 @@ public:
            glm::vec3 _rotationAxis,
            float _angle,
            glm::vec3 _scale,
+           float _radius = 5.0f,
+           glm::vec3 _color = BLUE_COLOR,
            std::string  _pipeline = "Planet_Face",
-           std::vector<std::string>  _sets = {"Camera"});
+           std::vector<std::string>  _sets = {"Camera", "Planet"});
     ~Planet();
     DefineUnCopy(Planet);
     void generateMesh();
-    void constructG() override;
-    void constructD() override;
-    void constructC() override;
+    void constructG()  override;
+    void constructD()  override;
+    void constructC()  override;
     void update(float) override {};
-
-    uint32_t       m_id;
-    uint32_t  m_resolution{};
+public:
+    uint32_t            m_id;
+    uint32_t            m_resolution{};
+    float               m_radius{};
+    glm::vec3           m_color{};
     std::string                 m_pipeline{};
     std::vector<std::string>    m_sets{};
     std::vector<glm::vec3> m_points{};

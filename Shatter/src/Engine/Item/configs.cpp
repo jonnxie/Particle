@@ -20,7 +20,7 @@ void Config::init()
     config_map["enableShadowMap"]               = 0;
     config_map["enableScreenGui"]               = 0;
     config_map["enableMultipleComputeQueue"]    = 0;
-    config_map["width"]                         = 1600;
+    config_map["width"]                         = 1200;
     config_map["height"]                        = 900;
     config_map["LightInitCount"]                = 64;
     config_map["PointDefaultSize"]              = 4;

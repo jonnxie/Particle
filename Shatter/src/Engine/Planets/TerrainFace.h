@@ -22,9 +22,11 @@ public:
         m_axisA = glm::vec3(_localUp.y, _localUp.z, _localUp.x);
         m_axisB = glm::cross(_localUp, m_axisA);
     }
+
     void generateMesh(std::vector<glm::vec3>& _points,
                        std::vector<glm::vec2>& _coordinates,
-                       std::vector<uint32_t>& _indices)
+                       std::vector<uint32_t>& _indices,
+                       float _radius)
     {
         _points.resize(m_resolution * m_resolution);
         _indices.resize((m_resolution - 1) * (m_resolution - 1) * 6);
@@ -36,7 +38,7 @@ public:
                 int i = x + y * m_resolution;
                 glm::vec2 percent = glm::vec2(float(x) / float(m_resolution - 1), float(y) / float(m_resolution - 1));
                 glm::vec3 cube_point = m_localUp + (percent.x - 0.5f) * 2.0f * m_axisA + (percent.y - 0.5f) * 2.0f * m_axisB;
-                glm::vec3 sphere_point = glm::normalize(cube_point) * 5.0f;
+                glm::vec3 sphere_point = glm::normalize(cube_point) * _radius;
                 _points[i] = sphere_point;
 
                 if (x != m_resolution - 1 && y != m_resolution - 1) {
