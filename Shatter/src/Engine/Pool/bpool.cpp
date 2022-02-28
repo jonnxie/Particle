@@ -6,11 +6,11 @@
 #include "bpool.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include "Engine/Item/shatter_item.h"
-#include "device.h"
+#include "Engine/Object/device.h"
 #include "mpool.h"
 #include "modelsetpool.h"
 #include "Engine/Event/taskpool.h"
-#include UniformCatalog
+#include UniformCatalog"Engine/Item/uniform.h"
 static bool created = false;
 static std::mutex pool_mutex;
 

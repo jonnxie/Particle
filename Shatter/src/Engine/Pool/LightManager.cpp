@@ -7,8 +7,8 @@
 #include <mutex>
 #include <array>
 #include <random>
-#include ConfigCatalog
-#include TaskCatalog
+#include ConfigCatalog"Engine/Item/configs.h"
+#include TaskCatalog"Engine/Event/taskpool.h"
 
 LightManager& LightManager::getLight(){
     static bool ready = false;

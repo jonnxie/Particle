@@ -9,7 +9,7 @@
 #include <mutex>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <glm.hpp>
+#include "glm.hpp"
 #include <algorithm>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
@@ -233,7 +233,7 @@ private:
     static MPool<DObject>* m_dobject_pool;
     static MPool<GObject>* m_gobject_pool;
     static MPool<CObject>* m_cobject_pool;
-    static MPool<VkDescriptorSet>* m_set_pool; // default set pool used for model matrix
+    static MPool<VkDescriptorSet>* m_set_pool; // default set Pool used for model matrix
     static MPool<glm::mat4>* m_model_matrix_pool;
     static MPool<ObjectBox>* m_object_pool;
 //    ObjectBox

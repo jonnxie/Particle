@@ -8,7 +8,7 @@
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Base/lines.h"
 #include "Engine/Base/tris.h"
-#include "Engine/Object/shatter_math.h"
+#include "Engine/Item/shatter_math.h"
 
 std::ostream & operator<<(std::ostream& _in,const Plane& _plane)
 {

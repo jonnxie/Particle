@@ -7,11 +7,11 @@
 #include "Engine/Object/line3d.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/device.h"
-#include "Engine/Object/mpool.h"
-#include "Engine/Object/setpool.h"
-#include "Engine/Object/modelsetpool.h"
+#include "Engine/pool/mpool.h"
+#include "Engine/pool/setpool.h"
+#include "Engine/pool/modelsetpool.h"
 #include "Engine/Item/shatter_item.h"
-#include "Engine/Object/bpool.h"
+#include "Engine/pool/bpool.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include <string>
 

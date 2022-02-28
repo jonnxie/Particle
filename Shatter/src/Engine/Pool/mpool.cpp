@@ -5,11 +5,11 @@
 
 #include <thread>
 #include "mpool.h"
-#include "line3d.h"
-#include "plane3d.h"
-#include "gobject.h"
-#include "dobject.h"
-#include "cobject.h"
+#include "Engine/Object/line3d.h"
+#include "Engine/Object/plane3d.h"
+#include "Engine/Object/gobject.h"
+#include "Engine/Object/dobject.h"
+#include "Engine/Object/cobject.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
 

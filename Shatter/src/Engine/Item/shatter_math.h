@@ -6,8 +6,8 @@
 #define SHATTER_ENGINE_SHATTER_MATH_H
 
 #include <iostream>
-#include <glm.hpp>
-#include <simd/platform.h>
+#include "glm.hpp"
+#include "simd/platform.h"
 #include <xmmintrin.h>
 //
 //template<class T>

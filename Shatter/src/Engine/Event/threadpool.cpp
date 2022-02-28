@@ -85,6 +85,21 @@ void ThreadPool::release() {
 }
 
 void ThreadPool::addTask(const std::function<void()> &_task) {
-    threads[m_index++%threads.size()]->addTask(_task);
-    m_index%=threads.size();
+    threads[m_index++]->addTask(_task);
+    if(m_index >= m_thread_count){
+        m_index -= m_thread_count;
+    }
 }
+
+void ThreadPool::addTasks(const std::array<std::function<void()>,4>& _array){
+    for(size_t index = 0; index < 4; index++)
+    {
+        threads[m_index++]->addTask(_array[index]);
+        if(m_index >= m_thread_count){
+            m_index -= m_thread_count;
+        }
+    }
+}
+
+
+

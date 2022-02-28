@@ -40,8 +40,11 @@ class ThreadPool
 public:
     void addTask(const std::function<void()>& _task);
 
+    void addTasks(const std::array<std::function<void()>,4>& _array);
+
     void setThreadCount(uint32_t count = std::thread::hardware_concurrency())
     {
+        m_thread_count = count;
         threads.clear();
         for(auto i = 0; i < count; i++)
         {
@@ -62,8 +65,9 @@ public:
     static void release();
 
 public:
-    int m_index = 0;
+    uint32_t m_index = 0;
     std::vector<Thread*> threads;
+    uint32_t m_thread_count;
 public:
     explicit ThreadPool(uint32_t count);
     ThreadPool();

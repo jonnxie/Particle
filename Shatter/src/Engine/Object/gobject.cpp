@@ -5,7 +5,7 @@
 
 #include "gobject.h"
 #include "aabb.h"
-#include "bpool.h"
+#include "Engine/pool/bpool.h"
 
 void GObject::genBuffer(const B_id& _id) {
     BPool::getPool().createVertexBuffer(_id,m_vertex_size,m_vertex);

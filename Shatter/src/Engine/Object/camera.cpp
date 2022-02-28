@@ -4,13 +4,12 @@
 #include "precompiledhead.h"
 
 #include "camera.h"
-//#include "../ShatterApp/shatter_app.h"
 #include "Engine/Render/shatter_render_include.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include "inputaction.h"
-#include "setpool.h"
+#include "Engine/pool/setpool.h"
 #include "Engine/Item/shatter_item.h"
-#include "bpool.h"
+#include "Engine/pool/bpool.h"
 #include "device.h"
 #include <mutex>
 

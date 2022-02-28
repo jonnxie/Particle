@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include "Engine/Item/shatter_enum.h"
-#include "Engine/Object/shatter_math.h"
+#include "Engine/Item/shatter_math.h"
 
 #define RandomSend 007u
 

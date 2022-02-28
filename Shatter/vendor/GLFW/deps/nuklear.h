@@ -609,7 +609,7 @@ NK_API int nk_init(struct nk_context*, struct nk_allocator*, const struct nk_use
 /// used for allocating windows, panels and state tables.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// int nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font *font);
+/// int nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *Pool, const struct nk_user_font *font);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -5792,7 +5792,7 @@ NK_LIB void nk_free_window(struct nk_context *ctx, struct nk_window *win);
 NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name);
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
-/* pool */
+/* Pool */
 NK_LIB void nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc, unsigned int capacity);
 NK_LIB void nk_pool_free(struct nk_pool *pool);
 NK_LIB void nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size);
@@ -14915,10 +14915,10 @@ nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds,
     nk_setup(ctx, font);
     ctx->memory = *cmds;
     if (pool->type == NK_BUFFER_FIXED) {
-        /* take memory from buffer and alloc fixed pool */
+        /* take memory from buffer and alloc fixed Pool */
         nk_pool_init_fixed(&ctx->pool, pool->memory.ptr, pool->memory.size);
     } else {
-        /* create dynamic pool from buffer allocator */
+        /* create dynamic Pool from buffer allocator */
         struct nk_allocator *alloc = &pool->pool;
         nk_pool_init(&ctx->pool, alloc, NK_POOL_DEFAULT_CAPACITY);
     }
@@ -15287,7 +15287,7 @@ nk_create_page_element(struct nk_context *ctx)
         elem = ctx->freelist;
         ctx->freelist = elem->next;
     } else if (ctx->use_pool) {
-        /* allocate page element from memory pool */
+        /* allocate page element from memory Pool */
         elem = nk_pool_alloc(&ctx->pool);
         NK_ASSERT(elem);
         if (!elem) return 0;
@@ -15319,7 +15319,7 @@ nk_link_page_element_into_freelist(struct nk_context *ctx,
 NK_LIB void
 nk_free_page_element(struct nk_context *ctx, struct nk_page_element *elem)
 {
-    /* we have a pool so just add to free list */
+    /* we have a Pool so just add to free list */
     if (ctx->use_pool) {
         nk_link_page_element_into_freelist(ctx, elem);
         return;
@@ -25494,9 +25494,9 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///                        to be always in the background of the screen
 /// - 2016/08/03 (1.03.2)- Removed invalid assert macro for NK_RGB color picker
 /// - 2016/08/01 (1.03.1)- Added helper macros into header include guard
-/// - 2016/07/29 (1.03.0) - Moved the window/table pool into the header part to
+/// - 2016/07/29 (1.03.0) - Moved the window/table Pool into the header part to
 ///                        simplify memory management by removing the need to
-///                        allocate the pool.
+///                        allocate the Pool.
 /// - 2016/07/29 (1.02.0) - Added auto scrollbar hiding window flag which if enabled
 ///                        will hide the window scrollbar after NK_SCROLLBAR_HIDING_TIMEOUT
 ///                        seconds without window interaction. To make it work

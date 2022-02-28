@@ -5,7 +5,7 @@
 
 #include "setpool.h"
 #include "Engine/Render/render.h"
-#include "device.h"
+#include "Engine/Object/device.h"
 #include "Engine/Item/shatter_enum.h"
 #include <mutex>
 #include "slbpool.h"
@@ -41,7 +41,7 @@ void SetPool::init() {
     poolInfo.maxSets = 400;
 
     if (vkCreateDescriptorPool(*ShatterRender::getRender().getDevice(), &poolInfo, nullptr, &m_set_pool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor pool!");
+        throw std::runtime_error("failed to create descriptor Pool!");
     }
 
     std::map<Sl_id,VkDescriptorSetLayout> & tmp_map = SlbPool::getPool().m_sl_map;

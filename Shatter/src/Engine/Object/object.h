@@ -19,6 +19,7 @@ public:
     void draw(VkCommandBuffer _cb);
     void init();
     virtual void update(float){};
+    virtual void imguiRender(){};
     void insertDObject(int);
     void insertGObject(int);
     void insertCObject(int);

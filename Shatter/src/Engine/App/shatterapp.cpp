@@ -5,7 +5,7 @@
 
 #include "shatterapp.h"
 #include "Engine/Object/camera.h"
-#include "Engine/Object/mpool.h"
+#include "Engine/pool/mpool.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/object.h"
 #include "Engine/Event/taskpool.h"
@@ -77,28 +77,23 @@ namespace Shatter::app{
                     (*dpool)[drawobj]->update();
                 }
             };
-            ThreadPool::pool()->addTask(dUpdateTask);
-
             static auto transUpdateTask = [&](){
                 for(auto& tObj : transparency_vec){
                     (*dpool)[tObj]->update();
                 }
             };
-            ThreadPool::pool()->addTask(transUpdateTask);
-
             static auto nUpdateTask = [&](){
                 for(auto& nObj : normal_vec){
                     (*dpool)[nObj]->update();
                 }
             };
-            ThreadPool::pool()->addTask(nUpdateTask);
-
             static auto offUpdateTask = [&](){
                 for(auto& drawobj : m_offscreenobjects){
                     (*dpool)[drawobj]->update();
                 }
             };
-            ThreadPool::pool()->addTask(offUpdateTask);
+            static std::array<std::function<void()>,4> tasks{dUpdateTask, transUpdateTask, nUpdateTask, offUpdateTask};
+            ThreadPool::pool()->addTasks(tasks);
             ThreadPool::pool()->wait();
 
             Camera::getCamera().update(cameraChanged);

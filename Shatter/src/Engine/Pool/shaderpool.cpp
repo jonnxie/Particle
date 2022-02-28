@@ -7,9 +7,9 @@
 #include "Engine/Render/shatter_render_include.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
-#include "device.h"
+#include "Engine/Object/device.h"
 #include <mutex>
-#include ConfigCatalog
+#include ConfigCatalog"Engine/Item/configs.h"
 #include <algorithm>
 
 using namespace Shatter::render;
