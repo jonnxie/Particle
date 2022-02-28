@@ -48,11 +48,6 @@ void Object::insertCObject(int _obj){
     m_cobjs.emplace_back(_obj);
 }
 
-
-void Object::regenerateCommandBuffer() {
-
-}
-
 void Object::construct() {
     constructG();
     constructC();
