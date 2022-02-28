@@ -61,6 +61,8 @@ private:
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
     Device* device = nullptr;
+public:
+
     std::unordered_map<Task_id,std::function<void()>> m_tasks;
 public:
     struct PushConstBlock{
