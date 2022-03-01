@@ -10,6 +10,9 @@
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
 
+
+class FrameBuffer;
+
 class OffScreen {
 public:
     static OffScreen& getOffScreen();
@@ -40,6 +43,8 @@ public:
     VkDescriptorImageInfo m_depth_descriptor;
 
     VkCommandBufferInheritanceInfo m_inherit_info;
+
+    FrameBuffer* m_newframebuffer{nullptr};
 private:
     void setup(const VkDevice& _device,
                uint32_t _width,

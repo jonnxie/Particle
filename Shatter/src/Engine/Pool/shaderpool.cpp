@@ -9,7 +9,7 @@
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Object/device.h"
 #include <mutex>
-#include ConfigCatalog"Engine/Item/configs.h"
+#include ConfigCatalog
 #include <algorithm>
 
 using namespace Shatter::render;

@@ -20,13 +20,12 @@ struct VkAttachment{
 
 class VulkanFrameBuffer : public FrameBuffer{
 public:
-    VulkanFrameBuffer(FrameBufferSpecification _spec, VkRenderPass _renderPass);
-
+    explicit VulkanFrameBuffer(FrameBufferSpecification _spec);
+    ~VulkanFrameBuffer() override = default;
     void init();
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
 public:
-    VkRenderPass                    m_renderPass{};
     VkFramebuffer                   m_frame_buffer{};
     std::vector<VkAttachment>       m_attachments{};
 };

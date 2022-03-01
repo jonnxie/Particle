@@ -7,11 +7,22 @@
 #include <utility>
 #include "Engine/Object/device.h"
 
+VkImageAspectFlags getAspect(VkImageUsageFlags _usage)
+{
+    VkFlags flags = 0x00000000;
+    if(_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) flags |= VK_IMAGE_ASPECT_COLOR_BIT;
+
+    if(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+
+    return flags;
+}
+
 void VulkanFrameBuffer::init() {
     auto device = SingleDevice();
+    m_attachments.resize(m_spec.formats.size());
     for(size_t index = 0; index < m_spec.formats.size(); index++)
     {
-        m_attachments[index].format = getFormat(m_spec.formats[index].format);
+        m_attachments[index].format = m_spec.formats[index].format;
         VkImageCreateInfo image = tool::imageCreateInfo();
         image.imageType = VK_IMAGE_TYPE_2D;
         image.format = m_attachments[index].format;
@@ -22,7 +33,7 @@ void VulkanFrameBuffer::init() {
         image.arrayLayers = 1;
         image.samples = VkSampleCountFlagBits(1 << m_spec.Samples);
         image.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image.usage = getUsage(m_spec.formats[index].usage) | VK_IMAGE_USAGE_SAMPLED_BIT;
+        image.usage = m_spec.formats[index].usage | VK_IMAGE_USAGE_SAMPLED_BIT;
 
         VkMemoryAllocateInfo memAlloc = tool::memoryAllocateInfo();
         VkMemoryRequirements memReqs;
@@ -38,7 +49,7 @@ void VulkanFrameBuffer::init() {
         colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
         colorImageView.format = m_attachments[index].format;
         colorImageView.subresourceRange = {};
-        colorImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        colorImageView.subresourceRange.aspectMask = getAspect(m_spec.formats[index].usage);
         colorImageView.subresourceRange.baseMipLevel = 0;
         colorImageView.subresourceRange.levelCount = 1;
         colorImageView.subresourceRange.baseArrayLayer = 0;
@@ -70,26 +81,39 @@ void VulkanFrameBuffer::init() {
         attachments.emplace_back(a.imageView);
     }
 
-    VkFramebufferCreateInfo fbufCreateInfo = tool::framebufferCreateInfo();
-    fbufCreateInfo.renderPass = m_renderPass;
-    fbufCreateInfo.attachmentCount = attachments.size();
-    fbufCreateInfo.pAttachments = attachments.data();
-    fbufCreateInfo.width = m_spec.Width;
-    fbufCreateInfo.height = m_spec.Height;
-    fbufCreateInfo.layers = 1;
+    VkFramebufferCreateInfo info = tool::framebufferCreateInfo();
+    info.renderPass = m_spec.RenderPass;
+    info.attachmentCount = attachments.size();
+    info.pAttachments = attachments.data();
+    info.width = m_spec.Width;
+    info.height = m_spec.Height;
+    info.layers = 1;
 
-    VK_CHECK_RESULT(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &m_frame_buffer));
-
+    VK_CHECK_RESULT(vkCreateFramebuffer(device, &info, nullptr, &m_frame_buffer));
 }
 
 void VulkanFrameBuffer::resize(uint32_t _width, uint32_t _height) {
+    m_spec.Width = _width;
+    m_spec.Height = _height;
+    release();
+    init();
 }
 
 void VulkanFrameBuffer::release() {
+    auto device = SingleDevice();
+    for(auto& a : m_attachments)
+    {
+        vkDestroyImageView(device, a.imageView, nullptr);
+        vkDestroyImage(device, a.image,nullptr);
+        vkFreeMemory(device, a.memory, nullptr);
+        vkDestroySampler(device, a.sampler, nullptr);
+    }
+
+    vkDestroyFramebuffer(device, m_frame_buffer, nullptr);
 }
 
-VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec,VkRenderPass _renderPass)
-        : FrameBuffer(std::move(_spec)),m_renderPass(_renderPass) {
+VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec)
+        : FrameBuffer(std::move(_spec)){
     init();
 }
 

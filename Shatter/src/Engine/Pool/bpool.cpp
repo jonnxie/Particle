@@ -10,7 +10,7 @@
 #include "mpool.h"
 #include "modelsetpool.h"
 #include "Engine/Event/taskpool.h"
-#include UniformCatalog"Engine/Item/uniform.h"
+#include UniformCatalog
 static bool created = false;
 static std::mutex pool_mutex;
 

@@ -18,8 +18,13 @@ enum class Usage{
 };
 
 struct AttachFormat{
+#ifdef SHATTER_GRAPHICS_VULKAN
+    VkFormat format;
+    VkImageUsageFlags usage;
+#else
     TextureFormat format;
     Usage usage;
+#endif
 };
 
 #endif //MAIN_FORMATFILTER_HPP

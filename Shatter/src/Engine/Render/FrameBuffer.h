@@ -14,20 +14,25 @@
 
 struct FrameBufferSpecification
 {
-    uint32_t Width = 0, Height = 0;
+    uint32_t Width = 0,
+    Height = 0;
     std::vector<AttachFormat> formats{};
     uint32_t Samples = 1;
 
     bool SwapChainTarget = false;
+#ifdef SHATTER_GRAPHICS_VULKAN
+    VkRenderPass RenderPass{};
+#endif
 };
 
 
 class FrameBuffer{
 public:
     static FrameBuffer* createFramebuffer(FrameBufferSpecification _spec);
-    FrameBuffer(FrameBufferSpecification _spec):
+    explicit FrameBuffer(FrameBufferSpecification _spec):
     m_spec(std::move(_spec))
     {};
+    virtual ~FrameBuffer()= default;;
 public:
     virtual void resize(uint32_t _width,uint32_t _height) = 0;
     virtual void release() = 0;

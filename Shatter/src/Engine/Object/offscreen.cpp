@@ -8,6 +8,12 @@
 #include "device.h"
 
 #include <mutex>
+#include "Engine/Render/FrameBuffer.h"
+
+#ifdef SHATTER_GRAPHICS_VULKAN
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+#endif
+
 
 static std::mutex lock;
 static bool ready = false;
@@ -169,6 +175,16 @@ void OffScreen::setup(const VkDevice& _device,
 
     VK_CHECK_RESULT(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &m_pass));
 
+    FrameBufferSpecification spec{};
+    spec.Width = _width;
+    spec.Height = _height;
+    spec.formats = {{m_color_format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT},{m_depth_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}};
+    spec.Samples = 1;
+    spec.SwapChainTarget = false;
+    spec.RenderPass = m_pass;
+
+    m_newframebuffer = FrameBuffer::createFramebuffer(spec);
+
     VkImageView attachments[2];
     attachments[0] = m_color_image_view;
     attachments[1] = m_depth_image_view;
@@ -201,6 +217,7 @@ void OffScreen::setup(const VkDevice& _device,
 }
 
 void OffScreen::release() {
+    delete m_newframebuffer;
     vkDestroyImageView(SingleDevice.logicalDevice,m_depth_image_view,nullptr);
     vkDestroyImageView(SingleDevice.logicalDevice,m_color_image_view,nullptr);
 

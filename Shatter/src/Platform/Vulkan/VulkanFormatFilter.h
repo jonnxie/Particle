@@ -22,6 +22,7 @@ VkFormat getFormat(TextureFormat _format){
             break;
         }
     }
+    return VkFormat{};
 }
 
 VkImageUsageFlags getUsage(Usage _usage)
@@ -39,6 +40,7 @@ VkImageUsageFlags getUsage(Usage _usage)
             break;
         }
     }
+    return VkImageUsageFlags{};
 }
 
 
