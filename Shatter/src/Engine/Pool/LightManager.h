@@ -6,13 +6,13 @@
 #define SHATTER_ENGINE_LIGHTMANAGER_H
 
 #include "Engine/Item/shatter_enum.h"
-#include UniformCatalog"Engine/Item/uniform.h"
-#include MacroCatalog"Engine/Item/shatter_macro.h"
+#include UniformCatalog
+#include MacroCatalog
 #include <vector>
 #include BPoolCatalog
-#include BufferCatalog"Engine/Buffer/shatterbufferinclude.h"
+#include BufferCatalog
 #include SetPoolCatalog
-#include DeviceCatalog"Engine/Object/device.h"
+#include DeviceCatalog
 
 class LightManager {
 public:

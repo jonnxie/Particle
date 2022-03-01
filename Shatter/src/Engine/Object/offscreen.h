@@ -13,10 +13,7 @@
 class OffScreen {
 public:
     static OffScreen& getOffScreen();
-    OffScreen(const OffScreen&) = delete;
-    OffScreen& operator=(const OffScreen&) = delete;
-    OffScreen(OffScreen&&) = delete;
-    OffScreen& operator=(OffScreen&&) = delete;
+    DefineUnCopy(OffScreen);
 
     void release();
     void beginRenderPass(VkCommandBuffer _cb,bool _multiple = false) const;
