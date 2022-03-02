@@ -35,6 +35,7 @@ void Camera::generateLookAt(){
 }
 
 void Camera::generateProj(){
+    m_aspect = getViewPort().width / getViewPort().height;
     m_camera.proj = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
     m_camera.proj[1][1] *= -1;
 }
