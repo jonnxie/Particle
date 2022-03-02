@@ -388,6 +388,7 @@ namespace Shatter::render{
             imageCount > swapChainSupport.capabilities.maxImageCount) {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
+        VkSwapchainKHR oldSwapchain = swapchain;
 
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -399,6 +400,7 @@ namespace Shatter::render{
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        createInfo.oldSwapchain = oldSwapchain;
 
 //        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
         QueueFamilyIndices indices = getIndices();
@@ -1683,8 +1685,6 @@ namespace Shatter::render{
             clearAttachment(normalAttachment);
             clearAttachment(albedoAttachment);
             clearAttachment(depthAttachment);
-//            clearAttachment(opaqueAttachment);
-//            clearAttachment(transparencyAttachment);
         }
 
         vkFreeCommandBuffers(device,graphic_commandPool,graphics_buffers.size(),graphics_buffers.data());
@@ -1692,11 +1692,6 @@ namespace Shatter::render{
         vkFreeCommandBuffers(device,graphic_commandPool,offscreen_buffers.size(),offscreen_buffers.data());
         vkFreeCommandBuffers(device,compute_commandPool,1,&compute_buffer);
 
-//        for (auto & swapChainFramebuffer : swapChainFramebuffers) {
-//            vkDestroyFramebuffer(device, swapChainFramebuffer, nullptr);
-//        }
-
-//        vkDestroyRenderPass(device, renderPass, nullptr);
 
         {
             for (auto & swapChainFramebuffer : new_swapChainFramebuffers) {
@@ -1818,15 +1813,23 @@ namespace Shatter::render{
 
             presentInfo.pImageIndices = &imageIndex;
             auto result = vkQueuePresentKHR(present_queue, &presentInfo);
-            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-            {
-                recreateSwapChain();
-                windowStill = false;
-            } else if(result != VK_SUCCESS)
-            {
-                VK_CHECK_RESULT(result);
+            if (!((result == VK_SUCCESS) || (result == VK_SUBOPTIMAL_KHR))) {
+                if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+                    recreateSwapChain();
+                    return;
+                } else {
+                    VK_CHECK_RESULT(result);
+                }
             }
-//            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
+//            vkQueueWaitIdle(present_queue);
+//            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+//            {
+//                recreateSwapChain();
+//                windowStill = false;
+//            } else if(result != VK_SUCCESS)
+//            {
+//                VK_CHECK_RESULT(result);
+//            }
         }
     }
 
@@ -2093,8 +2096,8 @@ namespace Shatter::render{
 
         setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
-//        app->recreateSwapChain();
-//        app->windowStill = false;
+        app->recreateSwapChain();
+        app->windowStill = false;
     }
 
     void ShatterRender::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
