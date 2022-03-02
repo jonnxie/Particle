@@ -207,7 +207,7 @@ namespace Shatter::render{
         prepareImGui();
         createDepthResources();
         createFramebuffers();
-        createPrimaryBuffers();
+        createPrimaryCommandBuffers();
         prepareMultipleThreadDate();
         createDescriptorPool();
         createSemaphores();
@@ -881,7 +881,7 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &newRenderPass));
     }
 
-    void ShatterRender::createPrimaryBuffers(){
+    void ShatterRender::createPrimaryCommandBuffers(){
         VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
         commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
@@ -1016,7 +1016,7 @@ namespace Shatter::render{
     }
 
 
-    void ShatterRender::prepareCommandBuffer()
+    void ShatterRender::createSecondaryCommandBuffers()
     {
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1045,7 +1045,6 @@ namespace Shatter::render{
         }
 
         pre_offscreen_buffers.reserve(offdrawid_vec.size() * graphics_buffers.size());
-//        pre_buffers.reserve((drawid_vec.size() + 1) * graphics_buffers.size());
     }
 
     void ShatterRender::cleanupObject()
@@ -1633,9 +1632,9 @@ namespace Shatter::render{
             SinglePPool.release();
             SinglePPool.init();
         }
-        createPrimaryBuffers();
+        createPrimaryCommandBuffers();
         createComputeCommandBuffer();
-        prepareCommandBuffer();
+        createSecondaryCommandBuffers();
         createGraphicsCommandBuffersMultiple();
         vkDeviceWaitIdle(device);
     }

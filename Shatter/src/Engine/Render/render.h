@@ -110,9 +110,9 @@ namespace Shatter{
 
             void createDescriptorPool();
 
-            void createPrimaryBuffers();
+            void createPrimaryCommandBuffers();
 
-            void prepareCommandBuffer();
+            void createSecondaryCommandBuffers();
 
             void prepareMultipleThreadDate();
 
