@@ -45,7 +45,7 @@ namespace Shatter::render{
     const std::vector<const char *> validationLayers = {
 //            "VK_LAYER_NV_optimus",
 //            "VK_LAYER_AMD_switchable_graphics",
-            "VK_LAYER_RENDERDOC_Capture",
+//            "VK_LAYER_RENDERDOC_Capture",
 //            "VK_LAYER_LUNARG_monitor"
             "VK_LAYER_KHRONOS_validation"
 //            "VK_LAYER_LUNARG_device_simulation"
@@ -129,8 +129,6 @@ namespace Shatter::render{
         delete normalAttachment;
         delete albedoAttachment;
         delete depthAttachment;
-//        delete opaqueAttachment;
-//        delete transparencyAttachment;
 
         delete imGui;
 
@@ -798,7 +796,9 @@ namespace Shatter::render{
         subpassDescriptions[SubpassG].colorAttachmentCount = 4;
         subpassDescriptions[SubpassG].pColorAttachments = colorReferences;
         subpassDescriptions[SubpassG].pDepthStencilAttachment = &depthReference;
-
+//        subpassDescriptions[SubpassG].pDepthStencilAttachment = VK_NULL_HANDLE;
+//        subpassDescriptions[SubpassG].preserveAttachmentCount = 1;
+//        subpassDescriptions[SubpassG].pPreserveAttachments = &int{4};
         // Second subpass: Final composition (using G-Buffer components)
         // ----------------------------------------------------------------------------------------
 
@@ -815,16 +815,11 @@ namespace Shatter::render{
         subpassDescriptions[SubpassLight].colorAttachmentCount = 1;
         subpassDescriptions[SubpassLight].pColorAttachments = &colorReference;
         subpassDescriptions[SubpassLight].pDepthStencilAttachment = &depthReference;
-        // Use the color attachments filled in the first pass as input attachments
         subpassDescriptions[SubpassLight].inputAttachmentCount = 3;
         subpassDescriptions[SubpassLight].pInputAttachments = inputReferences;
 
-        // Third subpass: Forward transparency
-        // ----------------------------------------------------------------------------------------
         colorReference = { AttachmentBack, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-
         inputReferences[0] = { AttachmentPosition, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-
         subpassDescriptions[SubpassTransparency].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDescriptions[SubpassTransparency].colorAttachmentCount = 1;
         subpassDescriptions[SubpassTransparency].pColorAttachments = &colorReference;
@@ -838,18 +833,18 @@ namespace Shatter::render{
 
         dependencies[ExternalToG].srcSubpass = VK_SUBPASS_EXTERNAL;
         dependencies[ExternalToG].dstSubpass = 0;
-        dependencies[ExternalToG].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-        dependencies[ExternalToG].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[ExternalToG].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dependencies[ExternalToG].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependencies[ExternalToG].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-        dependencies[ExternalToG].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[ExternalToG].dstAccessMask =  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependencies[ExternalToG].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // This dependency transitions the input attachment from color attachment to shader read
         dependencies[GtoLight].srcSubpass = 0;
         dependencies[GtoLight].dstSubpass = 1;
-        dependencies[GtoLight].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[GtoLight].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependencies[GtoLight].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dependencies[GtoLight].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[GtoLight].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependencies[GtoLight].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         dependencies[GtoLight].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
@@ -863,9 +858,9 @@ namespace Shatter::render{
 
         dependencies[TransparencyToExternal].srcSubpass = 0;
         dependencies[TransparencyToExternal].dstSubpass = VK_SUBPASS_EXTERNAL;
-        dependencies[TransparencyToExternal].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[TransparencyToExternal].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;;
         dependencies[TransparencyToExternal].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-        dependencies[TransparencyToExternal].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[TransparencyToExternal].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependencies[TransparencyToExternal].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
         dependencies[TransparencyToExternal].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
