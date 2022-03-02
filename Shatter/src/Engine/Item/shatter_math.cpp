@@ -184,7 +184,7 @@ void setFromEulerAngleToQuaternion(const glm::vec3 &_angle, glm::vec4& _quaterni
 }
 
 void genLocalCoordinateFromZ(const glm::vec3& _f,glm::vec3& _x,glm::vec3& _y,glm::vec3& _z) {
-    assert(glm::length(_z) <= float_limit);
+    assert(glm::length(_f) >= float_limit);
     _z = glm::normalize(_f);
     glm::vec3 a;
     if(_z.y >= float_limit || _z.z >= float_limit)
@@ -199,7 +199,8 @@ void genLocalCoordinateFromZ(const glm::vec3& _f,glm::vec3& _x,glm::vec3& _y,glm
     }else{
         assert(0);
     }
-    _x = glm::cross(a,_z) / glm::length(glm::cross(a,_z));
+    auto c = glm::cross(a,_z);
+    _x = c / glm::length(c);
     _y = glm::cross(_z,_x);
 }
 

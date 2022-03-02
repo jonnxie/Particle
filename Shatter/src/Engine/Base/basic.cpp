@@ -15,6 +15,7 @@
 #include PipelineCatalog
 #include MathCatalog
 #include OffScreenCatalog
+#include RenderCatalog
 
 Basic::Basic(const std::string& _files,
              glm::vec3 _pos,
@@ -79,4 +80,9 @@ void Basic::constructD()
         m_model->draw(_cb);
     };
     insertDObject(d);
+    SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    TaskPool::pushUpdateTask(tool::combine("Basic",m_id),[&,modelIndex,d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
+    });
 }

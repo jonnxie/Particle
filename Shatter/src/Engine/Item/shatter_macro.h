@@ -192,5 +192,4 @@ Class& operator = (Class&&) = delete
 
 
 
-
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H

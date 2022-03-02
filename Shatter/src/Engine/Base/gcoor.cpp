@@ -13,6 +13,8 @@
 #include "Engine/Item/shatter_item.h"
 #include "Engine/pool/bpool.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
+#include "Engine/Event/taskpool.h"
+#include "Engine/Render/shatter_render_include.h"
 #include <string>
 
 GCoor::GCoor(const std::vector<int>& _in):m_x_axis(_in[0]),m_y_axis(_in[1]),m_z_axis(_in[2]){
@@ -73,10 +75,11 @@ void GCoor::constructD() {
     int d = dpool->malloc();
 
     std::vector<std::string> s_vec{std::string("Camera")};
-//    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+    auto ms_index = ModelSetPool::getPool().malloc();
     (*dpool)[d]->m_type = DType::Normal;
+
     (*dpool)[d]->prepare(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)),
-                          ModelSetPool::getPool().malloc(),
+                         ms_index,
                           DrawType::Vertex,
                           0,
                           "coordinate",
@@ -87,6 +90,11 @@ void GCoor::constructD() {
                           "Polyline",
                           s_vec);
     insertDObject(d);
+    TaskPool::pushUpdateTask("GCoor",[&,ms_index,d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+    });
+    SingleRender.getNObjects()->push_back(d);
 }
 
 

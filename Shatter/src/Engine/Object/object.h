@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "aabb.h"
+#include "Engine/Item/shatter_macro.h"
 
 
 class Object {

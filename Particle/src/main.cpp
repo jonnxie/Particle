@@ -165,7 +165,6 @@ int main() {
         line->setLine(glm::vec3(0,0,0),glm::vec3(0,0,1));
     }
     auto coordinate = GCoor::createGCoor(coor_line);
-    app.getNObjects()->push_back(coordinate->m_dobjs[0]);
 
     {
 //        auto gline = new GLine({0,0,0},{5,5,5});
@@ -220,7 +219,6 @@ int main() {
             },
     };
     auto line = std::make_unique<DLines>(lines);
-//    auto line = new DLines(lines);
     line->init();
 
     auto planet = new Planet(20,
@@ -228,7 +226,6 @@ int main() {
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
                              glm::vec3(1.0f));
-
 
     TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
         auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
@@ -256,54 +253,38 @@ int main() {
         };
         memcpy(buffer->mapped,lines.data(),TargetPlaneDoubleCoordinateSize);
     });
-
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),
                                      tool::combineTexture("Skybox_left2.png"),
                                      tool::combineTexture("Skybox_top3.png"),
                                      tool::combineTexture("Skybox_bottom4.png"),
                                      tool::combineTexture("Skybox_front5.png"),
                                      tool::combineTexture("Skybox_back6.png")};
-
     auto skybox = new Skybox(sky_vec);
-    app.getNObjects()->insert(app.getNObjects()->end(),skybox->m_dobjs.begin(),skybox->m_dobjs.end());
-
     auto a = new animation::Animation(tool::combineModel("ninja.ms3d"),
                                       glm::vec3(-10.0f,-10.0f,0.0f),
                                       glm::vec3(1.0f,0.0f,0.0f),
                                       half_pai,
                                       glm::vec3(0.25f),
                                       0);
-    app.getNObjects()->insert(app.getNObjects()->end(), a->m_dobjs.begin(), a->m_dobjs.end());
-//
     auto* build = new Basic(std::string(ModelFilePath) + std::string("samplebuilding.gltf"),
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
                              glm::vec3(1.0f),
                              0);
-    app.getDObjects()->insert(app.getDObjects()->end(), build->m_dobjs[0]);
-
     auto* glass = new TBasic(std::string(ModelFilePath) + std::string("samplebuilding_glass.gltf"),
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
                              glm::vec3(1.0f),
                              0);
-    app.getTObjects()->insert(app.getTObjects()->end(), glass->m_dobjs[0]);
 
 //    initSet();
-
-    render.getCObjects()->insert(render.getCObjects()->begin(),app.getCObjects()->begin(),app.getCObjects()->end());
-    render.getDObjects()->insert(render.getDObjects()->begin(),app.getDObjects()->begin(),app.getDObjects()->end());
-    render.getOffDObjects()->insert(render.getOffDObjects()->begin(), app.getOffDObjects()->begin(),app.getOffDObjects()->end());
-    render.getTObjects()->insert(render.getTObjects()->begin(), app.getTObjects()->begin(),app.getTObjects()->end());
-    render.getNObjects()->insert(render.getNObjects()->begin(), app.getNObjects()->begin(),app.getNObjects()->end());
 
     TaskPool::executeMultiple();
     render.createCommandBuffer();
     thread_pool->wait();
     app.listener(new OutputPoint);
-
 
     try {
         app.update();
@@ -313,6 +294,7 @@ int main() {
         set_pool.release();
         pipeline_pool.release();
         buffer_pool.release();
+        delete coordinate;
         delete skybox;
         SingleOffScreen.release();
         SingleCascade.release();

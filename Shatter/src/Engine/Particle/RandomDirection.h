@@ -46,7 +46,7 @@ glm::vec3 randomDirection()
  */
 glm::vec3 randomDirectionInRange(const glm::vec3& _average,float _angle)
 {
-    assert(glm::length(_average) <= float_limit);
+    assert(glm::length(_average) >= float_limit);
     glm::vec3 x,y,z;
     genLocalCoordinateFromZ(_average,x,y,z);
     glm::mat3 localCoordinate = glm::inverse(glm::mat3(x,y,z));//column major

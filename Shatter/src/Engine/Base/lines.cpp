@@ -54,9 +54,7 @@ void DLines::constructD(){
             memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
         });
     }
-//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);
-//    SingleRender.normalChanged = true;
 }
 
 void DLines::pushLine(const Line &_line) {

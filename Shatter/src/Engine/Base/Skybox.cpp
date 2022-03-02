@@ -9,6 +9,7 @@
 #include TaskCatalog
 #include SetPoolCatalog
 #include "Engine/Buffer/shattertexture.h"
+#include "Engine/Render/shatter_render_include.h"
 
 Skybox::Skybox(const std::vector<std::string>& _files){
     m_model = new vkglTF::Model;
@@ -104,5 +105,11 @@ void Skybox::constructD(){
                          0,
                          "Skybox",
                          s_vec);
+    TaskPool::pushUpdateTask("Skybox",[&,mc_index,d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + mc_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+    });
+//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
+    SingleRender.getNObjects()->push_back(d);
     insertDObject(d);
 }
