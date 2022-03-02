@@ -14,6 +14,7 @@
 #include PipelineCatalog
 #include MathCatalog
 #include OffScreenCatalog
+#include RenderCatalog
 
 ABasic::ABasic(const std::string& _files,
              glm::vec3 _pos,
@@ -78,13 +79,10 @@ void ABasic::constructD()
         m_model->draw(_cb);
     };
     insertDObject(d);
-    if(updateFunc)
-    {
         TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,modelIndex,d](float _abs_time){
             m_model->updateAnimation(m_animation_index, _abs_time);
             glm::mat4* ptr = SingleBPool.getModels();
             memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
         });
-    }
     SingleRender.getNObjects()->push_back(d);
 }

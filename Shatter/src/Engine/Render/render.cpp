@@ -2161,8 +2161,7 @@ namespace Shatter::render{
         }else{
             createComputeCommandBuffer();
         }
-        prepareCommandBuffer();
-//        createGraphicsCommandBuffersMultiple();
+        createSecondaryCommandBuffers();
         createGraphicsCommandBuffersMultiple();
     }
 

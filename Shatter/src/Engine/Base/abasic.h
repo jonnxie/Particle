@@ -24,10 +24,8 @@ public:
                    int _id,
                    std::string  _pipeline = "Build",
                    std::vector<std::string>  _sets = {"Camera"});
-    ABasic(Basic&&) = delete;
-    ABasic(const Basic&) = delete;
-    ABasic& operator&(const Basic&) = delete;
-    ABasic& operator&(Basic&&) = delete;
+
+    DefineUnCopy(ABasic);
     ~ABasic(){
         delete m_model;
     }
