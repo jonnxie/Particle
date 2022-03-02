@@ -100,6 +100,13 @@ GUI *GUI::getGUI() {
 //        ImGui::End();//Viewport
 //        ImGui::PopStyleVar();
 
+        ImGui::Begin("ViewPort");
+
+        ImGui::Image(SingleRender.new_swapchain_images[getSwapChainIndex()], {getViewPort().width,getViewPort().height});
+
+        ImGui::End();
+
+
         ImGui::End();// End DockSpace
     });
     return gui;

@@ -45,7 +45,7 @@ namespace Shatter::render{
     const std::vector<const char *> validationLayers = {
 //            "VK_LAYER_NV_optimus",
 //            "VK_LAYER_AMD_switchable_graphics",
-            "VK_LAYER_RENDERDOC_Capture",
+//            "VK_LAYER_RENDERDOC_Capture",
 //            "VK_LAYER_LUNARG_monitor"
             "VK_LAYER_KHRONOS_validation"
 //            "VK_LAYER_LUNARG_device_simulation"

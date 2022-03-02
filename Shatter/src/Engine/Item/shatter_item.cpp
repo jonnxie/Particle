@@ -593,6 +593,10 @@ void setSwapChainIndex(int _index) {
     currentSwapChainIndex = _index;
 }
 
+int getSwapChainIndex(){
+    return currentSwapChainIndex;
+}
+
 void *getIndirectDrawState() {
     return &indirect_draw_state;
 }

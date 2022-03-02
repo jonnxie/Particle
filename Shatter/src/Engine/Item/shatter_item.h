@@ -868,6 +868,8 @@ static int currentSwapChainIndex;
 
 void setSwapChainIndex(int _index);
 
+int getSwapChainIndex();
+
 namespace tool{
     std::string combine(const std::string& _str,int num);
 

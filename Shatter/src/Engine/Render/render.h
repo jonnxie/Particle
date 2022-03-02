@@ -24,6 +24,7 @@
 #include "Engine/Item/shatter_item.h"
 #include "imgui.h"
 #include "Engine/Item/shatter_enum.h"
+#include "Engine/Item/shatter_macro.h"
 
 #ifdef NDEBUG
 static const bool enableValidationLayers = false;
@@ -52,11 +53,7 @@ namespace Shatter{
         public:
             static ShatterRender& getRender();
 
-            ShatterRender(const ShatterRender&) = delete;
-            ShatterRender& operator = (const ShatterRender&) = delete;
-            ShatterRender(ShatterRender&&) = delete;
-            ShatterRender& operator = (ShatterRender&&) = delete;
-
+            DefineUnCopy(ShatterRender);
             void init();
 
             void loop();
