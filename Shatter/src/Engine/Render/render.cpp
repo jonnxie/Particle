@@ -123,6 +123,7 @@ namespace Shatter::render{
 
     void ShatterRender::cleanup(){
         cleanupSwapChain();
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
 
         delete positionAttachment;
         delete normalAttachment;
@@ -1717,7 +1718,6 @@ namespace Shatter::render{
 
 
 
-        vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 
     void ShatterRender::draw() {
