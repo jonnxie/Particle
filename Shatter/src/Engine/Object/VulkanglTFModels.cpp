@@ -1471,7 +1471,12 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 	}
 }
 
-void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue transferQueue, uint32_t fileLoadingFlags, float scale)
+void vkglTF::Model::loadFromFile(std::string filename,
+                                 Device *device,
+                                 VkQueue transferQueue,
+                                 uint32_t fileLoadingFlags,
+                                 const glm::mat4& world_matrix,
+                                 float scale)
 {
 	tinygltf::Model gltfModel;
 	tinygltf::TinyGLTF gltfContext;
@@ -1524,7 +1529,7 @@ void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue t
 			}
 			// Initial pose
 			if (node->mesh) {
-				node->update();
+				node->update(world_matrix);
 			}
 		}
 	}

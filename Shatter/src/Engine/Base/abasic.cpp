@@ -29,11 +29,11 @@ ABasic::ABasic(const std::string& _files,
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
-    m_model->loadFromFile(_files,&SingleDevice,VkQueue{},glTFLoadingFlags);
     m_scale = glm::scale(glm::mat4(1.0f),_scale);
     m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
     m_translation = glm::translate(glm::mat4(1.0f), _pos);
     m_world = m_translation * m_scale * m_rotate;
+    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_world);
     m_id = _id;
     init();
 }

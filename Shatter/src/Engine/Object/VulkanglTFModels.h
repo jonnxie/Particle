@@ -298,7 +298,9 @@ namespace vkglTF
                           Device* device,
                           VkQueue transferQueue,
                           uint32_t fileLoadingFlags = vkglTF::FileLoadingFlags::DontLoadImages,
-                          float scale = 1.0f);
+                          const glm::mat4& world_matrix = glm::mat4(1.0f),
+                          float scale = 1.0f
+                          );
 
         void loadFromFileDefault(const std::string& filename,
                                  Device* device,
