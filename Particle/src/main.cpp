@@ -268,7 +268,7 @@ int main() {
 //                                      glm::vec3(0.25f),
 //                                      0);
     auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
-                             glm::vec3(0.0f),
+                             glm::vec3(-10.0f,-10.0f,0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
                              glm::vec3(1.0f),

@@ -47,9 +47,7 @@ void ABasic::constructD()
 {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-//    int modelIndex = ModelSetPool::getPool().malloc();
 
-//    (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_newDraw = [&](VkCommandBuffer _cb){
@@ -59,8 +57,6 @@ void ABasic::constructD()
         VkRect2D scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
 
-//        auto set_pool = MPool<VkDescriptorSet>::getPool();
-//        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
         std::vector<VkDescriptorSet> sets{};
         for(auto & s: m_sets)
         {
@@ -81,9 +77,7 @@ void ABasic::constructD()
     };
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,d](float _abs_time){
-        m_model->updateAnimation(m_animation_index, _abs_time);
-//        glm::mat4* ptr = SingleBPool.getModels();
-//        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        m_model->updateAnimation(m_animation_index, _abs_time,m_world);
     });
     SingleRender.getNObjects()->push_back(d);
 }

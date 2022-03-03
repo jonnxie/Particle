@@ -542,9 +542,10 @@ glm::mat4 vkglTF::Node::getMatrix() {
 	return m;
 }
 
-void vkglTF::Node::update() {
+void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
 		glm::mat4 m = getMatrix();
+        m = world_matrix * m;
 		if (skin) {
 			mesh->uniformBlock.matrix = m;
 			// Update join matrices
@@ -563,7 +564,7 @@ void vkglTF::Node::update() {
 	}
 
 	for (auto& child : children) {
-		child->update();
+		child->update(world_matrix);
 	}
 }
 
@@ -1928,7 +1929,7 @@ void vkglTF::Model::getSceneDimensions()
 	dimensions.radius = glm::distance(dimensions.min, dimensions.max) / 2.0f;
 }
 
-void vkglTF::Model::updateAnimation(uint32_t index, float time)
+void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix)
 {
 	if (index > static_cast<uint32_t>(animations.size()) - 1) {
 		std::cout << "No animation with index " << index << std::endl;
@@ -1982,7 +1983,7 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time)
 	}
 	if (updated) {
 		for (auto &node : nodes) {
-			node->update();
+			node->update(world_matrix);
 		}
 	}
 }
