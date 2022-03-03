@@ -102,7 +102,7 @@ GUI *GUI::getGUI() {
 
         ImGui::Begin("ViewPort");
 
-        ImGui::Image(SingleRender.new_swapchain_images[getSwapChainIndex()], {getViewPort().width,getViewPort().height});
+        ImGui::Image(SingleRender.m_swapchainImages[getSwapChainIndex()], {getViewPort().width, getViewPort().height});
 
         ImGui::End();
 

@@ -25,7 +25,9 @@
 #include "imgui.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
-
+#include "FrameBuffer.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+#include <memory>
 #ifdef NDEBUG
 static const bool enableValidationLayers = false;
 #else
@@ -88,6 +90,10 @@ namespace Shatter{
              * new render pass
              */
             void createRenderPass();
+
+            void createCaptureRenderPass();
+
+            void createCaptureFramebuffers();
 
             void createFramebuffers();
 
@@ -165,8 +171,7 @@ namespace Shatter{
             VkCommandBuffer beginSingleTimeCommands() ;
             void endSingleTimeCommands(VkCommandBuffer commandBuffer) ;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
-            [[nodiscard]] VkRenderPass getRenderPass() const {return renderPass;};
-            [[nodiscard]] VkRenderPass getNewRenderPass() const {return newRenderPass;};
+            [[nodiscard]] VkRenderPass getNewRenderPass() const {return m_renderPass;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return swapchain_extent;};
             void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                         VkDescriptorSet* set);
@@ -231,31 +236,29 @@ namespace Shatter{
             VkFormat swapchain_image_format;
             std::vector<VkImage> swapchain_images;
             VkExtent2D swapchain_extent{};
-//            std::vector<VkImageView> swapChainImageviews;
-//            std::vector<VkFramebuffer> swapChainFramebuffers;
-
-            VkRenderPass renderPass{};
 
             FrameBufferAttachment* positionAttachment{nullptr};
             FrameBufferAttachment* normalAttachment{nullptr};
             FrameBufferAttachment* albedoAttachment{nullptr};
             FrameBufferAttachment* depthAttachment{nullptr};
 
-            VkRenderPass newRenderPass = VK_NULL_HANDLE;
-            std::vector<VkImage> new_swapchain_images;
-            std::vector<VkImageView> new_swapChainImageviews;
-            std::vector<VkFramebuffer> new_swapChainFramebuffers;
-            std::vector<VkCommandBuffer> g_buffers;
+            VkRenderPass m_renderPass = VK_NULL_HANDLE;
+            std::vector<VkImage> m_swapchainImages;
+            std::vector<VkImageView> m_swapChainImageviews;
+            std::vector<VkFramebuffer> m_swapChainFramebuffers;
             std::vector<VkCommandBuffer> composite_buffers;
+            VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
+            VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
+            std::vector<std::unique_ptr<FrameBuffer>> m_frameBuffers{};
 
             VkCommandPool graphic_commandPool{};
             VkCommandPool compute_commandPool{};
             VkCommandPool transfer_commandPool{};
 
-            VkFormat depthFormat;
-            VkImage depthImage{};
-            VkDeviceMemory depthImageMemory{};
-            VkImageView depthImageView{};
+            VkFormat m_depthFormat;
+            VkImage m_depthImage{};
+            VkDeviceMemory m_depthImageMemory{};
+            VkImageView m_depthImageView{};
 
             VkDescriptorPool descriptorPool{};
 
@@ -270,12 +273,6 @@ namespace Shatter{
             bool normalChanged = false;
             bool transChanged = false;
             bool windowStill = true;
-            std::vector<VkCommandBuffer> pre_offscreen_buffers;
-            std::vector<VkCommandBuffer> pre_shadow_buffers;
-            std::vector<VkCommandBuffer> pre_buffers;
-            std::vector<VkCommandBuffer> pre_g_buffers{};
-            std::vector<VkCommandBuffer> pre_n_buffers{};
-            std::vector<VkCommandBuffer> pre_trans_buffers{};
             std::vector<VkCommandBuffer> pre_compute_buffers;
 
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{};
@@ -283,8 +280,6 @@ namespace Shatter{
             std::vector<std::vector<VkCommandBuffer>> pre_g_buffer{};
             std::vector<std::vector<VkCommandBuffer>> pre_norm_buffer{};
             std::vector<std::vector<VkCommandBuffer>> pre_trans_buffer{};
-
-            std::vector<std::vector<VkCommandBuffer>> pre_compute_buffer{};
 
             VkSemaphore imageAvailableSemaphore{};
             VkSemaphore renderFinishedSemaphore{};

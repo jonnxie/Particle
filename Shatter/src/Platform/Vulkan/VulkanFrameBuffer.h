@@ -21,15 +21,14 @@ struct VkAttachment{
 class VulkanFrameBuffer : public FrameBuffer{
 public:
     explicit VulkanFrameBuffer(FrameBufferSpecification _spec);
-    ~VulkanFrameBuffer() override {
-        release();
-    };
+    ~VulkanFrameBuffer() override = default;
     void init();
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
 public:
     VkFramebuffer                   m_frame_buffer{};
     std::vector<VkAttachment>       m_attachments{};
+    bool                            m_released = false;
 };
 
 

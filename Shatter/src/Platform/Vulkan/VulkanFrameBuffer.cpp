@@ -110,6 +110,7 @@ void VulkanFrameBuffer::release() {
     }
 
     vkDestroyFramebuffer(device, m_frame_buffer, nullptr);
+    m_released = true;
 }
 
 VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec)
