@@ -6,8 +6,11 @@
 #include "object.h"
 #include "dobject.h"
 #include "gobject.h"
+#include BufferCatalog
 #include "Engine/pool/mpool.h"
 #include "Engine/pool/modelsetpool.h"
+#include SetPoolCatalog
+#include DeviceCatalog
 
 Object::~Object(){
     auto& model_pool = ModelSetPool::getPool();
@@ -56,5 +59,23 @@ void Object::construct() {
 
 void Object::init() {
     construct();
+}
+
+Object::Object() {
+    m_capture_id = mallocCaptureId();
+    SingleBPool.createUniformBuffer(tool::combine("Capture",m_capture_id), 4);
+    auto buffer = SingleBPool.getBuffer(tool::combine("Capture",m_capture_id),Buffer_Type::Uniform_Buffer);
+    buffer->map();
+    memcpy(buffer->mapped, &m_capture_id, 4);
+    buffer->unmap();
+    SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &m_capture_set);
+
+    VkDescriptorBufferInfo descriptorBufferInfos{buffer->Get_Buffer(), 0, 4};
+    VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet(m_capture_set,
+                                                                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                                        0,
+                                                                        &descriptorBufferInfos);
+
+    vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
 }
 

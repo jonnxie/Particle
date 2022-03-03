@@ -190,7 +190,6 @@ int main() {
     /*
      * Plane
      */
-
     auto plane = std::make_unique<Plane>(dvec3{0,0,1},dvec3{5,5,5});
     plane->draw();
 

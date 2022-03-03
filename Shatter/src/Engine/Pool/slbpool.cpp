@@ -192,6 +192,13 @@ void SlbPool::init(){
                         0)
         };
 
+        m_map["CaptureVal"] = std::vector<VkDescriptorSetLayoutBinding>{
+                tool::descriptorSetLayoutBinding(
+                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        0)
+        };
+
     }
 
     for(auto &i:m_map){

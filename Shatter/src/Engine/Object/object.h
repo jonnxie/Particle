@@ -10,10 +10,19 @@
 #include "aabb.h"
 #include "Engine/Item/shatter_macro.h"
 
+static int initCaptureIdVal = 0;
+static std::mutex captureIdLock;
+
+static int mallocCaptureId()
+{
+    std::lock_guard<std::mutex> lockGuard(captureIdLock);
+    return initCaptureIdVal++;
+}
+
 
 class Object {
 public:
-    Object() = default;
+    Object();
     ~Object();
     DefineUnCopy(Object);
 public:
@@ -38,6 +47,8 @@ protected:
     glm::mat4   m_scale{};
     glm::mat4   m_rotate{};
     glm::mat4   m_translation{};
+    uint32_t    m_capture_id{};
+    VkDescriptorSet m_capture_set = VK_NULL_HANDLE;
 };
 
 
