@@ -47,20 +47,21 @@ void ABasic::constructD()
 {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int modelIndex = ModelSetPool::getPool().malloc();
+//    int modelIndex = ModelSetPool::getPool().malloc();
 
-    (*dpool)[d]->m_model_index = modelIndex;
+//    (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->m_newDraw = [&,modelIndex](VkCommandBuffer _cb){
+    (*dpool)[d]->m_newDraw = [&](VkCommandBuffer _cb){
         VkViewport tmp = getViewPort();
         vkCmdSetViewport(_cb,0,1,&tmp);
 
         VkRect2D scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
 
-        auto set_pool = MPool<VkDescriptorSet>::getPool();
-        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
+//        auto set_pool = MPool<VkDescriptorSet>::getPool();
+//        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
+        std::vector<VkDescriptorSet> sets{};
         for(auto & s: m_sets)
         {
             sets.emplace_back(SingleSetPool[s]);
@@ -68,7 +69,7 @@ void ABasic::constructD()
         vkCmdBindDescriptorSets(_cb,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 PPool::getPool()[m_pipeline]->getPipelineLayout(),
-                                0,
+                                1,
                                 sets.size(),
                                 sets.data(),
                                 0,
@@ -76,13 +77,13 @@ void ABasic::constructD()
 
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
-        m_model->draw(_cb);
+        m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
     };
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,modelIndex,d](float _abs_time){
+    TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,d](float _abs_time){
         m_model->updateAnimation(m_animation_index, _abs_time);
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
     SingleRender.getNObjects()->push_back(d);
 }

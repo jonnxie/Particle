@@ -1618,7 +1618,6 @@ void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue t
 		&indices.memory));
 
 	// Copy from staging buffers
-//	VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     VkCommandBuffer copyCmd  = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
 
 	VkBufferCopy copyRegion = {};
@@ -1630,7 +1629,6 @@ void vkglTF::Model::loadFromFile(std::string filename, Device *device, VkQueue t
 	vkCmdCopyBuffer(copyCmd, indexStaging.buffer, indices.buffer, 1, &copyRegion);
 
     Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
-//    device->flushCommandBuffer(copyCmd, transferQueue, true);
 
 	vkDestroyBuffer(device->logicalDevice, vertexStaging.buffer, nullptr);
 	vkFreeMemory(device->logicalDevice, vertexStaging.memory, nullptr);
@@ -1867,6 +1865,17 @@ void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t
 				if (renderFlags & RenderFlags::BindImages) {
 					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
 				}
+                if(VK_NULL_HANDLE != pipelineLayout)
+                {
+                    vkCmdBindDescriptorSets(commandBuffer,
+                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                            pipelineLayout,
+                                            0,
+                                            1,
+                                            &node->mesh->uniformBuffer.descriptorSet,
+                                            0,
+                                            nullptr);
+                }
 				vkCmdDrawIndexed(commandBuffer, primitive->indexCount, 1, primitive->firstIndex, 0, 0);
 			}
 		}
