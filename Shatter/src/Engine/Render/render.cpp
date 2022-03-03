@@ -523,8 +523,6 @@ namespace Shatter::render{
                     normalAttachment->view,
                     albedoAttachment->view,
                     depthAttachment->view,
-//                    opaqueAttachment->view,
-//                    transparencyAttachment->view,
             };
 
             VkFramebufferCreateInfo framebufferInfo = {};
