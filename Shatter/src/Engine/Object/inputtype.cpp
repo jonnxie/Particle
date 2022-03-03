@@ -82,6 +82,19 @@ VkVertexInputBindingDescription getBindingDescription(Input_Type _type){
             bindingDescription = *(ptr->pVertexBindingDescriptions);
             break;
         }
+        case Input_Type::GLTF:{
+            auto ptr = vkglTF::Vertex::getPipelineVertexInputState({
+                                                                           vkglTF::VertexComponent::Position,
+                                                                           vkglTF::VertexComponent::Normal,
+                                                                           vkglTF::VertexComponent::UV,
+                                                                           vkglTF::VertexComponent::Color,
+                                                                           vkglTF::VertexComponent::Joint0,
+                                                                           vkglTF::VertexComponent::Weight0,
+                                                                           vkglTF::VertexComponent::Tangent
+                                                                   });
+            bindingDescription = *(ptr->pVertexBindingDescriptions);
+            break;
+        }
         case Input_Type::NONE:{
             break;
         }
@@ -166,6 +179,23 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions(Input_Ty
         case Input_Type::Building:
         case Input_Type::TransparentGlass:{
             auto ptr = vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Color, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV});
+            attributeDescriptions.resize(ptr->vertexAttributeDescriptionCount);
+            for(size_t index = 0; index < ptr->vertexAttributeDescriptionCount; index++)
+            {
+                attributeDescriptions[index] = ptr->pVertexAttributeDescriptions[index];
+            }
+            break;
+        }
+        case Input_Type::GLTF:{
+            auto ptr = vkglTF::Vertex::getPipelineVertexInputState({
+                                                                           vkglTF::VertexComponent::Position,
+                                                                           vkglTF::VertexComponent::Normal,
+                                                                           vkglTF::VertexComponent::UV,
+                                                                           vkglTF::VertexComponent::Color,
+                                                                           vkglTF::VertexComponent::Joint0,
+                                                                           vkglTF::VertexComponent::Weight0,
+                                                                           vkglTF::VertexComponent::Tangent
+            });
             attributeDescriptions.resize(ptr->vertexAttributeDescriptionCount);
             for(size_t index = 0; index < ptr->vertexAttributeDescriptionCount; index++)
             {

@@ -27,6 +27,7 @@
 #include "Engine/Base/PBRBasic.h"
 #include "Engine/Base/basic.h"
 #include "Engine/Base/tbasic.h"
+#include "Engine/Base/abasic.h"
 #include "Engine/Base/gcoor.h"
 #include "Engine/Base/lines.h"
 #include "Engine/Base/tris.h"
@@ -35,7 +36,7 @@
 
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
-#include "Engine/Animation/animation.h"
+//#include "Engine/Animation/animation.h"
 #include "Engine/Event/delayevent.h"
 
 #include "Engine/Planets/Planet.h"
@@ -260,12 +261,20 @@ int main() {
                                      tool::combineTexture("Skybox_front5.png"),
                                      tool::combineTexture("Skybox_back6.png")};
     auto skybox = new Skybox(sky_vec);
-    auto a = new animation::Animation(tool::combineModel("ninja.ms3d"),
-                                      glm::vec3(-10.0f,-10.0f,0.0f),
-                                      glm::vec3(1.0f,0.0f,0.0f),
-                                      half_pai,
-                                      glm::vec3(0.25f),
-                                      0);
+//    auto a = new animation::Animation(tool::combineModel("ninja.ms3d"),
+//                                      glm::vec3(-10.0f,-10.0f,0.0f),
+//                                      glm::vec3(1.0f,0.0f,0.0f),
+//                                      half_pai,
+//                                      glm::vec3(0.25f),
+//                                      0);
+    auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
+                             glm::vec3(0.0f),
+                             glm::vec3(1.0f,0.0f,0.0f),
+                             -half_pai,
+                             glm::vec3(1.0f),
+                             0,
+                             "ABasic");
+
     auto* build = new Basic(std::string(ModelFilePath) + std::string("samplebuilding.gltf"),
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
@@ -298,9 +307,10 @@ int main() {
         delete skybox;
         SingleOffScreen.release();
         SingleCascade.release();
+        delete abasic;
         delete build;
         delete glass;
-        delete a;
+//        delete a;
         delete planet;
         Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();

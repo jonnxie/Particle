@@ -52,7 +52,7 @@ void ABasic::constructD()
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->m_gGraphics = [&,modelIndex](VkCommandBuffer _cb){
+    (*dpool)[d]->m_newDraw = [&,modelIndex](VkCommandBuffer _cb){
         VkViewport tmp = getViewPort();
         vkCmdSetViewport(_cb,0,1,&tmp);
 
@@ -79,10 +79,10 @@ void ABasic::constructD()
         m_model->draw(_cb);
     };
     insertDObject(d);
-        TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,modelIndex,d](float _abs_time){
-            m_model->updateAnimation(m_animation_index, _abs_time);
-            glm::mat4* ptr = SingleBPool.getModels();
-            memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
-        });
+    TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,modelIndex,d](float _abs_time){
+        m_model->updateAnimation(m_animation_index, _abs_time);
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
+    });
     SingleRender.getNObjects()->push_back(d);
 }

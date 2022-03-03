@@ -22,8 +22,8 @@ public:
                    float _angle,
                    glm::vec3 _scale,
                    int _id,
-                   std::string  _pipeline = "Build",
-                   std::vector<std::string>  _sets = {"Camera"});
+                   std::string  _pipeline = "ABasic",
+                   std::vector<std::string>  _sets = {"Camera", "Planet"});
 
     DefineUnCopy(ABasic);
     ~ABasic(){

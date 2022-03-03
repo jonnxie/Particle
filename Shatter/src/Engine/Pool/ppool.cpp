@@ -169,6 +169,20 @@ void PPool::init() {
                  SubpassTransparency
         );
 
+        createGP("ABasic",
+                 std::vector<Input_Type>{Input_Type::GLTF},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("abasic_vs"),
+                                                              ShaderPool::getPool().Get("abasic_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 std::vector<Sl_id> {"Default","Camera", "Planet"},
+                 RenderPassType::Default,
+                 SubpassTransparency
+        );
+
         createGP("Polyline",
                  std::vector<Input_Type>{Input_Type::Point3dColor},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("polyline_vs"),
