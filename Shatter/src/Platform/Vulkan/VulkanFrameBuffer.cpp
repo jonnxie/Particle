@@ -31,7 +31,7 @@ void VulkanFrameBuffer::init() {
         image.extent.depth = 1;
         image.mipLevels = 1;
         image.arrayLayers = 1;
-        image.samples = VkSampleCountFlagBits(1 << m_spec.Samples);
+        image.samples = VkSampleCountFlagBits(1 << (m_spec.Samples - 1));
         image.tiling = VK_IMAGE_TILING_OPTIMAL;
         image.usage = m_spec.formats[index].usage | VK_IMAGE_USAGE_SAMPLED_BIT;
 
