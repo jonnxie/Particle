@@ -1936,6 +1936,8 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time)
 	}
 	Animation &animation = animations[index];
 
+    int times = time / animation.end;
+    float local_time = time - float(times) * animation.end;
 	bool updated = false;
 	for (auto& channel : animation.channels) {
 		vkglTF::AnimationSampler &sampler = animation.samplers[channel.samplerIndex];
@@ -1944,8 +1946,8 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time)
 		}
 
 		for (auto i = 0; i < sampler.inputs.size() - 1; i++) {
-			if ((time >= sampler.inputs[i]) && (time <= sampler.inputs[i + 1])) {
-				float u = std::max(0.0f, time - sampler.inputs[i]) / (sampler.inputs[i + 1] - sampler.inputs[i]);
+			if ((local_time >= sampler.inputs[i]) && (local_time <= sampler.inputs[i + 1])) {
+				float u = std::max(0.0f, local_time - sampler.inputs[i]) / (sampler.inputs[i + 1] - sampler.inputs[i]);
 				if (u <= 1.0f) {
 					switch (channel.path) {
 					case vkglTF::AnimationChannel::PathType::TRANSLATION: {
