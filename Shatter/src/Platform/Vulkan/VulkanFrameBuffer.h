@@ -21,7 +21,9 @@ struct VkAttachment{
 class VulkanFrameBuffer : public FrameBuffer{
 public:
     explicit VulkanFrameBuffer(FrameBufferSpecification _spec);
-    ~VulkanFrameBuffer() override = default;
+    ~VulkanFrameBuffer() override {
+        release();
+    };
     void init();
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
