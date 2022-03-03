@@ -249,7 +249,7 @@ namespace Shatter{
             std::vector<VkCommandBuffer> composite_buffers;
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            std::vector<std::unique_ptr<FrameBuffer>> m_frameBuffers{};
+            FrameBuffer* m_frameBuffers{nullptr};
 
             VkCommandPool graphic_commandPool{};
             VkCommandPool compute_commandPool{};

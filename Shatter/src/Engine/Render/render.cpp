@@ -24,8 +24,8 @@
 #include "Engine/Base/GUI.h"
 #include "Engine/Event/taskpool.h"
 #include "Engine/Object/offscreen.h"
-#include "Engine/pool/setpool.h"
-#include "Engine/pool/ppool.h"
+#include "Engine/Pool/setpool.h"
+#include "Engine/Pool/ppool.h"
 #include "pipeline.h"
 
 namespace Shatter::render{
@@ -128,10 +128,14 @@ namespace Shatter::render{
             vkDestroyRenderPass(device, m_renderPass, nullptr);
         }
 
+#ifdef SHATTER_GPU_CAPTURE
         if(m_captureRenderPass != VK_NULL_HANDLE)
         {
             vkDestroyRenderPass(device, m_captureRenderPass, nullptr);
         }
+        m_frameBuffers->release();
+        delete m_frameBuffers;
+#endif
 
         vkDestroySwapchainKHR(device, swapchain, nullptr);
 
@@ -209,8 +213,10 @@ namespace Shatter::render{
         createLogicalDevice();
         createSwapChain();
         createRenderPass();
+#ifdef SHATTER_GPU_CAPTURE
         createCaptureRenderPass();
         createCaptureFramebuffers();
+#endif
         createGraphicsCommandPool();
         createComputeCommandPool();
         createTransferCommandPool();
@@ -500,7 +506,16 @@ namespace Shatter::render{
 
     void ShatterRender::createCaptureFramebuffers()
     {
+        FrameBufferSpecification spec{};
+        spec.Width = getViewPort().width;
+        spec.Height = getViewPort().height;
+        spec.formats = {{m_captureFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT},
+                        {m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}};
+        spec.Samples = 1;
+        spec.SwapChainTarget = false;
+        spec.RenderPass = m_captureRenderPass;
 
+        m_frameBuffers = FrameBuffer::createFramebuffer(spec);
     }
 
     void ShatterRender::createFramebuffers(){
