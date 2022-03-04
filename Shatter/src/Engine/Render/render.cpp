@@ -1836,6 +1836,8 @@ namespace Shatter::render{
                 computeSubmitInfo.waitSemaphoreCount = 1;
                 computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
                 computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
+            }else{
+                VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
             }
 
             uint32_t imageIndex;

@@ -105,10 +105,10 @@ void Skybox::constructD(){
                          0,
                          "Skybox",
                          s_vec);
-    TaskPool::pushUpdateTask("Skybox",[&,mc_index,d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + mc_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
-    });
+//    TaskPool::pushUpdateTask("Skybox",[&,mc_index,d](float _abs_time){
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + mc_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+//    });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);
     insertDObject(d);
