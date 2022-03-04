@@ -23,6 +23,7 @@
 #include "Engine/App/shatterappinclude.h"
 #include "Engine/Item/shatter_item.h"
 #include "imgui.h"
+#include "imgui_impl_vulkan.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
 #include "FrameBuffer.h"
