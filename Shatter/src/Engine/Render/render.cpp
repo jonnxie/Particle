@@ -27,6 +27,7 @@
 #include "Engine/Pool/setpool.h"
 #include "Engine/Pool/ppool.h"
 #include "pipeline.h"
+#include "Engine/Object/aabb.h"
 
 namespace Shatter::render{
     bool render_created = false;
@@ -1284,7 +1285,36 @@ namespace Shatter::render{
         TaskPool::captureBarrierRequire(m_capture_buffer);
         vkCmdBeginRenderPass(m_capture_buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
+        std::vector<glm::vec3> aabbBuffer{};
 
+        vkCmdBindPipeline(m_capture_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABB"])());
+        std::array<VkDescriptorSet, 3> set_array{};
+        set_array[1] = SingleSetPool["Camera"];
+        auto singlePool = SingleAABBPool;
+        ShatterBuffer* buffer{nullptr};
+        VkDeviceSize offsets = 0;
+        auto set_pool = MPool<VkDescriptorSet>::getPool();
+        int model_index;
+        for(auto& [captureId, Id]: aabb_map)
+        {
+            genVertexBufferFromAABB(*(*singlePool)[Id], aabbBuffer);
+            model_index = (*singlePool)[Id]->m_model_index;
+            SingleBPool.createVertexBuffer(tool::combine("AABBBox", Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
+            buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
+            vkCmdBindVertexBuffers(m_capture_buffer, 0, 1, &buffer->m_buffer, &offsets);
+            set_array[0] = *(*set_pool)[model_index];
+            set_array[2] = (*singlePool)[Id]->m_capture_set;
+            vkCmdBindDescriptorSets(m_capture_buffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    (*SinglePPool["AABB"]).getPipelineLayout(),
+                                    0,
+                                    3,
+                                    set_array.data(),
+                                    0,
+                                    nullptr
+                                    );
+            vkCmdDraw(m_capture_buffer , aabbBuffer.size(), 1, 0, 0);
+        }
 
         vkCmdEndRenderPass(m_capture_buffer);
 
@@ -2289,6 +2319,11 @@ namespace Shatter::render{
     std::vector<int>* ShatterRender::getOffDObjects()
     {
         return &offdrawid_vec;
+    }
+
+    std::unordered_map<int, int>* ShatterRender::getAABBMap()
+    {
+        return &aabb_map;
     }
 
     [[maybe_unused]] void ShatterRender::addDObject(int _drawid) {

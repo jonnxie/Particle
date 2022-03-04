@@ -214,13 +214,15 @@ namespace Shatter{
             std::vector<int>* getTObjects();
             std::vector<int>* getNObjects();
             std::vector<int>* getOffDObjects();
+            std::unordered_map<int, int>* getAABBMap();
         public:
             GUI *imGui = nullptr;
             std::vector<int> offdrawid_vec;
             std::vector<int> drawid_vec;
             std::vector<int> transparency_vec;
-            std::vector<int> normal_vec;//Dont output g attachment
+            std::vector<int> normal_vec;
             std::vector<int> computeid_vec;
+            std::unordered_map<int, int> aabb_map;//capture id , object id
             std::vector<buffer::ShatterTexture*> tex_vec;
             GLFWwindow *window{};
 

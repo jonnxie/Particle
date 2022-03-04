@@ -54,6 +54,8 @@ public:
 
     glm::vec3 m_min_edgy;
     glm::vec3 m_max_edgy;
+    uint32_t m_model_index;
+    VkDescriptorSet m_capture_set;
 };
 
 
