@@ -937,7 +937,6 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_captureRenderPass));
     }
 
-
     void ShatterRender::createPrimaryCommandBuffers(){
         VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
         commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -953,6 +952,16 @@ namespace Shatter::render{
         commandBufferAllocateInfo.commandBufferCount = 1;
 
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &compute_buffer));
+    }
+
+    void ShatterRender::createCapturePrimaryCommandBuffer(){
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
+        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
+        commandBufferAllocateInfo.commandPool = graphic_commandPool;
+        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        commandBufferAllocateInfo.commandBufferCount = 1;
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_capture_buffer));
     }
 
     void ShatterRender::prepareMultipleThreadDate() {
@@ -1245,6 +1254,45 @@ namespace Shatter::render{
 
         VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
     }
+
+    void ShatterRender::createCaptureCommandBuffers(){
+        VkCommandBufferBeginInfo cmdBufInfo{};
+        {
+            cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cmdBufInfo.pNext = VK_NULL_HANDLE;
+            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
+        }
+        std::array<VkClearValue,2> clearCaptureValue{};
+        clearValues[0].color = { { uint32_t(0) } };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        VkRenderPassBeginInfo renderPassBeginInfo{};
+        {
+            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+            renderPassBeginInfo.renderPass = m_captureRenderPass;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            renderPassBeginInfo.renderArea.offset = {0, 0};
+            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.clearValueCount = 2;
+            renderPassBeginInfo.pClearValues = clearCaptureValue.data();
+        }
+
+        VK_CHECK_RESULT(vkBeginCommandBuffer(m_capture_buffer, &cmdBufInfo));
+
+        TaskPool::captureBarrierRequire(m_capture_buffer);
+        vkCmdBeginRenderPass(m_capture_buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+
+
+        vkCmdEndRenderPass(m_capture_buffer);
+
+        TaskPool::captureBarrierRelease(m_capture_buffer);
+
+        VK_CHECK_RESULT(vkEndCommandBuffer(m_capture_buffer));
+    }
+
 
     void ShatterRender::createGraphicsCommandBuffersMultiple(){
         // Contains the list of secondary command buffers to be submitted

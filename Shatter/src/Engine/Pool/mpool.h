@@ -20,6 +20,7 @@ class GObject;
 class DObject;
 class CObject;
 struct ThreadObject;
+struct AABB;
 
 template<class Object_Type>
 class MPool {
@@ -109,6 +110,10 @@ public:
         {
             delete m_object_pool;
         }
+        else if constexpr(std::is_same_v<Object_Type,AABB>)
+        {
+            delete m_aabb_pool;
+        }
     }
 
     Object_Type* operator[](int _index) {
@@ -148,45 +153,6 @@ public:
         }
     }
 
-    static MPool<Object_Type>* getNPool(){
-        if constexpr (std::is_same_v<Object_Type,Line3d>)
-        {
-            static MPool<Line3d> val(100);
-            return &val;
-        }
-        else if constexpr (std::is_same_v<Object_Type,Plane3d>)
-        {
-            static MPool<Plane3d> val(100);
-            return val;
-        }
-        else if constexpr (std::is_same_v<Object_Type,DObject>)
-        {
-            static MPool<DObject> val(100);
-            return val;
-        }
-        else if constexpr (std::is_same_v<Object_Type,GObject>)
-        {
-            static MPool<GObject> val(100);
-            return val;
-        }
-        else if constexpr (std::is_same_v<Object_Type,VkDescriptorSet>)
-        {
-            static MPool<VkDescriptorSet> val(100);
-            return val;
-        }
-        else if constexpr(std::is_same_v<Object_Type,CObject>)
-        {
-            static MPool<CObject> val(100);
-            return val;
-        }
-        else if constexpr(std::is_same_v<Object_Type,ObjectBox>)
-        {
-            static MPool<ObjectBox> val(100);
-            return val;
-        }
-        return nullptr;
-    }
-
     static MPool<Object_Type>* getPool() {
         if constexpr (std::is_same_v<Object_Type,Line3d>)
         {
@@ -216,6 +182,10 @@ public:
         {
             return m_object_pool;
         }
+        else if constexpr(std::is_same_v<Object_Type,AABB>)
+        {
+            return m_aabb_pool;
+        }
         return nullptr;
     }
 
@@ -236,6 +206,7 @@ private:
     static MPool<VkDescriptorSet>* m_set_pool; // default set Pool used for model matrix
     static MPool<glm::mat4>* m_model_matrix_pool;
     static MPool<ObjectBox>* m_object_pool;
+    static MPool<AABB>* m_aabb_pool;
 //    ObjectBox
 };
 

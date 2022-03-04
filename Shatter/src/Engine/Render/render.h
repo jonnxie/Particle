@@ -91,9 +91,19 @@ namespace Shatter{
              */
             void createRenderPass();
 
+            VkCommandBuffer m_capture_buffer = VK_NULL_HANDLE;
+            VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
+            VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
+            FrameBuffer* m_frameBuffers{nullptr};
+            std::vector<VkCommandBuffer> pre_capture_buffers{};
+
             void createCaptureRenderPass();
 
             void createCaptureFramebuffers();
+
+            void createCapturePrimaryCommandBuffer();
+
+            void createCaptureCommandBuffers();
 
             void createFramebuffers();
 
@@ -247,9 +257,6 @@ namespace Shatter{
             std::vector<VkImageView> m_swapChainImageviews;
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
             std::vector<VkCommandBuffer> composite_buffers;
-            VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
-            VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            FrameBuffer* m_frameBuffers{nullptr};
 
             VkCommandPool graphic_commandPool{};
             VkCommandPool compute_commandPool{};

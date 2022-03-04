@@ -36,6 +36,14 @@ public:
     static void barrierRelease(VkCommandBuffer _cb);
     static void barrierReleaseMultiple(VkCommandBuffer _cb);
 
+    static void captureBarrierRequire(VkCommandBuffer _cb);
+    static void captureBarrierRequireMultiple(VkCommandBuffer _cb);
+    static void popCaptureBarrierRequireTask(const Task_id& _id);
+    static void captureBarrierRelease(VkCommandBuffer _cb);
+    static void captureBarrierReleaseMultiple(VkCommandBuffer _cb);
+    static void popCaptureBarrierReleaseTask(const Task_id& _id);
+
+
     static void computeBarrierRequire(VkCommandBuffer _cb);
     static void computeBarrierRequireMultiple(VkCommandBuffer _cb);
     static void computeBarrierRelease(VkCommandBuffer _cb);
@@ -44,6 +52,8 @@ public:
     static std::unordered_map<Task_id,std::function<void()>> m_tasks;
     static std::vector<std::function<void()>> m_pure_task;
     static std::unordered_map<Task_id,std::function<void(float)>> m_update_tasks;
+    static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_capture_barrier_require_tasks;
+    static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_capture_barrier_release_tasks;
     static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_barrier_require_tasks;
     static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_barrier_release_tasks;
     static std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> m_compute_barrier_require_tasks;

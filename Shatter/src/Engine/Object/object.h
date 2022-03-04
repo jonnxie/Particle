@@ -10,7 +10,7 @@
 #include "aabb.h"
 #include "Engine/Item/shatter_macro.h"
 
-static int initCaptureIdVal = 0;
+static int initCaptureIdVal = 1;
 static std::mutex captureIdLock;
 
 static int mallocCaptureId()
@@ -19,6 +19,10 @@ static int mallocCaptureId()
     return initCaptureIdVal++;
 }
 
+struct CaptureObject{
+    int model_index;
+    int aabb_box;
+};
 
 class Object {
 public:

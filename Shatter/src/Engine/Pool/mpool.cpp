@@ -10,6 +10,7 @@
 #include "Engine/Object/gobject.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/cobject.h"
+#include "Engine/Object/aabb.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
 
@@ -22,7 +23,7 @@ template<>MPool<CObject>* MPool<CObject>::m_cobject_pool = new MPool<CObject>(10
 template<>MPool<VkDescriptorSet>* MPool<VkDescriptorSet>::m_set_pool = new MPool<VkDescriptorSet>(defaultModelCount);
 template<>MPool<glm::mat4>* MPool<glm::mat4>::m_model_matrix_pool = new MPool<glm::mat4>(100);
 template<>MPool<ObjectBox>* MPool<ObjectBox>::m_object_pool = new MPool<ObjectBox>(100);
-
+template<>MPool<AABB>* MPool<AABB>::m_aabb_pool = new MPool<AABB>(100);
 
 template<class Object_Type>
 void MPool<Object_Type>::initMPool() {

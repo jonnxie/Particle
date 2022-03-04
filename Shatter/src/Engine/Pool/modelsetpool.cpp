@@ -30,9 +30,6 @@ void ModelSetPool::init()
 {
     VkBuffer buffer = (*BPool::getPool().getBuffer("Model", Buffer_Type::Uniform_Buffer))();
 
-//    VkDescriptorBufferInfo model_buffer[m_model_count];
-//    VkWriteDescriptorSet write_set[m_model_count];
-
     std::vector<VkDescriptorBufferInfo> model_buffer(m_model_count);
     std::vector<VkWriteDescriptorSet> write_set(m_model_count);
 
@@ -72,14 +69,13 @@ void ModelSetPool::reallocate()
     set_pool->reallocated();
     BPool::getPool().reallocateModel();
     SetPool::getPool().reallocateDefaultDescriptorSets();
+    update();
 }
 
 void ModelSetPool::update()
 {
     VkBuffer buffer = (*BPool::getPool().getBuffer("Model", Buffer_Type::Uniform_Buffer))();
 
-//    VkDescriptorBufferInfo model_buffer[m_model_count];
-//    VkWriteDescriptorSet write_set[m_model_count];
     std::vector<VkDescriptorBufferInfo> model_buffer(m_model_count);
     std::vector<VkWriteDescriptorSet> write_set(m_model_count);
 

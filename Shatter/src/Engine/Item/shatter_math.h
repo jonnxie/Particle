@@ -42,6 +42,10 @@ void invTransformAndRotate(const glm::mat4* _mat,const glm::vec3* _in,glm::vec3*
  */
 void genLocalCoordinateFromZ(const glm::vec3& _f, glm::vec3& _x, glm::vec3& _y, glm::vec3& _z);
 
+struct AABB;
+
+void genVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer);
+
 void decomposeTransform(const glm::mat4& _transform,glm::vec3& _transition,glm::vec3& _rotation,glm::vec3& _scale);
 
 #ifdef SHATTER_SIMD

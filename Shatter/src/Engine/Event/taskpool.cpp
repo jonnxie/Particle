@@ -9,6 +9,8 @@
 std::unordered_map<Task_id,std::function<void()>> TaskPool::m_tasks = std::unordered_map<Task_id,std::function<void()>>();
 std::vector<std::function<void()>> TaskPool::m_pure_task = std::vector<std::function<void()>>();
 std::unordered_map<Task_id,std::function<void(float)>> TaskPool::m_update_tasks = std::unordered_map<Task_id,std::function<void(float)>>();
+std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_capture_barrier_require_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
+std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_capture_barrier_release_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
 std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_barrier_require_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
 std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_barrier_release_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
 std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>> TaskPool::m_compute_barrier_require_tasks = std::unordered_map<Task_id,std::function<void(VkCommandBuffer)>>();
@@ -24,6 +26,8 @@ static std::mutex m_update_lock;
 static std::mutex m_barrier_lock;
 
 static std::mutex m_compute_barrier_lock;
+
+static std::mutex m_capture_barrier_lock;
 
 void TaskPool::pushTask(const Task_id& _id,std::function<void()> _task)
 {
@@ -186,6 +190,61 @@ void TaskPool::barrierReleaseMultiple(VkCommandBuffer _cb)
         ThreadPool::pool()->addTask([=]{func(_cb);});
     }
     ThreadPool::pool()->wait();
+}
+
+void TaskPool::captureBarrierRequire(VkCommandBuffer _cb) {
+    for(auto& [id,task] : m_capture_barrier_require_tasks)
+    {
+        task(_cb);
+    }
+}
+
+void TaskPool::captureBarrierRequireMultiple(VkCommandBuffer _cb) {
+    for(auto& [id,task] : m_capture_barrier_require_tasks)
+    {
+        std::function<void(VkCommandBuffer)> func = task;
+        ThreadPool::pool()->addTask([=]{func(_cb);});
+    }
+    ThreadPool::pool()->wait();
+}
+
+void TaskPool::popCaptureBarrierRequireTask(const Task_id& _id){
+    std::lock_guard<std::mutex> guard_lock(m_update_lock);
+    if(m_capture_barrier_require_tasks.count(_id) == 0)
+    {
+        WARNING(task is not exist);
+    }else {
+        m_capture_barrier_require_tasks.erase(_id);
+    }
+}
+
+
+void TaskPool::captureBarrierRelease(VkCommandBuffer _cb)
+{
+    for(auto& [id,task] : m_capture_barrier_release_tasks)
+    {
+        task(_cb);
+    }
+}
+
+void TaskPool::captureBarrierReleaseMultiple(VkCommandBuffer _cb)
+{
+    for(auto& [id,task] : m_capture_barrier_release_tasks)
+    {
+        std::function<void(VkCommandBuffer)> func = task;
+        ThreadPool::pool()->addTask([=]{func(_cb);});
+    }
+    ThreadPool::pool()->wait();
+}
+
+void TaskPool::popCaptureBarrierReleaseTask(const Task_id& _id){
+    std::lock_guard<std::mutex> guard_lock(m_update_lock);
+    if(m_capture_barrier_release_tasks.count(_id) == 0)
+    {
+        WARNING(task is not exist);
+    }else {
+        m_capture_barrier_release_tasks.erase(_id);
+    }
 }
 
 void TaskPool::computeBarrierRequire(VkCommandBuffer _cb)
