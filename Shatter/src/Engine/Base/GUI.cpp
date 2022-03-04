@@ -102,6 +102,11 @@ GUI *GUI::getGUI() {
 
         ImGui::Begin("ViewPort");
 
+        auto index = getSwapChainIndex();
+        auto id = ImGui_ImplVulkan_AddTexture(SingleRender.m_swapChainSamplers[index],
+                                              SingleRender.m_swapChainImageviews[index],
+                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
         ImGui::Image(SingleRender.m_swapchainImages[getSwapChainIndex()], {getViewPort().width, getViewPort().height});
 
         ImGui::End();

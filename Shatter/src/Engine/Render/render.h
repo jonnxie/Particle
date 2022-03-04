@@ -257,6 +257,7 @@ namespace Shatter{
             VkRenderPass m_renderPass = VK_NULL_HANDLE;
             std::vector<VkImage> m_swapchainImages;
             std::vector<VkImageView> m_swapChainImageviews;
+            std::vector<VkSampler> m_swapChainSamplers;
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
             std::vector<VkCommandBuffer> composite_buffers;
 

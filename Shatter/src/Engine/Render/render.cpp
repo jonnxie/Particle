@@ -480,9 +480,13 @@ namespace Shatter::render{
             m_swapchainImages.resize(imageCount);
             vkGetSwapchainImagesKHR(device, swapchain, &imageCount, m_swapchainImages.data());
             m_swapChainImageviews.resize(swapchain_images.size());
+            m_swapChainSamplers.resize(swapchain_images.size());
+            VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
+
             for (size_t i = 0; i < m_swapchainImages.size(); i++) {
                 m_swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, m_swapchainImages[i], swapchain_image_format,
                                                                                     VK_IMAGE_ASPECT_COLOR_BIT);
+                vkCreateSampler(device, &samplerInfo, nullptr, &m_swapChainSamplers[i]);
             }
         }
         /*
@@ -1829,8 +1833,9 @@ namespace Shatter::render{
 //            {
 //                vkDestroyRenderPass(device, m_renderPass, nullptr);
 //            }
-//
-
+            for (auto & s : m_swapChainSamplers){
+                vkDestroySampler(device, s, nullptr);
+            }
 
             for (auto & swapChainImageview : m_swapChainImageviews) {
                 vkDestroyImageView(device, swapChainImageview, nullptr);
