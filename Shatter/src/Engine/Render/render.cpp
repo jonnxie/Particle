@@ -2341,41 +2341,29 @@ namespace Shatter::render{
 
     void ShatterRender::prepareImGui() {
         imGui = GUI::getGUI();
-//        struct ImGui_ImplVulkan_InitInfo
-//        {
-//            VkInstance                      Instance;
-//            VkPhysicalDevice                PhysicalDevice;
-//            VkDevice                        Device;
-//            uint32_t                        QueueFamily;
-//            VkQueue                         Queue;
-//            VkPipelineCache                 PipelineCache;
-//            VkDescriptorPool                DescriptorPool;
-//            uint32_t                        Subpass;
-//            uint32_t                        MinImageCount;          // >= 2
-//            uint32_t                        ImageCount;             // >= MinImageCount
-//            VkSampleCountFlagBits           MSAASamples;            // >= VK_SAMPLE_COUNT_1_BIT (0 -> default to VK_SAMPLE_COUNT_1_BIT)
-//            const VkAllocationCallbacks*    Allocator;
-//            void                            (*CheckVkResultFn)(VkResult err);
-//        };
-
-        ImGui_ImplVulkan_InitInfo initInfo{};
-        initInfo.Instance = instance;
-        initInfo.PhysicalDevice = physicalDevice;
-        initInfo.Device = device;
-        initInfo.QueueFamily = getIndices().graphicsFamily;
-        initInfo.Queue = graphics_queue;
-        initInfo.PipelineCache = VK_NULL_HANDLE;
-        initInfo.DescriptorPool = descriptorPool;
-        initInfo.Subpass = SubpassTransparency;
-        initInfo.MinImageCount =  min_image_count;
-        initInfo.ImageCount = m_swapchainImages.size();
-        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        initInfo.Allocator = nullptr;
-        initInfo.CheckVkResultFn = nullptr;
 
         imGui->init((float)swapchain_extent.width,(float)swapchain_extent.height);
         imGui->initResources(m_renderPass, graphics_queue, "../shaders/");
-        ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+
+        if(Config::getConfig("enableScreenGui"))
+        {
+            ImGui_ImplVulkan_InitInfo initInfo{};
+            initInfo.Instance = instance;
+            initInfo.PhysicalDevice = physicalDevice;
+            initInfo.Device = device;
+            initInfo.QueueFamily = getIndices().graphicsFamily;
+            initInfo.Queue = graphics_queue;
+            initInfo.PipelineCache = VK_NULL_HANDLE;
+            initInfo.DescriptorPool = descriptorPool;
+            initInfo.Subpass = SubpassTransparency;
+            initInfo.MinImageCount =  min_image_count;
+            initInfo.ImageCount = m_swapchainImages.size();
+            initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+            initInfo.Allocator = nullptr;
+            initInfo.CheckVkResultFn = nullptr;
+
+            ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+        }
     }
 
     void ShatterRender::updateUI() {
