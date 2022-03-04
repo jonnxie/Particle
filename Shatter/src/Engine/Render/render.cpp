@@ -221,12 +221,12 @@ namespace Shatter::render{
         createGraphicsCommandPool();
         createComputeCommandPool();
         createTransferCommandPool();
-        prepareImGui();
+        createDescriptorPool();
         createDepthResources();
         createFramebuffers();
+        prepareImGui();
         createPrimaryCommandBuffers();
         prepareMultipleThreadDate();
-        createDescriptorPool();
         createSemaphores();
     }
 
