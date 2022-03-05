@@ -102,9 +102,7 @@ namespace Shatter{
 
             void createCaptureFramebuffers();
 
-            void createCapturePrimaryCommandBuffer();
-
-            void createCaptureCommandBuffers();
+            void createCaptureCommandBuffers(VkCommandBuffer _cb);
 
             void createFramebuffers();
 

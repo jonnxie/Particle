@@ -961,15 +961,6 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &compute_buffer));
     }
 
-    void ShatterRender::createCapturePrimaryCommandBuffer(){
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
-        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
-        commandBufferAllocateInfo.commandPool = graphic_commandPool;
-        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        commandBufferAllocateInfo.commandBufferCount = 1;
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_capture_buffer));
-    }
 
     void ShatterRender::prepareMultipleThreadDate() {
         VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -1262,7 +1253,7 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
     }
 
-    void ShatterRender::createCaptureCommandBuffers(){
+    void ShatterRender::createCaptureCommandBuffers(VkCommandBuffer _cb){
         VkCommandBufferBeginInfo cmdBufInfo{};
         {
             cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1285,15 +1276,12 @@ namespace Shatter::render{
             renderPassBeginInfo.clearValueCount = 2;
             renderPassBeginInfo.pClearValues = clearCaptureValue.data();
         }
-
-        VK_CHECK_RESULT(vkBeginCommandBuffer(m_capture_buffer, &cmdBufInfo));
-
-        TaskPool::captureBarrierRequire(m_capture_buffer);
-        vkCmdBeginRenderPass(m_capture_buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+//        TaskPool::captureBarrierRequire(m_capture_buffer);
+        vkCmdBeginRenderPass(_cb, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         std::vector<glm::vec3> aabbBuffer{};
 
-        vkCmdBindPipeline(m_capture_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABB"])());
+        vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABB"])());
         std::array<VkDescriptorSet, 3> set_array{};
         set_array[1] = SingleSetPool["Camera"];
         auto singlePool = SingleAABBPool;
@@ -1307,10 +1295,10 @@ namespace Shatter::render{
             model_index = (*singlePool)[Id]->m_model_index;
             SingleBPool.createVertexBuffer(tool::combine("AABBBox", Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
             buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
-            vkCmdBindVertexBuffers(m_capture_buffer, 0, 1, &buffer->m_buffer, &offsets);
+            vkCmdBindVertexBuffers(_cb, 0, 1, &buffer->m_buffer, &offsets);
             set_array[0] = *(*set_pool)[model_index];
             set_array[2] = (*singlePool)[Id]->m_capture_set;
-            vkCmdBindDescriptorSets(m_capture_buffer,
+            vkCmdBindDescriptorSets(_cb,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     (*SinglePPool["AABB"]).getPipelineLayout(),
                                     0,
@@ -1319,14 +1307,12 @@ namespace Shatter::render{
                                     0,
                                     nullptr
                                     );
-            vkCmdDraw(m_capture_buffer , aabbBuffer.size(), 1, 0, 0);
+            vkCmdDraw(_cb , aabbBuffer.size(), 1, 0, 0);
         }
 
-        vkCmdEndRenderPass(m_capture_buffer);
+        vkCmdEndRenderPass(_cb);
 
-        TaskPool::captureBarrierRelease(m_capture_buffer);
-
-        VK_CHECK_RESULT(vkEndCommandBuffer(m_capture_buffer));
+//        TaskPool::captureBarrierRelease(m_capture_buffer);
     }
 
 
@@ -1363,7 +1349,7 @@ namespace Shatter::render{
                 imGui->updateBuffers();
             }
 
-            VK_CHECK_RESULT(vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo));
+            vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo);
 //            auto threadObjectPool = getThreadObjectPool();
             auto threadPool = ThreadPool::pool();
             // Inheritance info for the secondary command buffers
@@ -1377,7 +1363,6 @@ namespace Shatter::render{
                 inheritanceInfo.occlusionQueryEnable = false;
             }
 
-            TaskPool::barrierRequire(graphics_buffers[i]);
 
             #ifdef SHATTER_OFFSCREEN
                 createOffScreenBuffers(graphics_buffers[i], i);
@@ -1387,7 +1372,14 @@ namespace Shatter::render{
                 createShadowGraphicsBuffers(graphics_buffers[i], i);
             #endif
 
+            #ifdef SHATTER_GPU_CAPTURE
+//                createCaptureCommandBuffers(graphics_buffers[i]);
+            #endif
             auto dPool = SingleDPool;
+            /*
+             * Use barrier to changed offscreen and shadow image layout to shader resource
+             */
+            TaskPool::barrierRequire(graphics_buffers[i]);
 
             vkCmdBeginRenderPass(graphics_buffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
             int draw_index = 0;
@@ -1437,7 +1429,7 @@ namespace Shatter::render{
                 commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
                 commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-                VK_CHECK_RESULT(vkBeginCommandBuffer(composite_buffers[i], &commandBufferBeginInfo));
+                vkBeginCommandBuffer(composite_buffers[i], &commandBufferBeginInfo);
                 {
                     VkViewport tmp = getViewPort();
                     vkCmdSetViewport(composite_buffers[i],0,1,&tmp);
@@ -1453,7 +1445,7 @@ namespace Shatter::render{
                 vkCmdBindDescriptorSets(composite_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
                 vkCmdBindPipeline(composite_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
                 vkCmdDraw(composite_buffers[i], 3, 1, 0, 0);
-                VK_CHECK_RESULT(vkEndCommandBuffer(composite_buffers[i]));
+                vkEndCommandBuffer(composite_buffers[i]);
 
                 vkCmdExecuteCommands(graphics_buffers[i], 1, &composite_buffers[i]);
             }
@@ -1538,7 +1530,7 @@ namespace Shatter::render{
                     commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
                     commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-                    VK_CHECK_RESULT(vkBeginCommandBuffer(offscreen_buffers[i], &commandBufferBeginInfo));
+                    vkBeginCommandBuffer(offscreen_buffers[i], &commandBufferBeginInfo);
                     VkViewport tmp = getViewPort();
                     vkCmdSetViewport(offscreen_buffers[i],0,1,&tmp);
 
@@ -1548,7 +1540,7 @@ namespace Shatter::render{
                     vkCmdBindDescriptorSets(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipelineLayout(), 0, 1, &tmp_set, 0, nullptr);
                     vkCmdBindPipeline(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipeline());
                     vkCmdDraw(offscreen_buffers[i], 4, 1, 0, 0);
-                    VK_CHECK_RESULT(vkEndCommandBuffer(offscreen_buffers[i]));
+                    vkEndCommandBuffer(offscreen_buffers[i]);
                 }
             },Config::getConfig("enableOffscreenDebug"));
 
@@ -1561,11 +1553,11 @@ namespace Shatter::render{
                     commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
                     commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-                    VK_CHECK_RESULT(vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo));
+                    vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo);
 
                     imGui->drawFrame(gui_buffer);
 
-                    VK_CHECK_RESULT(vkEndCommandBuffer(gui_buffer));
+                    vkEndCommandBuffer(gui_buffer);
                 }
             },Config::getConfig("enableScreenGui"));
 
@@ -1589,9 +1581,17 @@ namespace Shatter::render{
 
             vkCmdEndRenderPass(graphics_buffers[i]);
 
+            /*
+             * create new render pass to render imgui docking image
+             */
+//            if(Config::getConfig("enableDockSpace"))
+//            {
+//                commandBuffers.push_back(gui_buffer);
+//            }
+
             TaskPool::barrierRelease(graphics_buffers[i]);
 
-            VK_CHECK_RESULT(vkEndCommandBuffer(graphics_buffers[i]));
+            vkEndCommandBuffer(graphics_buffers[i]);
         }
     }
 
@@ -1628,7 +1628,7 @@ namespace Shatter::render{
             imGui->updateBuffers();
         }
 
-        VK_CHECK_RESULT(vkBeginCommandBuffer(graphics_buffers[_index], &cmdBufInfo));
+        vkBeginCommandBuffer(graphics_buffers[_index], &cmdBufInfo);
         // Inheritance info for the secondary command buffers
         static VkCommandBufferInheritanceInfo inheritanceInfo
         {
@@ -1695,11 +1695,11 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-            VK_CHECK_RESULT(vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo));
+            vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo);
 
             imGui->drawFrame(gui_buffer);
 
-            VK_CHECK_RESULT(vkEndCommandBuffer(gui_buffer));
+            vkEndCommandBuffer(gui_buffer);
 
             commandBuffers.push_back(gui_buffer);
         }
@@ -1714,7 +1714,7 @@ namespace Shatter::render{
 
         TaskPool::barrierRelease(graphics_buffers[_index]);
 
-        VK_CHECK_RESULT(vkEndCommandBuffer(graphics_buffers[_index]));
+        vkEndCommandBuffer(graphics_buffers[_index]);
     }
 
     void ShatterRender::createComputeCommandBuffer(){
