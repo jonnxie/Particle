@@ -203,6 +203,15 @@ namespace Shatter{
                 return VK_FALSE;
             }
 
+            static void check_vk_result(VkResult err)
+            {
+                if (err == 0)
+                    return;
+                fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+                if (err < 0)
+                    abort();
+            }
+
         public:
             static void onWindowResized(GLFWwindow *window, int width, int height);
             static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);

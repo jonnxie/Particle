@@ -11,6 +11,7 @@ namespace Shatter {
         #ifdef SHATTER_PLATPORM_WINDOWS
         ////		return std::make_unique<WindowsWindow>(props);
         #endif
+        return nullptr;
     }
 
     void Window::setApplication(Application* _application) {

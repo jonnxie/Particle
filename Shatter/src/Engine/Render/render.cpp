@@ -2360,8 +2360,9 @@ namespace Shatter::render{
             initInfo.ImageCount = m_swapchainImages.size();
             initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
             initInfo.Allocator = nullptr;
-            initInfo.CheckVkResultFn = nullptr;
+            initInfo.CheckVkResultFn = check_vk_result;
 
+            ImGui_ImplGlfw_InitForVulkan(window, true);
             ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
         }
     }
