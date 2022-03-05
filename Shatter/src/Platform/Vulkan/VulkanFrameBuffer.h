@@ -25,6 +25,7 @@ public:
     void init();
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
+    uint32_t capture(uint32_t _xCoordinate, uint32_t _yCoordinate) override;
 public:
     VkFramebuffer                   m_frame_buffer{};
     std::vector<VkAttachment>       m_attachments{};

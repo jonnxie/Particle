@@ -113,6 +113,11 @@ void VulkanFrameBuffer::release() {
     m_released = true;
 }
 
+uint32_t VulkanFrameBuffer::capture(uint32_t _xCoordinate, uint32_t _yCoordinate)
+{
+
+}
+
 VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec)
         : FrameBuffer(std::move(_spec)){
     init();

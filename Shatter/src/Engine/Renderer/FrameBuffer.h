@@ -36,6 +36,7 @@ public:
 public:
     virtual void resize(uint32_t _width,uint32_t _height) = 0;
     virtual void release() = 0;
+    virtual uint32_t capture(uint32_t _xCoordinate, uint32_t _yCoordinate) = 0;
 
 protected:
     FrameBufferSpecification m_spec;
