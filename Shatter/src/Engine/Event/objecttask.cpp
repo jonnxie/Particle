@@ -151,7 +151,7 @@ void ObjectTask::gTask(int _threadIndex,int _id,VkCommandBufferInheritanceInfo _
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
     commandBufferAllocateInfo.commandBufferCount = 1;
 
-    vkAllocateCommandBuffers(SingleDevice.logicalDevice,&commandBufferAllocateInfo,_cb);
+    vkAllocateCommandBuffers(SingleDevice.logicalDevice, &commandBufferAllocateInfo, _cb);
 
     d->gCMB = *_cb;
 

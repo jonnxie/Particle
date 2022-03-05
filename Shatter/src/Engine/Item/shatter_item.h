@@ -774,6 +774,13 @@ struct UnionCommandPool{
     VkCommandPool computePool;
 };
 
+enum class CommandPoolType{
+    GraphicsPool,
+    ComputePool
+};
+
+VkCommandPool getCommandPool(CommandPoolType _type);
+
 static std::vector<UnionCommandPool> threadCommandPool;
 
 std::vector<UnionCommandPool>* getThreadCommandPool();

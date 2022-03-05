@@ -96,13 +96,13 @@ namespace Shatter{
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
             FrameBuffer* m_frameBuffers{nullptr};
-            std::vector<VkCommandBuffer> pre_capture_buffers{};
+            std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
 
             void createCaptureRenderPass();
 
             void createCaptureFramebuffers();
 
-            void createCaptureCommandBuffers(VkCommandBuffer _cb);
+            void createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex);
 
             void createFramebuffers();
 
