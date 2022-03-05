@@ -269,6 +269,7 @@ namespace Shatter{
             std::vector<VkImageView> m_swapChainImageviews;
             std::vector<VkSampler> m_swapChainSamplers;
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
+            std::vector<VkDescriptorSet> m_swapChainSets;
             std::vector<VkCommandBuffer> composite_buffers;
 
             VkCommandPool graphic_commandPool{};

@@ -482,6 +482,7 @@ namespace Shatter::render{
             m_swapChainImageviews.resize(swapchain_images.size());
             m_swapChainSamplers.resize(swapchain_images.size());
             VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
+            m_swapChainSets.resize(swapchain_images.size());
 
             for (size_t i = 0; i < m_swapchainImages.size(); i++) {
                 m_swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, m_swapchainImages[i], swapchain_image_format,
@@ -2345,25 +2346,30 @@ namespace Shatter::render{
         imGui->init((float)swapchain_extent.width,(float)swapchain_extent.height);
         imGui->initResources(m_renderPass, graphics_queue, "../shaders/");
 
-        if(Config::getConfig("enableScreenGui"))
-        {
-            ImGui_ImplVulkan_InitInfo initInfo{};
-            initInfo.Instance = instance;
-            initInfo.PhysicalDevice = physicalDevice;
-            initInfo.Device = device;
-            initInfo.QueueFamily = getIndices().graphicsFamily;
-            initInfo.Queue = graphics_queue;
-            initInfo.PipelineCache = VK_NULL_HANDLE;
-            initInfo.DescriptorPool = descriptorPool;
-            initInfo.Subpass = SubpassTransparency;
-            initInfo.MinImageCount =  min_image_count;
-            initInfo.ImageCount = m_swapchainImages.size();
-            initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-            initInfo.Allocator = nullptr;
-            initInfo.CheckVkResultFn = check_vk_result;
+        ImGui_ImplVulkan_InitInfo initInfo{};
+        initInfo.Instance = instance;
+        initInfo.PhysicalDevice = physicalDevice;
+        initInfo.Device = device;
+        initInfo.QueueFamily = getIndices().graphicsFamily;
+        initInfo.Queue = graphics_queue;
+        initInfo.PipelineCache = VK_NULL_HANDLE;
+        initInfo.DescriptorPool = descriptorPool;
+        initInfo.Subpass = SubpassTransparency;
+        initInfo.MinImageCount =  min_image_count;
+        initInfo.ImageCount = m_swapchainImages.size();
+        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        initInfo.Allocator = nullptr;
+        initInfo.CheckVkResultFn = check_vk_result;
 
-            ImGui_ImplGlfw_InitForVulkan(window, true);
-            ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+        ImGui_ImplGlfw_InitForVulkan(window, true);
+        ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+
+        for(size_t index = 0; index < m_swapchainImages.size(); index++)
+        {
+            m_swapChainSets[index] = ImGui_ImplVulkan_AddTexture(m_swapChainSamplers[index],
+                                                                 m_swapChainImageviews[index],
+                                                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            std::cout << "SwapChainImageSet: " << m_swapChainSets[index] << std::endl;
         }
     }
 
