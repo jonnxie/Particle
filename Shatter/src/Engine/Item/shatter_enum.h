@@ -409,9 +409,9 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define PrecompiledCatalog "precompiledhead.h"
 #define AABBCatalog        "Engine/Object/aabb.h"
 #define BufferCatalog   "Engine/Buffer/shatterbufferinclude.h"
-#define PipelineCatalog "Engine/Render/pipeline.h"
-#define RenderCatalog   "Engine/Render/shatter_render_include.h"
-#define PCatalog        "Engine/Render/pipeline.h"
+#define PipelineCatalog "Engine/Renderer/pipeline.h"
+#define RenderCatalog   "Engine/Renderer/shatter_render_include.h"
+#define PCatalog        "Engine/Renderer/pipeline.h"
 #define AppCatalog      "Engine/App/shatterapp.h"
 
 #define ItemCatalog     "Engine/Item/shatter_item.h"

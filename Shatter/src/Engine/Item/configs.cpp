@@ -26,6 +26,7 @@ void Config::init()
     config_map["height"]                        = 900;
     config_map["LightInitCount"]                = 64;
     config_map["PointDefaultSize"]              = 4;
+    config_map["SwapChainImageCount"]           = 3;
 }
 
 int Config::getConfig(const std::string& _id)

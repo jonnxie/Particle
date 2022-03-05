@@ -8,7 +8,7 @@
 #include "device.h"
 
 #include <mutex>
-#include "Engine/Render/FrameBuffer.h"
+#include "Engine/Renderer/FrameBuffer.h"
 
 #ifdef SHATTER_GRAPHICS_VULKAN
 #include "Platform/Vulkan/VulkanFrameBuffer.h"

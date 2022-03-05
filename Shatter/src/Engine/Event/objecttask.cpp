@@ -10,42 +10,6 @@
 #include "Engine/Object/cobject.h"
 #include "Engine/Object/device.h"
 
-void ObjectTask::graphicsTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex ,bool off) {
-    auto threadPool = getThreadObjectPool();
-    ThreadObject threadObject = (*threadPool)[_threadIndex];
-
-    auto drawPool = MPool<DObject>::getPool();
-    DObject drawObject = *(*drawPool)[_id];
-
-    if(drawObject.m_type != DType::RayTracing)
-    {
-        VkCommandBufferBeginInfo commandBufferBeginInfo {};
-        commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
-        commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-        commandBufferBeginInfo.pInheritanceInfo = &_inheritanceInfo;
-
-        if(!off)
-        {
-            VkCommandBuffer cmdBuffer = threadObject.buffers[_objectIndex + _imageIndex * numObjectsPerThread];
-
-            VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
-
-            drawObject.draw(cmdBuffer);
-            VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
-            (*threadPool)[_threadIndex].visibility[_objectIndex] = true;
-        }else{
-            VkCommandBuffer cmdBuffer = threadObject.off_buffers[_objectIndex + _imageIndex * numObjectsPerThread];
-
-            VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
-
-            drawObject.draw(cmdBuffer);
-            VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
-            (*threadPool)[_threadIndex].off_visibility[_objectIndex] = true;
-        }
-    }
-}
-
 void ObjectTask::rayTracingTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex)
 {
     auto threadPool = getThreadObjectPool();

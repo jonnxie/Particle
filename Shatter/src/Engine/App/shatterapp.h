@@ -5,7 +5,7 @@
 #ifndef VULKAN_TOTURIOL_SHATTER_APP_H
 #define VULKAN_TOTURIOL_SHATTER_APP_H
 
-#include "Engine/Render/shatter_render_include.h"
+#include "Engine/Renderer/shatter_render_include.h"
 //#include "../Shatter_Asset/shatterasset.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"

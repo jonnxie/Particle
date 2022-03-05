@@ -440,7 +440,8 @@ namespace Shatter::render{
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+//        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        Config::setConfig("SwapChainImageCount", imageCount);
 
         if(swapChainSupport.capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT){
             createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -1363,7 +1364,7 @@ namespace Shatter::render{
             }
 
             VK_CHECK_RESULT(vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo));
-            auto threadObjectPool = getThreadObjectPool();
+//            auto threadObjectPool = getThreadObjectPool();
             auto threadPool = ThreadPool::pool();
             // Inheritance info for the secondary command buffers
             VkCommandBufferInheritanceInfo inheritanceInfo {};

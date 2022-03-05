@@ -22,7 +22,7 @@
 #include "VulkanglTFModels.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/shatter_item.h"
-#include "Engine/Render/shatter_render_include.h"
+#include "Engine/Renderer/shatter_render_include.h"
 
 VkDescriptorSetLayout vkglTF::descriptorSetLayoutImage = VK_NULL_HANDLE;
 VkDescriptorSetLayout vkglTF::descriptorSetLayoutUbo = VK_NULL_HANDLE;

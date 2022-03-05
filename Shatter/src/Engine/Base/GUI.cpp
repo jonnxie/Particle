@@ -102,7 +102,9 @@ GUI *GUI::getGUI() {
 
         ImGui::Begin("ViewPort");
 
-        ImGui::Image(SingleRender.m_swapChainSets[getSwapChainIndex()], {getViewPort().width, getViewPort().height});
+        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
+
+        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
 
         ImGui::End();
 
@@ -385,7 +387,7 @@ void GUI::drawFrame(VkCommandBuffer commandBuffer) {
     pushConstBlock.translate = glm::vec2(-1.0f);
     vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
 
-    // Render commands
+    // Renderer commands
     ImDrawData* imDrawData = ImGui::GetDrawData();
     int32_t vertexOffset = 0;
     int32_t indexOffset = 0;
@@ -478,7 +480,7 @@ void GUI::newFrame(bool updateFrameGraph) {
         task();
     }
 
-    // Render to generate draw buffers
+    // Renderer to generate draw buffers
     ImGui::Render();
 }
 

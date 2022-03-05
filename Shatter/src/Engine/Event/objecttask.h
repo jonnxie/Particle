@@ -20,8 +20,6 @@ public:
 
     static void gTask(int _threadIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb);
 
-    static void graphicsTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex,bool off = false);
-
     static void rayTracingTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex);
 };
 
