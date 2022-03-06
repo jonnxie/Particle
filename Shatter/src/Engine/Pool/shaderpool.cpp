@@ -108,6 +108,8 @@ void ShaderPool::init() {
     createShaderStage("abasic_vs", tool::combineShader("abasic/vert.spv"), VertexShader);
     createShaderStage("abasic_fs", tool::combineShader("abasic/frag.spv"), FragmentShader);
 
+    createShaderStage("aabb_vs", tool::combineShader("aabb/vert.spv"), VertexShader);
+    createShaderStage("aabb_fs", tool::combineShader("aabb/frag.spv"), FragmentShader);
     /*
      * Skybox
      */

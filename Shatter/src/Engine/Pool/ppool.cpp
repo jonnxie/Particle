@@ -183,6 +183,20 @@ void PPool::init() {
                  SubpassTransparency
         );
 
+        createGP("AABBCapture",
+                 std::vector<Input_Type>{Input_Type::Point3d},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aabb_vs"),
+                                                              ShaderPool::getPool().Get("aabb_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Capture,
+                 std::vector<Sl_id> {"Default","Camera", "CaptureVal"},
+                 RenderPassType::Capture,
+                 0
+        );
+
         createGP("Polyline",
                  std::vector<Input_Type>{Input_Type::Point3dColor},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("polyline_vs"),

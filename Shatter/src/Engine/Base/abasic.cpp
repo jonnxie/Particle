@@ -90,5 +90,5 @@ void ABasic::constructD()
     (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.min);
     (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.max);
     (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
-\
+    SingleRender.aabb_map[m_capture_id] = m_aabbIndex;
 }

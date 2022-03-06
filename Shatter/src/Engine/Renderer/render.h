@@ -104,6 +104,8 @@ namespace Shatter{
 
             void createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex);
 
+            void updateCaptureCommandBuffers(VkCommandBuffer _cb,int _imageIndex);
+
             void createFramebuffers();
 
             void clearAttachment(FrameBufferAttachment* _attachment);
@@ -180,7 +182,10 @@ namespace Shatter{
             VkCommandBuffer beginSingleTimeCommands() ;
             void endSingleTimeCommands(VkCommandBuffer commandBuffer) ;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
-            [[nodiscard]] VkRenderPass getNewRenderPass() const {return m_renderPass;};
+            [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
+            VkRenderPass getCaptureRenderPass(){
+                return m_captureRenderPass;
+            };
             [[nodiscard]] VkExtent2D getExtent2D() const {return swapchain_extent;};
             void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                         VkDescriptorSet* set);

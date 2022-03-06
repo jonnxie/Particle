@@ -367,7 +367,23 @@ void GP::setColorBlendState(BlendState _state){
                      };
             break;
         }
-        case BlendState::GPass :{
+        case BlendState::Capture:{
+            m_blendAttachs =
+                    {
+                            {
+                                    VK_FALSE,
+                                    VK_BLEND_FACTOR_ONE,
+                                    VK_BLEND_FACTOR_ZERO,
+                                    VK_BLEND_OP_ADD,
+                                    VK_BLEND_FACTOR_ONE,
+                                    VK_BLEND_FACTOR_ZERO,
+                                    VK_BLEND_OP_ADD,
+                                    VK_COLOR_COMPONENT_R_BIT
+                            }
+                    };
+            break;
+        }
+        case BlendState::GPass:{
             m_blendAttachs = {
                     tool::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
                     tool::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
@@ -584,7 +600,7 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
 
     switch (_passType) {
         case RenderPassType::Default:{
-            setRenderPass(Shatter::render::ShatterRender::getRender().getNewRenderPass());
+            setRenderPass(Shatter::render::ShatterRender::getRender().getDefaultRenderPass());
             break;
         }
         case RenderPassType::OffScreen:{
@@ -593,6 +609,10 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
         }
         case RenderPassType::CascadeShadow:{
             setRenderPass(SingleCascade.depthPass());
+            break;
+        }
+        case RenderPassType::Capture:{
+            setRenderPass(Shatter::render::ShatterRender::getRender().getCaptureRenderPass());
             break;
         }
         default:

@@ -163,12 +163,14 @@ enum class BlendState{
     CPU_Particle,
     Particle,
     GPass,
+    Capture,
 };
 
 enum class RenderPassType{
     Default,
     CascadeShadow,
     OffScreen,
+    Capture,
 };
 
 enum class RasterState{

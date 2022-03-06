@@ -919,18 +919,18 @@ namespace Shatter::render{
 
         dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
         dependencies[0].dstSubpass = 0;
-        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_HOST_BIT;
         dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependencies[0].srcAccessMask = 0;
+        dependencies[0].srcAccessMask = VK_ACCESS_HOST_READ_BIT;
         dependencies[0].dstAccessMask =  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         dependencies[1].srcSubpass = 0;
         dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
         dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_HOST_BIT;
         dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependencies[1].dstAccessMask =  0;
+        dependencies[1].dstAccessMask = VK_ACCESS_HOST_READ_BIT;
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkRenderPassCreateInfo renderPassInfo = {};
@@ -1293,6 +1293,8 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
         }
+        VkViewport tmp = getViewPort();
+        VkRect2D scissor = getScissor();
 
         for(auto& pair: aabb_map)
         {
@@ -1308,7 +1310,9 @@ namespace Shatter::render{
                 vkAllocateCommandBuffers(SingleDevice.logicalDevice, &commandBufferAllocateInfo, &captureBuffers[index]);
 
                 vkBeginCommandBuffer(captureBuffers[index], &commandBufferBeginInfo);
-                vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABB"])());
+                vkCmdSetViewport(captureBuffers[index], 0, 1, &tmp);
+                vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
+                vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
                 std::vector<glm::vec3> aabbBuffer{};
                 genVertexBufferFromAABB(*(*SingleAABBPool)[Id], aabbBuffer);
                 int model_index = (*SingleAABBPool)[Id]->m_model_index;
@@ -1316,31 +1320,59 @@ namespace Shatter::render{
                 ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
-                set_array[1] = SingleSetPool["Camera"];
                 set_array[0] = *(*set_pool)[model_index];
+                set_array[1] = SingleSetPool["Camera"];
                 set_array[2] = (*SingleAABBPool)[Id]->m_capture_set;
                 vkCmdBindDescriptorSets(captureBuffers[index],
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        (*SinglePPool["AABB"]).getPipelineLayout(),
+                                        (*SinglePPool["AABBCapture"]).getPipelineLayout(),
                                         0,
                                         3,
                                         set_array.data(),
                                         0,
                                         nullptr
                 );
-                vkCmdDraw(captureBuffers[index] , aabbBuffer.size(), 1, 0, 0);
+                vkCmdDraw(captureBuffers[index], aabbBuffer.size(), 1, 0, 0);
                 vkEndCommandBuffer(captureBuffers[index]);
             });
             index++;
         }
         SingleThreadPool->wait();
-        vkCmdExecuteCommands(_cb, captureBuffers.size(), captureBuffers.data());
+        if(!captureBuffers.empty()) {
+            vkCmdExecuteCommands(_cb, captureBuffers.size(), captureBuffers.data());
+        }
         pre_capture_buffers[_imageIndex].clear();
         pre_capture_buffers[_imageIndex].insert(pre_capture_buffers[_imageIndex].end(), captureBuffers.begin(), captureBuffers.end());
         vkCmdEndRenderPass(_cb);
 //        TaskPool::captureBarrierRelease(m_capture_buffer);
     }
 
+    void ShatterRender::updateCaptureCommandBuffers(VkCommandBuffer _cb,int _imageIndex)
+    {
+        std::array<VkClearValue,2> clearCaptureValue{};
+        clearValues[0].color = { { uint32_t(0) } };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        VkRenderPassBeginInfo renderPassBeginInfo{};
+        {
+            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+            renderPassBeginInfo.renderPass = m_captureRenderPass;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            renderPassBeginInfo.renderArea.offset = {0, 0};
+            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.clearValueCount = 2;
+            renderPassBeginInfo.pClearValues = clearCaptureValue.data();
+        }
+        vkCmdBeginRenderPass(_cb, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+        if(!aabb_map.empty())
+        {
+            vkCmdExecuteCommands(_cb, aabb_map.size(), pre_capture_buffers[_imageIndex].data());
+        }
+
+        vkCmdEndRenderPass(_cb);
+    }
 
     void ShatterRender::createGraphicsCommandBuffersMultiple(){
         // Contains the list of secondary command buffers to be submitted
@@ -1399,7 +1431,7 @@ namespace Shatter::render{
             #endif
 
             #ifdef SHATTER_GPU_CAPTURE
-//                createCaptureCommandBuffers(graphics_buffers[i], i);
+                createCaptureCommandBuffers(graphics_buffers[i], i);
             #endif
             auto dPool = SingleDPool;
             /*
@@ -1671,13 +1703,17 @@ namespace Shatter::render{
 
         TaskPool::barrierRequire(graphics_buffers[_index]);
 
-        #ifdef SHATTER_OFFSCREEN
-            updateOffscreenBufferAsync(graphics_buffers[_index], int(_index));
-        #endif
+#ifdef SHATTER_OFFSCREEN
+        updateOffscreenBufferAsync(graphics_buffers[_index], int(_index));
+#endif
 
-        #ifdef SHATTER_SHADOW
-            updateShadowGraphicsAsync(graphics_buffers[_index], int(_index));
-        #endif
+#ifdef SHATTER_SHADOW
+        updateShadowGraphicsAsync(graphics_buffers[_index], int(_index));
+#endif
+
+#ifdef SHATTER_GPU_CAPTURE
+        updateCaptureCommandBuffers(graphics_buffers[_index], int(_index));
+#endif
 
         vkCmdBeginRenderPass(graphics_buffers[_index], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
