@@ -40,7 +40,7 @@ public:
     std::vector<int> m_dobjs{};
     std::vector<int> m_gobjs{};
     std::vector<int> m_cobjs{};
-    AABB m_aabb{};
+    int m_aabbIndex;
 public:
     void construct();
     virtual void constructG(){};
@@ -52,7 +52,7 @@ protected:
     glm::mat4   m_rotate{};
     glm::mat4   m_translation{};
     uint32_t    m_capture_id{};
-    VkDescriptorSet m_capture_set = VK_NULL_HANDLE;
+//    VkDescriptorSet m_capture_set = VK_NULL_HANDLE;
 };
 
 

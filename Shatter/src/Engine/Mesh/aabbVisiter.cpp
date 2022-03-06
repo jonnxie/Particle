@@ -3,7 +3,9 @@
 //
 
 #include "aabbVisiter.h"
+#include "Engine/Pool/mpool.h"
 
 void AABBVisitor::visitor(std::vector<glm::vec3> &_buffer, Object &_obj) {
-    genVertexBufferFromAABB(_obj.m_aabb, _buffer);
+    auto aabbPool = MPool<AABB>::getPool();
+    genVertexBufferFromAABB(*(*aabbPool)[_obj.m_aabbIndex], _buffer);
 }

@@ -65,8 +65,8 @@ void GCoor::constructG() {
 
     for(auto & i : vertex)
     {
-//        printPoint(i.pos);
-        m_aabb.addInternalPoint(i.pos);
+        auto aabbPool = MPool<AABB>::getPool();
+        (*aabbPool)[m_aabbIndex]->addInternalPoint(i.pos);
     }
 }
 

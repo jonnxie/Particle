@@ -1255,13 +1255,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex){
-        VkCommandBufferBeginInfo cmdBufInfo{};
-        {
-            cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            cmdBufInfo.pNext = VK_NULL_HANDLE;
-            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
-        }
         std::array<VkClearValue,2> clearCaptureValue{};
         clearValues[0].color = { { uint32_t(0) } };
         clearValues[1].depthStencil = { 1.0f, 0 };
@@ -1279,33 +1272,32 @@ namespace Shatter::render{
         }
 //        TaskPool::captureBarrierRequire(m_capture_buffer);
         vkCmdBeginRenderPass(_cb, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-        std::array<VkDescriptorSet, 3> set_array{};
-        set_array[1] = SingleSetPool["Camera"];
-        auto singlePool = SingleAABBPool;
-        auto threadPool = ThreadPool::pool();
-        ShatterBuffer* buffer{nullptr};
         VkDeviceSize offsets = 0;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkCommandBuffer> captureBuffers(aabb_map.size());
         int index = 0;
         VkCommandBufferInheritanceInfo inheritanceInfo{};
-        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        inheritanceInfo.pNext = VK_NULL_HANDLE;
-        inheritanceInfo.renderPass = m_captureRenderPass;
-        inheritanceInfo.subpass = 0;
-        inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
-        inheritanceInfo.occlusionQueryEnable = false;
+        {
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = VK_NULL_HANDLE;
+            inheritanceInfo.renderPass = m_captureRenderPass;
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            inheritanceInfo.occlusionQueryEnable = false;
+        }
 
         VkCommandBufferBeginInfo commandBufferBeginInfo {};
-        commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
-        commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-        commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+        {
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+        }
 
         for(auto& pair: aabb_map)
         {
-            int captureId = pair.first, Id =  pair.second;
-            threadPool->addTask([&, captureId, Id, index](){
+            int Id =  pair.second;
+            SingleThreadPool->addTask([&, Id, index](){
                 VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool);
                 VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
                 commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1318,13 +1310,15 @@ namespace Shatter::render{
                 vkBeginCommandBuffer(captureBuffers[index], &commandBufferBeginInfo);
                 vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABB"])());
                 std::vector<glm::vec3> aabbBuffer{};
-                genVertexBufferFromAABB(*(*singlePool)[Id], aabbBuffer);
-                int model_index = (*singlePool)[Id]->m_model_index;
+                genVertexBufferFromAABB(*(*SingleAABBPool)[Id], aabbBuffer);
+                int model_index = (*SingleAABBPool)[Id]->m_model_index;
                 SingleBPool.createVertexBuffer(tool::combine("AABBBox", Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-                buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
+                std::array<VkDescriptorSet, 3> set_array{};
+                set_array[1] = SingleSetPool["Camera"];
                 set_array[0] = *(*set_pool)[model_index];
-                set_array[2] = (*singlePool)[Id]->m_capture_set;
+                set_array[2] = (*SingleAABBPool)[Id]->m_capture_set;
                 vkCmdBindDescriptorSets(captureBuffers[index],
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
                                         (*SinglePPool["AABB"]).getPipelineLayout(),
@@ -1339,7 +1333,7 @@ namespace Shatter::render{
             });
             index++;
         }
-        threadPool->wait();
+        SingleThreadPool->wait();
         vkCmdExecuteCommands(_cb, captureBuffers.size(), captureBuffers.data());
         pre_capture_buffers[_imageIndex].clear();
         pre_capture_buffers[_imageIndex].insert(pre_capture_buffers[_imageIndex].end(), captureBuffers.begin(), captureBuffers.end());
@@ -1405,7 +1399,7 @@ namespace Shatter::render{
             #endif
 
             #ifdef SHATTER_GPU_CAPTURE
-//                createCaptureCommandBuffers(graphics_buffers[i]);
+//                createCaptureCommandBuffers(graphics_buffers[i], i);
             #endif
             auto dPool = SingleDPool;
             /*

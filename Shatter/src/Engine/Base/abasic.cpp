@@ -80,4 +80,15 @@ void ABasic::constructD()
         m_model->updateAnimation(m_animation_index, _abs_time,m_world);
     });
     SingleRender.getNObjects()->push_back(d);
+
+    int model_index = ModelSetPool::getPool().malloc();
+    TaskPool::pushUpdateTask(tool::combine("BasicAnimationWorld",m_id),[&,model_index](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + model_index, &m_world, one_matrix);
+    });
+    auto aabbPool = MPool<AABB>::getPool();
+    (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.min);
+    (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.max);
+    (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
+\
 }

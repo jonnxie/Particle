@@ -63,15 +63,18 @@ void Object::init() {
 
 Object::Object() {
     m_capture_id = mallocCaptureId();
+    auto aabbPool = MPool<AABB>::getPool();
+    m_aabbIndex = aabbPool->malloc();
+
     SingleBPool.createUniformBuffer(tool::combine("Capture",m_capture_id), 4);
     auto buffer = SingleBPool.getBuffer(tool::combine("Capture",m_capture_id),Buffer_Type::Uniform_Buffer);
     buffer->map();
     memcpy(buffer->mapped, &m_capture_id, 4);
     buffer->unmap();
-    SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &m_capture_set);
+    SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*aabbPool)[m_aabbIndex]->m_capture_set);
 
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->Get_Buffer(), 0, 4};
-    VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet(m_capture_set,
+    VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*aabbPool)[m_aabbIndex]->m_capture_set,
                                                                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                                                         0,
                                                                         &descriptorBufferInfos);

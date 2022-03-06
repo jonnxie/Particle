@@ -482,6 +482,8 @@ void GUI::newFrame(bool updateFrameGraph) {
 
     // Renderer to generate draw buffers
     ImGui::Render();
+
+    ImGui::UpdatePlatformWindows();
 }
 
 void GUI::init(float width, float height) {
@@ -500,6 +502,7 @@ void GUI::init(float width, float height) {
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
