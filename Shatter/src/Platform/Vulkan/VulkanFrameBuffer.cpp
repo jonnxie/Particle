@@ -113,9 +113,22 @@ void VulkanFrameBuffer::release() {
     m_released = true;
 }
 
-uint32_t VulkanFrameBuffer::capture(uint32_t _xCoordinate, uint32_t _yCoordinate)
+auto VulkanFrameBuffer::capture(uint32_t _xCoordinate, uint32_t _yCoordinate, int _attachmentIndex)
 {
-
+    auto format = m_attachments[_attachmentIndex].format;
+    uint32_t index = _yCoordinate * m_spec.Width + _xCoordinate;
+    void* result;
+    switch (format) {
+        case VK_FORMAT_R32_UINT:{
+            index *= 4;
+            vkMapMemory(SingleDevice(), m_attachments[_attachmentIndex].memory, index, 4, 0, &result);
+            return *(uint32_t*)result;
+        }
+        default:{
+            std::cout << "No Such Attachment Type: [1]" << format << std::endl;
+            break;
+        }
+    }
 }
 
 VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec)

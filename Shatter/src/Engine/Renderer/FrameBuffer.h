@@ -6,7 +6,6 @@
 #define MAIN_FRAMEBUFFER_H
 
 #include <utility>
-
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
@@ -36,7 +35,6 @@ public:
 public:
     virtual void resize(uint32_t _width,uint32_t _height) = 0;
     virtual void release() = 0;
-    virtual uint32_t capture(uint32_t _xCoordinate, uint32_t _yCoordinate) = 0;
 
 protected:
     FrameBufferSpecification m_spec;
