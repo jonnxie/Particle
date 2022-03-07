@@ -98,10 +98,9 @@ void ObjectTask::shadowDepthTask(int _threadIndex, int _id, VkCommandBufferInher
     VK_CHECK_RESULT(vkEndCommandBuffer(*_cb));
 }
 
-void ObjectTask::newGraphicsTask(int _threadIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb)
+void ObjectTask::newGraphicsTask(int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb)
 {
-    auto threadPool = getThreadCommandPool();
-    VkCommandPool pool = (*threadPool)[_threadIndex].graphicsPool;
+    VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool);
 
     auto DPool = MPool<DObject>::getPool();
     DObject* d = (*DPool)[_id];
@@ -130,10 +129,9 @@ void ObjectTask::newGraphicsTask(int _threadIndex,int _id,VkCommandBufferInherit
     VK_CHECK_RESULT(vkEndCommandBuffer(*_cb));
 }
 
-void ObjectTask::gTask(int _threadIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb)
+void ObjectTask::gTask(int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb)
 {
-    auto threadPool = getThreadCommandPool();
-    VkCommandPool pool = (*threadPool)[_threadIndex].graphicsPool;
+    VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool);
 
     auto DPool = MPool<DObject>::getPool();
     DObject* d = (*DPool)[_id];

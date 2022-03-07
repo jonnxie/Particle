@@ -1005,20 +1005,14 @@ namespace Shatter::render{
         auto threadPool = ThreadPool::pool();
         int draw_index = 0;
         std::vector<VkCommandBuffer> commandBuffers(offdrawid_vec.size());
-        for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+        for(size_t off_index = 0; off_index < offdrawid_vec.size(); off_index++)
         {
-            for (int i = 0; i < numObjectsPerThread; i++)
-            {
-                if(draw_index >= offdrawid_vec.size()) break;
-                (*threadPool).threads[t]->addTask([&] {
-                    VkCommandBuffer* cb = &commandBuffers[draw_index];
-                    ObjectTask::newGraphicsTask(t ,offdrawid_vec[draw_index] ,SingleOffScreen.m_inherit_info ,cb);
-                });
-                draw_index++;
-            }
-            if(draw_index >= offdrawid_vec.size()) break;
+            threadPool->addTask([&, off_index] {
+                VkCommandBuffer* cb = &commandBuffers[off_index];
+                ObjectTask::newGraphicsTask(offdrawid_vec[off_index], SingleOffScreen.m_inherit_info, cb);
+            });
         }
-        (*threadPool).wait();
+        threadPool->wait();
         if(!commandBuffers.empty())
         {
             vkCmdExecuteCommands(_cb, commandBuffers.size(), commandBuffers.data());
@@ -1408,7 +1402,6 @@ namespace Shatter::render{
             }
 
             vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo);
-//            auto threadObjectPool = getThreadObjectPool();
             auto threadPool = ThreadPool::pool();
             // Inheritance info for the secondary command buffers
             VkCommandBufferInheritanceInfo inheritanceInfo {};
@@ -1443,35 +1436,23 @@ namespace Shatter::render{
             int draw_index = 0;
 
             /*
-             * depth pass
-             */
-            /*
              * G
              */
             {
                 draw_index = 0;
                 std::vector<VkCommandBuffer> gBuffers(drawid_vec.size());
                 inheritanceInfo.subpass = SubpassG;
-                for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+                for(size_t d_index = 0; d_index < drawid_vec.size(); d_index++)
                 {
-                    for (int j = 0; j < numObjectsPerThread; j++)
-                    {
-                        if(draw_index >= drawid_vec.size()) break;
-                        if((*dPool)[drawid_vec[draw_index]]->m_visible)
-                        {
-                            (*threadPool).threads[t]->addTask([&,draw_index] {
-                                VkCommandBuffer* cb = &gBuffers[draw_index];
-                                ObjectTask::gTask(t,drawid_vec[draw_index],inheritanceInfo,cb);
-                            });
-                        }
-                        draw_index++;
-                    }
-                    if(draw_index >= drawid_vec.size()) break;
+                    threadPool->addTask([&, d_index](){
+                        VkCommandBuffer* cb = &gBuffers[d_index];
+                        ObjectTask::gTask(drawid_vec[d_index], inheritanceInfo, cb);
+                    });
                 }
                 (*threadPool).wait();
                 vkCmdExecuteCommands(graphics_buffers[i], gBuffers.size(), gBuffers.data());
                 pre_g_buffer[i].clear();
-                pre_g_buffer[i].insert(pre_g_buffer[i].end(),gBuffers.begin(),gBuffers.end());
+                pre_g_buffer[i].insert(pre_g_buffer[i].end(), gBuffers.begin(), gBuffers.end());
             }
             vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1488,12 +1469,10 @@ namespace Shatter::render{
                 commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
                 vkBeginCommandBuffer(composite_buffers[i], &commandBufferBeginInfo);
-                {
-                    VkViewport tmp = getViewPort();
-                    vkCmdSetViewport(composite_buffers[i],0,1,&tmp);
-                    VkRect2D scissor = getScissor();
-                    vkCmdSetScissor(composite_buffers[i],0,1,&scissor);
-                }
+                VkViewport tmp = getViewPort();
+                vkCmdSetViewport(composite_buffers[i],0,1,&tmp);
+                VkRect2D scissor = getScissor();
+                vkCmdSetScissor(composite_buffers[i],0,1,&scissor);
 
                 std::array<VkDescriptorSet,2> sets{};
                 {
@@ -1509,36 +1488,24 @@ namespace Shatter::render{
             }
             vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-
             /*
-         * normal object pass
-         */
+             * normal object pass
+             */
             {
                 if(!normal_vec.empty())
                 {
-                    draw_index = 0;
                     std::vector<VkCommandBuffer> normalBuffers(normal_vec.size());
                     inheritanceInfo.subpass = SubpassTransparency;
-                    for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+                    for(size_t normal_index = 0; normal_index < normal_vec.size(); normal_index++)
                     {
-                        for (int j = 0; j < numObjectsPerThread; j++)
-                        {
-                            if(draw_index >= normal_vec.size()) break;
-                            if((*dPool)[normal_vec[draw_index]]->m_visible)
-                            {
-                                (*threadPool).threads[t]->addTask([&,draw_index,t] {
-                                    VkCommandBuffer* cb = &normalBuffers[draw_index];
-                                    ObjectTask::newGraphicsTask(t,normal_vec[draw_index],inheritanceInfo,cb);
-                                });
-                            }
-                            draw_index++;
-                        }
-                        if(draw_index >= normal_vec.size()) break;
+                        threadPool->addTask([&,normal_index] {
+                            VkCommandBuffer* cb = &normalBuffers[normal_index];
+                            ObjectTask::newGraphicsTask(normal_vec[normal_index], inheritanceInfo, cb);
+                        });
                     }
 
                     (*threadPool).wait();
                     vkCmdExecuteCommands(graphics_buffers[i], normalBuffers.size(), normalBuffers.data());
-//                    pre_n_buffers.insert(pre_n_buffers.end(),normalBuffers.begin(),normalBuffers.end());
                     pre_norm_buffer[i].clear();
                     pre_norm_buffer[i].insert(pre_norm_buffer[i].end(),normalBuffers.begin(),normalBuffers.end());
                 }
@@ -1553,21 +1520,12 @@ namespace Shatter::render{
                     draw_index = 0;
                     std::vector<VkCommandBuffer> transparencyBuffers(transparency_vec.size());
                     inheritanceInfo.subpass = SubpassTransparency;
-                    for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+                    for(size_t transparent_index = 0; transparent_index < transparency_vec.size(); transparent_index++)
                     {
-                        for (int j = 0; j < numObjectsPerThread; j++)
-                        {
-                            if(draw_index >= transparency_vec.size()) break;
-                            if((*dPool)[transparency_vec[draw_index]]->m_visible)
-                            {
-                                (*threadPool).threads[t]->addTask([&,draw_index,t] {
-                                    VkCommandBuffer* cb = &transparencyBuffers[draw_index];
-                                    ObjectTask::newGraphicsTask(t,transparency_vec[draw_index],inheritanceInfo,cb);
-                                });
-                            }
-                            draw_index++;
-                        }
-                        if(draw_index >= transparency_vec.size()) break;
+                        threadPool->addTask([&,transparent_index] {
+                            VkCommandBuffer* cb = &transparencyBuffers[transparent_index];
+                            ObjectTask::newGraphicsTask(transparency_vec[transparent_index], inheritanceInfo, cb);
+                        });
                     }
 
                     (*threadPool).wait();
@@ -1623,7 +1581,6 @@ namespace Shatter::render{
             if(Config::getConfig("enableOffscreenDebug"))
             {
                 commandBuffers.push_back(offscreen_buffers[i]);
-//                pre_buffers.push_back(offscreen_buffers[i]);
             }
             gui_thread.join();
             if(Config::getConfig("enableScreenGui"))
