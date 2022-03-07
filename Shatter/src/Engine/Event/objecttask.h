@@ -12,7 +12,7 @@ struct ThreadObject;
 
 class ObjectTask {
 public:
-    static void computeTask(int _threadIndex,uint32_t _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb);
+    static void computeTask(int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb);
 
     static void shadowDepthTask(int _threadIndex, int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb);
 

@@ -37,10 +37,8 @@ void ObjectTask::rayTracingTask(int _threadIndex,int _objectIndex,int _id,VkComm
 }
 
 
-void ObjectTask::computeTask(int _threadIndex, uint32_t _objectIndex, int _id,
-                             VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb) {
-    auto threadPool = getThreadCommandPool();
-    VkCommandPool pool = (*threadPool)[_threadIndex].computePool;
+void ObjectTask::computeTask(int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb) {
+    VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool);
 
     auto computePool = MPool<CObject>::getPool();
     CObject* computeObject = (*computePool)[_id];

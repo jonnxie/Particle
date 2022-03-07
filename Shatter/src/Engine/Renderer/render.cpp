@@ -1125,12 +1125,6 @@ namespace Shatter::render{
         }
 
         VK_CHECK_RESULT(vkBeginCommandBuffer(compute_buffer, &cmdBufInfo));
-
-        auto computeThreadObjectPool = getThreadCommandPool();
-//        for (uint32_t t = 0; t < std::thread::hardware_concurrency(); t++)
-//        {
-//            (*computeThreadObjectPool)[t].ready.assign(numObjectsPerThread,false);
-//        }
         auto threadPool = ThreadPool::pool();
         // Inheritance info for the secondary command buffers
         VkCommandBufferInheritanceInfo inheritanceInfo {};
@@ -1147,39 +1141,17 @@ namespace Shatter::render{
 
         int draw_index = 0;
 
-        VkCommandBuffer* cb;
-
-        for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+        for(size_t compute_index = 0; compute_index < normal_vec.size(); compute_index++)
         {
-            for (int j = 0; j < numObjectsPerThread; j++)
-            {
-                if(draw_index >= computeid_vec.size()) break;
-                cb = &commandBuffers[draw_index];
-                (*threadPool).threads[t]->addTask([=] { ObjectTask::computeTask(t, j, computeid_vec[draw_index], inheritanceInfo,cb); });
-                draw_index++;
-            }
-            if(draw_index >= computeid_vec.size()) break;
+            threadPool->addTask([&,compute_index] {
+                VkCommandBuffer* cb = &commandBuffers[compute_index];
+                ObjectTask::computeTask(computeid_vec[compute_index], inheritanceInfo, cb);
+            });
         }
 
         (*threadPool).wait();
 
-        // Only submit if object is within the current view frustum
-        draw_index = 0;
-
         pre_compute_buffers = commandBuffers;
-//        for (uint32_t t = 0; t < std::thread::hardware_concurrency(); t++)
-//        {
-//            for (uint32_t j = 0; j < numObjectsPerThread; j++)
-//            {
-//                if((*computeThreadObjectPool)[t].ready[j])
-//                {
-//                    commandBuffers.push_back((*computeThreadObjectPool)[t].buffers[j]);
-//                    draw_index++;
-//                    pre_compute_buffers.push_back((*computeThreadObjectPool)[t].buffers[j]);
-//                }
-//            }
-//            if(draw_index >= computeid_vec.size()) break;
-//        }
 
         // Execute render commands from the secondary command buffer
         vkCmdExecuteCommands(compute_buffer, commandBuffers.size(), commandBuffers.data());
@@ -1202,48 +1174,10 @@ namespace Shatter::render{
 
 //        vkQueueWaitIdle(compute_queue);
         VK_CHECK_RESULT(vkBeginCommandBuffer(compute_buffer, &cmdBufInfo));
-        auto threadObjectPool = getThreadCommandPool();
-
-        auto threadPool = ThreadPool::pool();
-        // Inheritance info for the secondary command buffers
-        VkCommandBufferInheritanceInfo inheritanceInfo {};
-        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        inheritanceInfo.pNext = VK_NULL_HANDLE;
-        inheritanceInfo.renderPass = VK_NULL_HANDLE;
-        inheritanceInfo.subpass = 0;
-        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-        inheritanceInfo.occlusionQueryEnable = false;
-
-//        TaskPool::barrierRequire(graphics_buffers[_index]);
-
-        commandBuffers.insert(commandBuffers.begin(), pre_compute_buffers.begin(), pre_compute_buffers.end());
-
-        VkCommandBuffer* cb;
-
-        int draw_index = pre_compute_buffers.size();
-
-        for (int t = 0; t < std::thread::hardware_concurrency(); t++)
+        if(!computeid_vec.empty())
         {
-            for (int j = 0; j < numObjectsPerThread; j++)
-            {
-                if(draw_index >= computeid_vec.size()) break;
-                cb = &commandBuffers[draw_index];
-                (*threadPool).threads[t]->addTask([=] { ObjectTask::computeTask(t, j, computeid_vec[draw_index], inheritanceInfo,cb); });
-                draw_index++;
-            }
-            if(draw_index >= computeid_vec.size()) break;
+            vkCmdExecuteCommands(compute_buffer, computeid_vec.size(), pre_compute_buffers.data());
         }
-
-        (*threadPool).wait();
-
-        // Execute render commands from the secondary command buffer
-        if(!commandBuffers.empty())
-        {
-            vkCmdExecuteCommands(compute_buffer, commandBuffers.size(), commandBuffers.data());
-        }
-        vkCmdEndRenderPass(compute_buffer);
-
-        TaskPool::barrierRelease(compute_buffer);
 
         VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
     }
@@ -1792,9 +1726,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::keyEventCallback(int key, int action){
-//        for(auto& obj : input_vec){
-//            obj->keyEventCallback(key,action);
-//        }
         ImGuiIO& io = ImGui::GetIO();
 
         if(action == GLFW_PRESS)
