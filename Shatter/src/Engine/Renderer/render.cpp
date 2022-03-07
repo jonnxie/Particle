@@ -1184,8 +1184,8 @@ namespace Shatter::render{
 
     void ShatterRender::createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex){
         std::array<VkClearValue,2> clearCaptureValue{};
-        clearValues[0].color = { { uint32_t(0) } };
-        clearValues[1].depthStencil = { 1.0f, 0 };
+        clearCaptureValue[0].color = { { uint32_t(0) } };
+        clearCaptureValue[1].depthStencil = { 1.0f, 0 };
 
         VkRenderPassBeginInfo renderPassBeginInfo{};
         {
