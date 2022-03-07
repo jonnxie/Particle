@@ -3,7 +3,7 @@
 //
 #include "precompiledhead.h"
 
-#include "render.h"
+#include "renderer.h"
 
 #include <stb_image.h>
 #include <stdexcept>
@@ -1741,13 +1741,12 @@ namespace Shatter::render{
     }
 
     void ShatterRender::mouseEventCallback(int button, int action, double xpos, double ypos){
-//        for(auto& obj : input_vec){
-//            obj->mouseEventCallback(button,action,xpos,ypos);
-//        }
+        glm::uvec2 coordinate{xpos, ypos};
         if(action == GLFW_PRESS)
         {
+            input::MousePressCoordiante(coordinate, STATE_IN);
             pressMouse(button);
-            glm::vec2 tmp(xpos/getViewPort().width,ypos/getViewPort().height);
+            glm::vec2 tmp(xpos/getViewPort().width, ypos/getViewPort().height);
             tmp *= 2.0f;
             tmp -= 1.0f;
             updateCursorPressPos(tmp);

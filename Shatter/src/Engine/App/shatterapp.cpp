@@ -142,6 +142,20 @@ namespace Shatter::app{
                     drawPoint = true;
                 }
             }
+
+            if(key == GLFW_KEY_F5)
+            {
+                static bool captureObject = true;
+                if(captureObject)
+                {
+                    captureObject = false;
+                    appendListener("CaptureObject",new CaptureObject);
+                }else{
+                    deleteListener("CaptureObject");
+                    captureObject = true;
+                }
+            }
+
         }
 
         if(action == GLFW_REPEAT)

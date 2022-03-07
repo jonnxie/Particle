@@ -44,12 +44,14 @@ void pressMouse(int);
 void releaseMouse(int);
 
 namespace input{
-    delInOut(cursor,glm::vec3);
-    delInOut(mouseRay,glm::vec3);
-    delInOut(inputMode,InputMode);
-    delInOut(targetDepth,float);
-    delInOut(cursorWindow,glm::vec2);
-    delInOut(formatProperties,VkFormatProperties);
+    delInOut(cursor, glm::vec3);
+    delInOut(mouseRay, glm::vec3);
+    delInOut(captureObject,uint32_t);
+    delInOut(MousePressCoordiante,glm::u32vec2);
+    delInOut(inputMode, InputMode);
+    delInOut(targetDepth, float);
+    delInOut(cursorWindow, glm::vec2);
+    delInOut(formatProperties, VkFormatProperties);
 }
 
 #endif //SHATTER_ENGINE_INPUTACTION_H

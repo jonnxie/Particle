@@ -49,6 +49,10 @@ namespace Shatter{
         DeleteObject();
     };
 
+    class CaptureObject : public Listener{
+    public:
+        CaptureObject();
+    };
 
     class OutputPoint : public Listener{
     public:

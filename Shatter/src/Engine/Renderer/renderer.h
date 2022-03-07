@@ -186,13 +186,14 @@ namespace Shatter{
             VkRenderPass getCaptureRenderPass(){
                 return m_captureRenderPass;
             };
+            FrameBuffer* getCaptureFrameBuffer(){
+                return m_frameBuffers;
+            };
             [[nodiscard]] VkExtent2D getExtent2D() const {return swapchain_extent;};
             void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                         VkDescriptorSet* set);
             VkDevice* getDevice(){return &device;};
-
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
-
             [[maybe_unused]] void addDObject(int _drawId);
             void addCObject(int _computeId);
             void createCommandBuffer();
@@ -202,7 +203,6 @@ namespace Shatter{
             debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
                           size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData) {
                 std::cerr << "validation layer: " << msg << std::endl;
-
                 return VK_FALSE;
             }
 
