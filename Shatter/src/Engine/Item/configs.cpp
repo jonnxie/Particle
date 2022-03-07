@@ -19,7 +19,7 @@ void Config::init()
     config_map["enableOffscreenDebug"]          = 0;
     config_map["enableShadowMap"]               = 0;
     config_map["enableScreenGui"]               = 0;
-    config_map["enableDockSpace"]               = 1;
+    config_map["enableDockSpace"]               = 0;
     config_map["enableFullScreenPersistant"]    = 1;
     config_map["enableMultipleComputeQueue"]    = 0;
     config_map["width"]                         = 1200;

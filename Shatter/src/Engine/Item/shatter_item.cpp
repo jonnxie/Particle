@@ -536,20 +536,22 @@ void releaseThreadObjectPool() {
 }
 
 VkCommandPool getCommandPool(CommandPoolType _type){
+    VkCommandPool pool{};
     if(_type == CommandPoolType::ComputePool)
     {
         static int computePoolIndex = 0;
         static std::mutex computePoolLock;
         std::lock_guard<std::mutex> lockGuard(computePoolLock);
+        pool = threadCommandPool[computePoolIndex++].computePool;
         computePoolIndex %= threadCommandPool.size();
-        return threadCommandPool[computePoolIndex++].computePool;
     }else{
         static int graphicsPoolIndex = 0;
         static std::mutex graphicsPoolLock;
         std::lock_guard<std::mutex> lockGuard(graphicsPoolLock);
+        pool = threadCommandPool[graphicsPoolIndex++].graphicsPool;
         graphicsPoolIndex %= threadCommandPool.size();
-        return threadCommandPool[graphicsPoolIndex++].computePool;
     }
+    return pool;
 }
 
 std::vector<UnionCommandPool>* getThreadCommandPool() {

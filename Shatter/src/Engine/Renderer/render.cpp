@@ -1316,8 +1316,8 @@ namespace Shatter::render{
                 std::vector<glm::vec3> aabbBuffer{};
                 genVertexBufferFromAABB(*(*SingleAABBPool)[Id], aabbBuffer);
                 int model_index = (*SingleAABBPool)[Id]->m_model_index;
-                SingleBPool.createVertexBuffer(tool::combine("AABBBox", Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("AABBBox", Id), Buffer_Type::Vertex_Buffer);
+                SingleBPool.createVertexBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
                 set_array[0] = *(*set_pool)[model_index];
@@ -2427,12 +2427,15 @@ namespace Shatter::render{
         ImGui_ImplGlfw_InitForVulkan(window, true);
         ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
 
-        for(size_t index = 0; index < m_swapchainImages.size(); index++)
+        if(Config::getConfig("enableDockSpace"))
         {
-            m_swapChainSets[index] = ImGui_ImplVulkan_AddTexture(m_swapChainSamplers[index],
-                                                                 m_swapChainImageviews[index],
-                                                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            std::cout << "SwapChainImageSet: " << m_swapChainSets[index] << std::endl;
+            for(size_t index = 0; index < m_swapchainImages.size(); index++)
+            {
+                m_swapChainSets[index] = ImGui_ImplVulkan_AddTexture(m_swapChainSamplers[index],
+                                                                     m_swapChainImageviews[index],
+                                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                std::cout << "SwapChainImageSet: " << m_swapChainSets[index] << std::endl;
+            }
         }
     }
 
