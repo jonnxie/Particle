@@ -420,12 +420,7 @@ namespace Shatter::render{
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         createInfo.oldSwapchain = oldSwapchain;
 
-//        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
         QueueFamilyIndices indices = getIndices();
-//        uint32_t queueFamilyIndices[] = {(uint32_t) indices.graphicsFamily,
-//                                         (uint32_t) indices.presentFamily,
-//                                         (uint32_t) indices.transferFamily,
-//                                         (uint32_t) indices.computeFamily};
 
         std::set<uint32_t> queueFamilyIndicesSets = {(uint32_t) indices.graphicsFamily,
                                                      (uint32_t) indices.presentFamily,
@@ -451,7 +446,6 @@ namespace Shatter::render{
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-//        createInfo.oldSwapchain = VK_NULL_HANDLE;
         Config::setConfig("SwapChainImageCount", imageCount);
 
         if(swapChainSupport.capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT){
@@ -679,6 +673,7 @@ namespace Shatter::render{
         VkCommandPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
         if (vkCreateCommandPool(device, &poolInfo, nullptr, &transfer_commandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command Pool!");
@@ -2140,6 +2135,42 @@ namespace Shatter::render{
 
         return commandBuffer;
     }
+
+    VkCommandBuffer ShatterRender::beginSingleTimeTransCommands()
+    {
+        VkCommandBufferAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = transfer_commandPool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+        return commandBuffer;
+    }
+
+    void ShatterRender::endSingleTimeTransCommands(VkCommandBuffer commandBuffer)
+    {
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        vkQueueSubmit(transfer_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(transfer_queue);
+
+        vkFreeCommandBuffers(device, transfer_commandPool, 1, &commandBuffer);
+    }
+
 
     void ShatterRender::endSingleTimeCommands(VkCommandBuffer commandBuffer){
         vkEndCommandBuffer(commandBuffer);

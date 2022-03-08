@@ -180,7 +180,11 @@ namespace Shatter{
 
         public:
             VkCommandBuffer beginSingleTimeCommands() ;
-            void endSingleTimeCommands(VkCommandBuffer commandBuffer) ;
+            void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+            VkCommandBuffer beginSingleTimeTransCommands() ;
+            void endSingleTimeTransCommands(VkCommandBuffer commandBuffer);
+
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
             [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
             VkRenderPass getCaptureRenderPass(){

@@ -58,7 +58,7 @@ public:
                     m_deviceMemories.push_back(memory);
                 }
 
-                auto cmd = beginSingleCommandBuffer();
+                auto cmd = beginSingleTransCommandBuffer();
                 VkBufferImageCopy bufferCopyRegion = {};
                 bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 bufferCopyRegion.imageSubresource.layerCount = 1;
@@ -85,7 +85,7 @@ public:
                         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-                endSingleCommandBuffer(cmd);
+                endSingleTransCommandBuffer(cmd);
 
                 vkMapMemory(SingleDevice(), memory, 0, 4, 0, &mapped);
                 uint32_t result = *((uint32_t*)mapped);
