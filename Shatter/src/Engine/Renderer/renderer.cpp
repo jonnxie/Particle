@@ -2001,6 +2001,20 @@ namespace Shatter::render{
 
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device,&deviceProperties);
+
+        {
+            uint32_t count;
+            VkSampleCountFlags counts = deviceProperties.limits.framebufferColorSampleCounts & deviceProperties.limits.framebufferDepthSampleCounts;
+            count = VK_SAMPLE_COUNT_1_BIT;
+            if (counts & VK_SAMPLE_COUNT_2_BIT) { count = VK_SAMPLE_COUNT_2_BIT; }
+            if (counts & VK_SAMPLE_COUNT_4_BIT) { count = VK_SAMPLE_COUNT_4_BIT; }
+            if (counts & VK_SAMPLE_COUNT_8_BIT) { count = VK_SAMPLE_COUNT_8_BIT; }
+            if (counts & VK_SAMPLE_COUNT_16_BIT) { count = VK_SAMPLE_COUNT_16_BIT; }
+            if (counts & VK_SAMPLE_COUNT_32_BIT) { count = VK_SAMPLE_COUNT_32_BIT; }
+            if (counts & VK_SAMPLE_COUNT_64_BIT) { count = VK_SAMPLE_COUNT_64_BIT; }
+            Config::setConfig("FramebufferSampleCount", count);
+        }
+
 //
 //        VkPhysicalDeviceProperties2 deviceProperties2;
 //        (*vkGetPhysicalDeviceProperties2)(device,&deviceProperties2);
