@@ -260,17 +260,6 @@ void PPool::release() {
 //    m_map.clear();
 }
 
-//void PPool::createGP(const P_id &_id, const std::vector<Input_Type> &_inputType,
-//                     const std::vector<VkPipelineShaderStageCreateInfo> &_shader, AssemState _assemState,
-//                     RasterState _rasterState, MultisampleState _multisampleState,
-//                     DepthStencilState _depthStencilState, BlendState _blendState, const std::vector<Sl_id> &_sl_id,
-//                     uint32_t _pass, bool _off) {
-//    std::lock_guard<std::mutex> g_mutex(m_mutex);
-//    checkMap(m_map);
-//    m_map[_id] = GP::createGP(_inputType,_shader,_assemState,_rasterState,
-//                 _multisampleState,_depthStencilState,_blendState,_sl_id,_pass,_off);
-//}
-
 void PPool::createGP(const P_id & _id,
               const std::vector<Input_Type>& _inputType,
               const std::vector<VkPipelineShaderStageCreateInfo>& _shader,

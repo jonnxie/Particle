@@ -426,11 +426,11 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define DLineCatalog    "Engine/Base/lines.h"
 //#define RayCatalog    "Engine/Base/Raytracing.h"
 
-//#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"
-//#define ModelFilePath       "C:/Users/AnWell/Desktop/ASSET/models/"
-//#define TextureFilePath     "C:/Users/AnWell/Desktop/ASSET/textures/"
-#define ShaderFilePath      "C:/Users/jonnxie/ClionProjects/Particle/ShatterInut/assets/shaders/"
-#define ModelFilePath       "C:/Users/jonnxie/ClionProjects/data/models/"
-#define TextureFilePath     "C:/Users/jonnxie/ClionProjects/data/textures/"
+#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"
+#define ModelFilePath       "C:/Users/AnWell/Desktop/ASSET/models/"
+#define TextureFilePath     "C:/Users/AnWell/Desktop/ASSET/textures/"
+//#define ShaderFilePath      "C:/Users/jonnxie/ClionProjects/Particle/ShatterInut/assets/shaders/"
+//#define ModelFilePath       "C:/Users/jonnxie/ClionProjects/data/models/"
+//#define TextureFilePath     "C:/Users/jonnxie/ClionProjects/data/textures/"
 
 #endif //SHATTER_ENGINE_SHATTER_ENUM_H
