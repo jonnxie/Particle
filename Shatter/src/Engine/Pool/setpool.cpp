@@ -163,22 +163,6 @@ void SetPool::allocateDefaultDescriptorSets() const {
 }
 
 void SetPool::reallocateDefaultDescriptorSets() {
-//    auto set_pool = MPool<VkDescriptorSet>::getPool();
-//
-//    m_count *=2;
-//
-//    std::vector<VkDescriptorSetLayout> tmp_vec;
-//    tmp_vec.assign(m_count,SlbPool::getPool().getSL("Default"));
-//
-//    VkDescriptorSetAllocateInfo allocInfo = {};
-//    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-//    allocInfo.descriptorPool = m_set_pool;
-//    allocInfo.descriptorSetCount = m_count;
-//    allocInfo.pSetLayouts = tmp_vec.data();
-//
-//    if (vkAllocateDescriptorSets(Device::getDevice()(), &allocInfo, (*set_pool)()) != VK_SUCCESS) {
-//        throw std::runtime_error("failed to allocate descriptor set!");
-//    }
     auto set_pool = MPool<VkDescriptorSet>::getPool();
     std::vector<VkDescriptorSetLayout> tmp_vec;
     tmp_vec.assign(m_count,SlbPool::getPool().getSL("Default"));

@@ -105,13 +105,13 @@ DrawLine::DrawLine() {
                 realPos = glm::inverse(SingleCamera.m_camera.view) * view;
 
                 auto buffer = SingleBPool.getBuffer(tool::combine("DLines", id), Buffer_Type::Vertex_Host_Buffer);
-                void* data;
-                vkMapMemory(localDevice, buffer->getMemory(), PointSize, PointSize,VK_PIPELINE_STAGE_HOST_BIT, &data);
+//                void* data;
+//                vkMapMemory(localDevice, buffer->getMemory(), PointSize, PointSize,VK_PIPELINE_STAGE_HOST_BIT, &data);
                 Point point{};
                 point.pos = realPos;
                 point.color = RED_COLOR;
-                memcpy(data, &point, PointSize);
-                vkUnmapMemory(localDevice, buffer->getMemory());
+                memcpy(buffer->mapped, &point, PointSize);
+//                vkUnmapMemory(localDevice, buffer->getMemory());
                 lines.push_back(std::move(localLine));
             });
             SingleRender.normalChanged = true;

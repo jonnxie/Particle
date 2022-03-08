@@ -188,14 +188,11 @@ int main() {
 //        tri->init();
     }
 
-
     /*
      * Plane
      */
     auto plane = std::make_unique<Plane>(dvec3{0,0,1},dvec3{5,5,5});
     plane->draw();
-
-
 
     /*
      * target plane
@@ -290,7 +287,6 @@ int main() {
                              0);
 
 //    initSet();
-
     TaskPool::executeMultiple();
     render.createCommandBuffer();
     thread_pool->wait();

@@ -1250,6 +1250,7 @@ namespace Shatter::render{
                 std::vector<glm::vec3> aabbBuffer{};
                 genVertexBufferFromAABB(*(*SingleAABBPool)[Id], aabbBuffer);
                 int model_index = (*SingleAABBPool)[Id]->m_model_index;
+                SingleBPool.freeBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), Buffer_Type::Vertex_Buffer);
                 SingleBPool.createVertexBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
                 ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);

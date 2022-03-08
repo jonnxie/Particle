@@ -198,25 +198,32 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
     switch(_type){
         case Buffer_Type::Vertex_Host_Buffer:
         case Buffer_Type::Vertex_Buffer:{
-            findMap(m_vertex_map);
+            if(m_vertex_map.count(_id) == 0)
+            {
+                return;
+            }
             delete m_vertex_map[_id];
             m_vertex_map.erase(_id);
+            break;
         }
         case Buffer_Type::Index_Buffer:{
             findMap(m_index_map);
             delete m_index_map[_id];
             m_index_map.erase(_id);
+            break;
         }
         case Buffer_Type::Uniform_Buffer:{
             findMap(m_uniform_map);
             delete m_uniform_map[_id];
             m_uniform_map.erase(_id);
+            break;
         }
         case Buffer_Type::Storage_Host_Buffer:
         case Buffer_Type::Storage_Buffer:{
             findMap(m_storage_map);
             delete m_storage_map[_id];
             m_storage_map.erase(_id);
+            break;
         }
         case Buffer_Type::VS_Buffer:{
             findMap(m_vertex_map);
@@ -235,6 +242,7 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             delete m_storage_map[_id];
             m_storage_map.erase(_id);
             m_vertex_map.erase(_id);
+            break;
         }
     }
 }
