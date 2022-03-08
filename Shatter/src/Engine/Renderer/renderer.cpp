@@ -422,15 +422,26 @@ namespace Shatter::render{
 
 //        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
         QueueFamilyIndices indices = getIndices();
-        uint32_t queueFamilyIndices[] = {(uint32_t) indices.graphicsFamily,
-                                         (uint32_t) indices.presentFamily,
-                                         (uint32_t) indices.transferFamily,
-                                         (uint32_t) indices.computeFamily};
+//        uint32_t queueFamilyIndices[] = {(uint32_t) indices.graphicsFamily,
+//                                         (uint32_t) indices.presentFamily,
+//                                         (uint32_t) indices.transferFamily,
+//                                         (uint32_t) indices.computeFamily};
+
+        std::set<uint32_t> queueFamilyIndicesSets = {(uint32_t) indices.graphicsFamily,
+                                                     (uint32_t) indices.presentFamily,
+                                                     (uint32_t) indices.transferFamily,
+                                                     (uint32_t) indices.computeFamily};
+
+        std::vector<uint32_t> queueFamilyIndices{};
+        for(auto& set : queueFamilyIndicesSets)
+        {
+            queueFamilyIndices.emplace_back(set);
+        }
 
         if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+            createInfo.queueFamilyIndexCount = queueFamilyIndices.size();
+            createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
         } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
