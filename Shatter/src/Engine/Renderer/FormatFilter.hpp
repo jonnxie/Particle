@@ -5,6 +5,8 @@
 #ifndef MAIN_FORMATFILTER_HPP
 #define MAIN_FORMATFILTER_HPP
 
+#include "Engine/Core/BuildMacro.h"
+
 enum class TextureFormat{
     RGBA8U,
 

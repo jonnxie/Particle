@@ -15,22 +15,8 @@ namespace Shatter{
     class Listener {
     public:
         Listener(){
-//            m_map = std::unordered_map<Event,bool>(int(Event::Count));
-//            m_action = std::unordered_map<Event,std::function<void()>>(int(Event::Count));
-//            for(int i = 0; i < int(Event::Count); i++)
-//            {
-//                m_action[Event(i)] = [i](){
-//                    return;
-//                };
-//            }
             m_map = std::unordered_map<Event,bool>();
             m_action = std::unordered_map<Event,std::function<void()>>();
-//            for(int i = 0; i < int(Event::Count); i++)
-//            {
-//                m_action[Event(i)] = [i](){
-//                    return;
-//                };
-//            }
         }
         virtual void handle(Event _event){
             if(m_action.count(_event) != 0)

@@ -1,0 +1,12 @@
+//
+// Created by jonnxie on 2022/3/8.
+//
+
+#ifndef MAIN_BUILDMACRO_H
+#define MAIN_BUILDMACRO_H
+
+#define SHATTER_PLATFORM_WINDOWS
+#define SHATTER_GRAPHICS_VULKAN
+#define SHATTER_BUILD_DLL
+
+#endif //MAIN_BUILDMACRO_H

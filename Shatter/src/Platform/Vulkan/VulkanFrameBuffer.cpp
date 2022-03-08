@@ -6,6 +6,7 @@
 #include "VulkanFormatFilter.h"
 #include <utility>
 #include "Engine/Object/device.h"
+#include "Engine/Renderer/renderer.h"
 
 VkImageAspectFlags getAspect(VkImageUsageFlags _usage)
 {
@@ -14,7 +15,7 @@ VkImageAspectFlags getAspect(VkImageUsageFlags _usage)
 
     if(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
 
-    return flags;
+    return VkImageAspectFlags(flags);
 }
 
 void VulkanFrameBuffer::init() {
@@ -109,6 +110,16 @@ void VulkanFrameBuffer::release() {
         vkDestroySampler(device, a.sampler, nullptr);
     }
 
+    for(auto b : m_buffers)
+    {
+        vkDestroyBuffer(SingleDevice(), b, nullptr);
+    }
+
+    for(auto m : m_deviceMemories)
+    {
+        vkFreeMemory(SingleDevice(), m, nullptr);
+    }
+
     vkDestroyFramebuffer(device, m_frame_buffer, nullptr);
     m_released = true;
 }
@@ -117,4 +128,5 @@ VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecification _spec)
         : FrameBuffer(std::move(_spec)){
     init();
 }
+
 

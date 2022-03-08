@@ -517,7 +517,7 @@ namespace Shatter::render{
         FrameBufferSpecification spec{};
         spec.Width = getViewPort().width;
         spec.Height = getViewPort().height;
-        spec.formats = {{m_captureFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT},
+        spec.formats = {{m_captureFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
                         {m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}};
         spec.Samples = 1;
         spec.SwapChainTarget = false;
