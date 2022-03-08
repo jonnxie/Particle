@@ -28,6 +28,7 @@ void Config::init()
     config_map["PointDefaultSize"]              = 4;
     config_map["SwapChainImageCount"]           = 3;
     config_map["FramebufferSampleCount"]        = 0;
+    config_map["EnableMSAA"]                    = 1;
 }
 
 int Config::getConfig(const std::string& _id)

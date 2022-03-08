@@ -92,6 +92,8 @@ namespace Shatter{
              */
             void createRenderPass();
 
+            void createMSAARenderPass();
+
             VkCommandBuffer m_capture_buffer = VK_NULL_HANDLE;
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
