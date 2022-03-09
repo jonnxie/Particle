@@ -41,7 +41,7 @@ public:
     void refine();
 
     VkDescriptorPool m_set_pool;
-    int m_count = 20;
+    int m_count;
 private:
     SetPool():m_set_pool(VK_NULL_HANDLE){};
 };

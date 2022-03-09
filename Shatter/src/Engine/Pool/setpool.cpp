@@ -10,7 +10,7 @@
 #include <mutex>
 #include "slbpool.h"
 #include "mpool.h"
-
+#include "Engine/Item/configs.h"
 
 using namespace Shatter::render;
 static std::mutex pool_mutex;
@@ -28,6 +28,7 @@ SetPool &SetPool::getPool() {
 }
 
 void SetPool::init() {
+    m_count = Config::getConfig("DefaultModelCount");
     std::vector<VkDescriptorPoolSize> dps_vec{
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,100},
             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,100},

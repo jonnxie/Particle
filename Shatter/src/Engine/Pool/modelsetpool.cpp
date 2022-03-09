@@ -10,6 +10,7 @@
 #include "Engine/Object/device.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include "Engine/Renderer/renderer.h"
+#include "Engine/Item/configs.h"
 
 static std::mutex pool_mutex;
 static bool if_get = false;
@@ -29,6 +30,8 @@ ModelSetPool& ModelSetPool::getPool()
 
 void ModelSetPool::init()
 {
+    m_model_count = Config::getConfig("DefaultModelCount");
+
     VkBuffer buffer = (*BPool::getPool().getBuffer("Model", Buffer_Type::Uniform_Buffer))();
 
     std::vector<VkDescriptorBufferInfo> model_buffer(m_model_count);

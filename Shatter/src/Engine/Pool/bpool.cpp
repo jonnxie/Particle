@@ -10,6 +10,7 @@
 #include "mpool.h"
 #include "modelsetpool.h"
 #include "Engine/Event/taskpool.h"
+#include "Engine/Item/configs.h"
 #include UniformCatalog
 static bool created = false;
 static std::mutex pool_mutex;
@@ -250,6 +251,7 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
 
 
 void BPool::init() {
+    m_model_count = Config::getConfig("DefaultModelCount");
     createUniformBuffer("CameraBuffer",sizeof(CameraBuffer));
     createUniformBuffer("Model",sizeof(glm::mat4) * m_model_count);
     createUniformBuffer("CameraPos",sizeof(glm::vec3));

@@ -108,7 +108,7 @@ private:
     BPool() = default;
 
     std::vector<int> m_idle_model;
-    int m_model_count = 20;
+    int m_model_count;
     size_t model_size;
     glm::mat4 * models{nullptr};
 };

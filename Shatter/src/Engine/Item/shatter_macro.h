@@ -30,8 +30,9 @@ for(auto& i:map){ \
 }
 
 #define checkMapPrint(map) \
-for(auto& i:map){ \
-    if(i.first == _id) std::cout << _id + "is already exit" << std::endl;\
+if(map.count(_id) != 0)    \
+{                          \
+     std::cout << _id + "is already exit" << std::endl;       \
 }
 
 #define findMap(map) \
