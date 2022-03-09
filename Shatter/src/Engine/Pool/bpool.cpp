@@ -330,7 +330,7 @@ void BPool::reallocateModel() {
     createUniformBuffer("Model",sizeof(glm::mat4) * 2 * m_model_count);
     auto buffer = BPool::getPool().getBuffer("Model", Buffer_Type::Uniform_Buffer);
     buffer->map();
-    memcpy(buffer->mapped, models, sizeof(glm::mat4) * m_model_count);
+    memcpy(buffer->mapped, models, model_size);
 
     int old_num = m_model_count;
     m_model_count *= 2;

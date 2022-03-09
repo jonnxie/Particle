@@ -213,7 +213,12 @@ namespace Shatter::render{
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
-        createRenderPass();
+        if(Config::getConfig("EnableMSAA"))
+        {
+            createMSAARenderPass();
+        }else{
+            createRenderPass();
+        }
 #ifdef SHATTER_GPU_CAPTURE
         createCaptureRenderPass();
         createCaptureFramebuffers();
@@ -892,73 +897,62 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createMSAARenderPass(){
-        std::array<VkAttachmentDescription, AttachmentCount> attachments{};
+        std::array<VkAttachmentDescription, MSAAAttachmentCount> attachments{};
         {
-            VkAttachmentDescription colorAttach;
-            colorAttach.format = swapchain_image_format;
-            colorAttach.samples = VkSampleCountFlagBits(Config::getConfig("FramebufferSampleCount"));
-            colorAttach.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttach.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttach.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttach.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            VkAttachmentDescription colorAttachResolve;
-            colorAttachResolve.format = swapchain_image_format;
-            colorAttachResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorAttachResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttachResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttachResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
             //Color attachment
-            attachments[AttachmentBack].format = swapchain_image_format;
-            attachments[AttachmentBack].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[AttachmentBack].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[AttachmentBack].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachments[AttachmentBack].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[AttachmentBack].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentBack].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[AttachmentBack].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            attachments[MSAAAttachmentBack].format = swapchain_image_format;
+            attachments[MSAAAttachmentBack].samples = VkSampleCountFlagBits(Config::getConfig("FramebufferSampleCount"));
+            attachments[MSAAAttachmentBack].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[MSAAAttachmentBack].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[MSAAAttachmentBack].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentBack].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentBack].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentBack].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             // Position
-            attachments[AttachmentPosition].format = positionAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
-            attachments[AttachmentPosition].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[AttachmentPosition].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[AttachmentPosition].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentPosition].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[AttachmentPosition].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentPosition].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[AttachmentPosition].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachments[MSAAAttachmentPosition].format = positionAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachments[MSAAAttachmentPosition].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[MSAAAttachmentPosition].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[MSAAAttachmentPosition].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentPosition].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentPosition].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentPosition].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentPosition].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             // Normals
-            attachments[AttachmentNormal].format = normalAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
-            attachments[AttachmentNormal].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[AttachmentNormal].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[AttachmentNormal].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentNormal].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[AttachmentNormal].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentNormal].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[AttachmentNormal].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachments[MSAAAttachmentNormal].format = normalAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachments[MSAAAttachmentNormal].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[MSAAAttachmentNormal].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[MSAAAttachmentNormal].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentNormal].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentNormal].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentNormal].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentNormal].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             // Albedo
-            attachments[AttachmentAlbedo].format = albedoAttachment->format = VK_FORMAT_R8G8B8A8_UNORM;
-            attachments[AttachmentAlbedo].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[AttachmentAlbedo].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[AttachmentAlbedo].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentAlbedo].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[AttachmentAlbedo].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentAlbedo].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[AttachmentAlbedo].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachments[MSAAAttachmentAlbedo].format = albedoAttachment->format = VK_FORMAT_R8G8B8A8_UNORM;
+            attachments[MSAAAttachmentAlbedo].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[MSAAAttachmentAlbedo].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[MSAAAttachmentAlbedo].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentAlbedo].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentAlbedo].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentAlbedo].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentAlbedo].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             //Depth attachment
-            attachments[AttachmentDepth].format = m_depthFormat;
-            attachments[AttachmentDepth].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachments[AttachmentDepth].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachments[AttachmentDepth].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentDepth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachments[AttachmentDepth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachments[AttachmentDepth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachments[AttachmentDepth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachments[MSAAAttachmentDepth].format = m_depthFormat;
+            attachments[MSAAAttachmentDepth].samples = VkSampleCountFlagBits(Config::getConfig("FramebufferSampleCount"));
+            attachments[MSAAAttachmentDepth].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[MSAAAttachmentDepth].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentDepth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentDepth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentDepth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentDepth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            //present attachment
+            attachments[MSAAAttachmentPresent].format = swapchain_image_format;
+            attachments[MSAAAttachmentPresent].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[MSAAAttachmentPresent].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentPresent].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[MSAAAttachmentPresent].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[MSAAAttachmentPresent].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[MSAAAttachmentPresent].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[MSAAAttachmentPresent].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         }
         std::array<VkSubpassDescription,3> subpassDescriptions{};
 
@@ -1009,6 +1003,7 @@ namespace Shatter::render{
         // Use the color/depth attachments filled in the first pass as input attachments
         subpassDescriptions[SubpassTransparency].inputAttachmentCount = 1;
         subpassDescriptions[SubpassTransparency].pInputAttachments = inputReferences;
+        subpassDescriptions[SubpassTransparency].pResolveAttachments = &colorAttachmentResolveRef;
 
         // Subpass dependencies for layout transitions
         std::array<VkSubpassDependency, 4> dependencies;

@@ -173,7 +173,7 @@ void SetPool::reallocateDefaultDescriptorSets() {
     allocInfo.descriptorSetCount = m_count;
     allocInfo.pSetLayouts = tmp_vec.data();
 
-    if (vkAllocateDescriptorSets(Device::getDevice()(), &allocInfo, &(*set_pool)()[m_count]) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(Device::getDevice()(), &allocInfo, (*set_pool)[m_count]) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor set!");
     }
     m_count *=2;
