@@ -14,7 +14,6 @@
 #include "glm.hpp"
 #include <algorithm>
 #include <condition_variable>
-//#include <semaphore.h>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
 #include ConfigCatalog
