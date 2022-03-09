@@ -781,6 +781,8 @@ enum class CommandPoolType{
 
 VkCommandPool getCommandPool(CommandPoolType _type);
 
+VkCommandPool getCommandPool(CommandPoolType _type, uint32_t _index);
+
 static std::vector<UnionCommandPool> threadCommandPool;
 
 std::vector<UnionCommandPool>* getThreadCommandPool();

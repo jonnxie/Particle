@@ -554,6 +554,17 @@ VkCommandPool getCommandPool(CommandPoolType _type){
     return pool;
 }
 
+VkCommandPool getCommandPool(CommandPoolType _type, uint32_t _index){
+    VkCommandPool pool{};
+    if(_type == CommandPoolType::ComputePool)
+    {
+        pool = threadCommandPool[_index].computePool;
+    }else{
+        pool = threadCommandPool[_index].graphicsPool;
+    }
+    return pool;
+}
+
 std::vector<UnionCommandPool>* getThreadCommandPool() {
     return &threadCommandPool;
 }

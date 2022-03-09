@@ -60,6 +60,10 @@ public:
         }
     }
 
+    Thread* operator[](size_t _index){
+        return threads[_index];
+    }
+
     static ThreadPool* pool();
 
     static void release();

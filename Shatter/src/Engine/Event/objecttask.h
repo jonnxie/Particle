@@ -16,9 +16,9 @@ public:
 
     static void shadowDepthTask(int _threadIndex, int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb);
 
-    static void newGraphicsTask(int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb);
+    static void newGraphicsTask(uint32_t _threadId, int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb);
 
-    static void gTask(int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,VkCommandBuffer* _cb);
+    static void gTask(uint32_t _threadId, int _id, VkCommandBufferInheritanceInfo _inheritanceInfo, VkCommandBuffer* _cb);
 
     static void rayTracingTask(int _threadIndex,int _objectIndex,int _id,VkCommandBufferInheritanceInfo _inheritanceInfo,int _imageIndex);
 };
