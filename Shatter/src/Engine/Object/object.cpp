@@ -13,21 +13,7 @@
 #include DeviceCatalog
 
 Object::~Object(){
-    auto& model_pool = ModelSetPool::getPool();
-    auto dpool = MPool<DObject>::getPool();
-    for(auto i : m_dobjs){
-        dpool->free(i);
-        model_pool.free((*dpool)[i]->m_model_index);
-    }
-    auto gpool = MPool<GObject>::getPool();
-    for(auto i: m_gobjs){
-        gpool->free(i);
-    }
-
-    auto cpool = MPool<CObject>::getPool();
-    for(auto i: m_cobjs){
-        cpool->free(i);
-    }
+    release();
 }
 
 void Object::draw(VkCommandBuffer _cb) {
@@ -49,6 +35,24 @@ void Object::insertGObject(int _obj){
 
 void Object::insertCObject(int _obj){
     m_cobjs.emplace_back(_obj);
+}
+
+void Object::release(){
+    auto& model_pool = ModelSetPool::getPool();
+    auto dpool = MPool<DObject>::getPool();
+    for(auto i : m_dobjs){
+        dpool->free(i);
+        model_pool.free((*dpool)[i]->m_model_index);
+    }
+    auto gpool = MPool<GObject>::getPool();
+    for(auto i: m_gobjs){
+        gpool->free(i);
+    }
+
+    auto cpool = MPool<CObject>::getPool();
+    for(auto i: m_cobjs){
+        cpool->free(i);
+    }
 }
 
 void Object::construct() {

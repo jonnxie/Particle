@@ -37,6 +37,7 @@ public:
     void insertDObject(int);
     void insertGObject(int);
     void insertCObject(int);
+    virtual void release();
     std::vector<int> m_dobjs{};
     std::vector<int> m_gobjs{};
     std::vector<int> m_cobjs{};

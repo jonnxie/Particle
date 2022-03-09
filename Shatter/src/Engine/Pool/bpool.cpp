@@ -82,12 +82,9 @@ void BPool::createVertexHostBuffer(const B_id& _id,VkDeviceSize _size,void* _dat
 
 
 void BPool::createVSBuffer(const B_id& _id,VkDeviceSize _size,void* _data) {
-    std::lock_guard<std::mutex> guard(m_v_mutex);
     std::lock_guard<std::mutex> guard_s(m_s_mutex);
-    checkMapPrint(m_vertex_map)
     checkMapPrint(m_storage_map)
-    m_vertex_map[_id] = ShatterBuffer::createBuffer(_size, Buffer_Type::VS_Buffer, _data);
-    m_storage_map[_id] = m_vertex_map[_id];
+    m_storage_map[_id] = ShatterBuffer::createBuffer(_size, Buffer_Type::VS_Buffer, _data);
     m_size_map[_id] = _size;
 }
 
@@ -220,29 +217,11 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             break;
         }
         case Buffer_Type::Storage_Host_Buffer:
+        case Buffer_Type::VS_Buffer:
         case Buffer_Type::Storage_Buffer:{
             findMap(m_storage_map);
             delete m_storage_map[_id];
             m_storage_map.erase(_id);
-            break;
-        }
-        case Buffer_Type::VS_Buffer:{
-            findMap(m_vertex_map);
-            num = 0;
-            for (auto &i:m_storage_map)
-            {
-                if (i.first != _id)
-                {
-                    num++;
-                }
-            }
-            if (num == m_storage_map.size())
-            {
-                std::cout << _id + "is not exit" << std::endl;
-            }
-            delete m_storage_map[_id];
-            m_storage_map.erase(_id);
-            m_vertex_map.erase(_id);
             break;
         }
     }

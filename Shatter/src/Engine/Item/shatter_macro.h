@@ -35,12 +35,17 @@ if(map.count(_id) != 0)    \
      std::cout << _id + "is already exit" << std::endl;       \
 }
 
+//#define findMap(map) \
+//int num = 0;          \
+//for(auto &i:map){     \
+//    if(i.first != _id) num++;                 \
+//}                     \
+//if(num == map.size()){\
+//    std::cout << _id + "is not exit"<< std::endl;                      \
+//}
+
 #define findMap(map) \
-int num = 0;          \
-for(auto &i:map){     \
-    if(i.first != _id) num++;                 \
-}                     \
-if(num == map.size()){\
+if(map.count(_id) == 0){\
     std::cout << _id + "is not exit"<< std::endl;                      \
 }
 

@@ -23,6 +23,24 @@ static int mallocId()
     return initIdVal++;
 }
 
+class DLinePool : public Object{
+public:
+    explicit DLinePool(const std::vector<Line>& _lines, bool _updateFunc = true);
+    void constructG() override;
+    void constructD() override;
+    void constructC() override{};
+    void update(float) override {};
+    void pushLine(const Line& _line);
+    void pushLines(const std::vector<Line>& _lines);
+    void release() override;
+
+public:
+    std::vector<Line>   lines;
+    bool                updateFunc;
+    bool                changed = true;
+    int                 id;
+};
+
 class DLines : public Object{
 public:
     explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true);
