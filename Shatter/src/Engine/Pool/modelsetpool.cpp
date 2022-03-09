@@ -9,6 +9,7 @@
 #include "setpool.h"
 #include "Engine/Object/device.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
+#include "Engine/Renderer/renderer.h"
 
 static std::mutex pool_mutex;
 static bool if_get = false;
@@ -67,6 +68,7 @@ void ModelSetPool::reallocate()
     m_model_count*=2;
     auto set_pool = MPool<VkDescriptorSet>::getPool();
     set_pool->reallocated();
+    vkQueueWaitIdle(SingleRender.graphics_queue);
     BPool::getPool().reallocateModel();
     SetPool::getPool().reallocateDefaultDescriptorSets();
     update();

@@ -2051,7 +2051,7 @@ namespace Shatter::render{
         }else{
             if(!windowStill)
             {
-                vkDeviceWaitIdle(device);
+//                vkDeviceWaitIdle(device);
                 computeSubmitInfo.waitSemaphoreCount = 0;
                 computeSubmitInfo.pWaitSemaphores = nullptr;
                 computeSubmitInfo.pWaitDstStageMask = nullptr;
