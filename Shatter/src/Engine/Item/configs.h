@@ -9,13 +9,13 @@
 #include <unordered_map>
 #include <string>
 
+#include "shatter_macro.h"
 
 class Config{
     void init();
 public:
     static Config& config();
-    Config(const Config&) = delete;
-    Config& operator=(const Config&) = delete;
+    DefineUnCopy(Config);
     std::unordered_map<std::string,int> config_map;
     static int getConfig(const std::string& _id);
     static void setConfig(const std::string& _id,int _val);

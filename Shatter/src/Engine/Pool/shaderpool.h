@@ -14,10 +14,7 @@
 class ShaderPool : public Pool<Shader_id,VkPipelineShaderStageCreateInfo> {
 public:
     static ShaderPool& getPool();
-
-    ShaderPool(const ShaderPool& _other) = delete;
-
-    ShaderPool& operator = (const ShaderPool& _other) = delete;
+    DefineUnCopy(ShaderPool);
 
     void init() override;
 

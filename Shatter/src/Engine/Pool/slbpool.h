@@ -17,8 +17,7 @@
 class SlbPool : public Pool<Slb_id,std::vector<VkDescriptorSetLayoutBinding>>{
 public:
     static SlbPool& getPool();
-    SlbPool(const SlbPool&) = delete;
-    SlbPool& operator= (const SlbPool&) = delete;
+    DefineUnCopy(SlbPool);
 
     void init() override;
 

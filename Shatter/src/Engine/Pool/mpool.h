@@ -13,6 +13,7 @@
 #include <algorithm>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
+#include "Engine/Item/shatter_macro.h"
 
 class Line3d;
 class Plane3d;
@@ -28,6 +29,8 @@ public:
     explicit MPool(int _count ):m_count(_count) {
         init();
     }
+
+    DefineUnCopy(MPool);
 public:
 
     void malloc(int _count, std::vector<int> &_out)

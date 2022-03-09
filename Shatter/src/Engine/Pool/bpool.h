@@ -26,9 +26,7 @@ using namespace Shatter::buffer;
 class BPool {
 public:
     static BPool& getPool();
-    BPool(const BPool&) = delete;
-    BPool& operator=(const BPool&) = delete;
-
+    DefineUnCopy(BPool);
     void init();
 
     void release();

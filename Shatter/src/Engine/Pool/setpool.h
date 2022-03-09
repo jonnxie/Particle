@@ -16,9 +16,7 @@
 class SetPool : public Pool<Set_id,VkDescriptorSet>{
 public:
     static SetPool& getPool();
-    SetPool(const SetPool&) = delete;
-    SetPool& operator=(const SetPool&) = delete;
-
+    DefineUnCopy(SetPool);
     void init() override;
 
     void release() override;
