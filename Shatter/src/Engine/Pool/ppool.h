@@ -28,18 +28,6 @@ public:
 
     void release() override;
 
-//    void createGP(const P_id & _id,
-//                  const std::vector<Input_Type>& _inputType,
-//                  const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
-//                  AssemState _assemState,
-//                  RasterState _rasterState,
-//                  MultisampleState _multisampleState,
-//                  DepthStencilState _depthStencilState,
-//                  BlendState _blendState,
-//                  const std::vector<Sl_id>& _sl_id,
-//                  uint32_t _pass = SubpassG,
-//                  bool _off = false);
-
     void createGP(const P_id & _id,
                   const std::vector<Input_Type>& _inputType,
                   const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
