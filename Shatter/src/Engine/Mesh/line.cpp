@@ -134,7 +134,7 @@ DrawLinePool::DrawLinePool() {
             input::cursor(pre_pos, STATE_OUT);
             auto line = makeLine(pre_pos);
             pool->pushLine(line);
-            TaskPool::pushUpdateTask("DrawLinePoolUpdate",[&](float _abs_time){
+            TaskPool::pushUpdateTask("DrawLinePoolUpdate", [&](float _abs_time){
                 glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
                 float depth = center.z / center.w;
 
@@ -148,11 +148,10 @@ DrawLinePool::DrawLinePool() {
                 input::LineColor(point.color, STATE_OUT);
                 Line* ptr = (Line*)buffer->mapped;
                 ptr += pool->lineCount-1;
-                Point* pointPtr = (Point*)ptr;
+                auto* pointPtr = (Point*)ptr;
                 pointPtr++;
                 memcpy(pointPtr, &point, PointSize);
             });
-            SingleRender.normalChanged = true;
             draw = true;
         };
     };
