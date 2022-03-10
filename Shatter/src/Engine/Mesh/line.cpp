@@ -119,3 +119,41 @@ DrawLine::DrawLine() {
         };
     };
 }
+
+DrawLinePool::DrawLinePool() {
+    pool = std::make_unique<DLinePool>(std::vector<Line>{}, true);
+    m_action[Event::SingleClick] = [&]() {
+        static bool draw = false;
+        static glm::vec3 pre_pos;
+        static glm::vec3 realPos;
+        static VkDevice localDevice = SingleDevice();
+        if (draw) {
+            TaskPool::popUpdateTask("DrawLinePoolUpdate");
+            draw = false;
+        } else {
+            input::cursor(pre_pos, STATE_OUT);
+            auto line = makeLine(pre_pos);
+            pool->pushLine(line);
+            TaskPool::pushUpdateTask("DrawLinePoolUpdate",[&](float _abs_time){
+                glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
+                float depth = center.z / center.w;
+
+                glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(),depth,1.0f);
+                view /= view.w;
+                realPos = glm::inverse(SingleCamera.m_camera.view) * view;
+
+                auto buffer = SingleBPool.getBuffer(tool::combine("DLinePool", pool->id), Buffer_Type::Vertex_Host_Buffer);
+                Point point{};
+                point.pos = realPos;
+                input::LineColor(point.color, STATE_OUT);
+                Line* ptr = (Line*)buffer->mapped;
+                ptr += pool->lineCount-1;
+                Point* pointPtr = (Point*)ptr;
+                pointPtr++;
+                memcpy(pointPtr, &point, PointSize);
+            });
+            SingleRender.normalChanged = true;
+            draw = true;
+        };
+    };
+}

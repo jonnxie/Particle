@@ -7,6 +7,7 @@
 #include <sstream>
 #include "Engine/Object/device.h"
 #include "Engine/Renderer/shatter_render_include.h"
+#include "Engine/Object/inputaction.h"
 //#include <ktx.h>
 //#include <ktxvulkan.h>
 //#include "../../external/ktx/include/ktx.h"
@@ -662,6 +663,14 @@ bool memoryTypeFromProperties(VkPhysicalDeviceMemoryProperties &memoryProperties
     }
     //没有找到所需的类型索引
     return false;
+}
+
+Line makeLine(glm::vec3 _initialPosition)
+{
+    glm::vec3 color;
+    input::LineColor(color, STATE_OUT);
+    Point p = {_initialPosition, color};
+    return {p, p};
 }
 
 Material &getMaterial() {

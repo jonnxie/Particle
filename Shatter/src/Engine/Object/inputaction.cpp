@@ -73,6 +73,7 @@ namespace input{
     genInOut(cursor, glm::vec3);
     genInOut(mouseRay, glm::vec3);
     genInOut(captureObject, uint32_t);
+    genInOut(LineColor, glm::vec3);
     genInOut(MousePressCoordiante, glm::u32vec2);
     genInOut(inputMode, InputMode);
     genInOut(targetDepth, float);

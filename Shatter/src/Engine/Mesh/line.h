@@ -14,6 +14,8 @@
 class DLines;
 using namespace glm;
 
+class DLinePool;
+
 using namespace Shatter;
 
 class GLine
@@ -36,7 +38,7 @@ public:
 public:
     DLines* line{nullptr};
 
-    vec3  p0, p1;
+    vec3   p0, p1;
     vec3   color{0.0f,0.5f,0.0f};
 };
 
@@ -46,6 +48,14 @@ public:
 private:
     std::deque<std::unique_ptr<GLine>> lines;
 };
+
+class DrawLinePool : public Shatter::Listener{
+public:
+    DrawLinePool();
+private:
+    std::unique_ptr<DLinePool> pool;
+};
+
 
 
 #endif //GAME_LINE_H

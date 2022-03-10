@@ -47,6 +47,7 @@ namespace input{
     delInOut(cursor, glm::vec3);
     delInOut(mouseRay, glm::vec3);
     delInOut(captureObject,uint32_t);
+    delInOut(LineColor, glm::vec3);
     delInOut(MousePressCoordiante,glm::u32vec2);
     delInOut(inputMode, InputMode);
     delInOut(targetDepth, float);

@@ -539,6 +539,8 @@ struct Line{
 };
 #define LineSize 48
 
+Line makeLine(glm::vec3 _initialPosition);
+
 struct Tri{
     Point points[3];
 };
