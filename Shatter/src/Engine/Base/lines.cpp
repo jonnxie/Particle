@@ -15,7 +15,7 @@
 #include OffScreenCatalog
 #include AppCatalog
 #include RenderCatalog
-
+#include ConfigCatalog
 
 DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
     lines = _lines;
@@ -68,6 +68,8 @@ void DLines::pushLines(const std::vector<Line>& _lines) {
 DLinePool::DLinePool(const std::vector<Line>& _lines, bool _updateFunc): updateFunc(_updateFunc){
     lines = _lines;
     id = mallocId();
+    lineResolveCount = Config::getConfig("LinePoolInitialCount");
+    lineCount = _lines.size();
 }
 
 void DLinePool::constructG(){
@@ -87,8 +89,8 @@ void DLinePool::constructD(){
                          ms_index,
                          DrawType::Vertex,
                          0,
-                         tool::combine("DLines",id),
-                         lines.size() * 2,
+                         tool::combine("DLinePool",id),
+                         lineCount * 2,
                          "",
                          0,
                          0,
@@ -107,13 +109,22 @@ void DLinePool::constructD(){
 
 void DLinePool::pushLine(const Line &_line) {
     lines.push_back(_line);
+    if(++lineCount >= lineResolveCount)
+    {
+        reallocated();
+    }
 }
 
 void DLinePool::pushLines(const std::vector<Line>& _lines) {
     lines.insert(lines.end(),_lines.begin(),_lines.end());
+    lineCount += _lines.size();
+    if(lineCount >= lineResolveCount)
+    {
+        reallocated();
+    }
 }
 
-void DLinePool::release(){
+void DLinePool::reallocated(){
     SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
     Object::release();
     if(updateFunc)
@@ -122,6 +133,7 @@ void DLinePool::release(){
     }
     SingleBPool.freeBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer);
     init();
+    SingleRender.normalChanged = true;
 }
 
 

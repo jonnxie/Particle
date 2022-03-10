@@ -32,12 +32,14 @@ public:
     void update(float) override {};
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
-    void release() override;
+    void reallocated();
 
 public:
     std::vector<Line>   lines;
     bool                updateFunc;
     bool                changed = true;
+    int                 lineCount;
+    int                 lineResolveCount;
     int                 id;
 };
 
