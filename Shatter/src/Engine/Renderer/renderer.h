@@ -229,6 +229,7 @@ namespace Shatter{
             static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
             static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             std::vector<int>* getDObjects();
+            void releaseObject(int _id, DrawObjectType _type);
             std::vector<int>* getCObjects();
             std::vector<int>* getTObjects();
             std::vector<int>* getNObjects();

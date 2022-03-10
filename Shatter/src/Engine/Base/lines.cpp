@@ -114,12 +114,14 @@ void DLinePool::pushLines(const std::vector<Line>& _lines) {
 }
 
 void DLinePool::release(){
+    SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
     Object::release();
     if(updateFunc)
     {
         TaskPool::popUpdateTask(tool::combine("LinePoolBasic",id));
     }
-
+    SingleBPool.freeBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer);
+    init();
 }
 
 

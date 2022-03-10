@@ -2515,6 +2515,52 @@ namespace Shatter::render{
         return &offdrawid_vec;
     }
 
+    void ShatterRender::releaseObject(int _id, DrawObjectType _type)
+    {
+        switch (_type) {
+            case DrawObjectType::Default:
+            {
+                auto iterator = std::find(drawid_vec.begin(), drawid_vec.end(), _id);
+                if(iterator != drawid_vec.end())
+                {
+                    drawid_vec.erase(iterator);
+                }
+                break;
+            }
+            case DrawObjectType::OffScreen:
+            {
+                auto iterator = std::find(offdrawid_vec.begin(), offdrawid_vec.end(), _id);
+                if(iterator != offdrawid_vec.end())
+                {
+                    offdrawid_vec.erase(iterator);
+                }
+                break;
+            }
+            case DrawObjectType::Transparency:
+            {
+                auto iterator = std::find(transparency_vec.begin(), transparency_vec.end(), _id);
+                if(iterator != transparency_vec.end())
+                {
+                    transparency_vec.erase(iterator);
+                }
+                break;
+            }
+            case DrawObjectType::Normal:
+            {
+                auto iterator = std::find(normal_vec.begin(), normal_vec.end(), _id);
+                if(iterator != normal_vec.end())
+                {
+                    normal_vec.erase(iterator);
+                }
+                break;
+            }
+            default:{
+                break;
+            }
+        }
+    }
+
+
     std::unordered_map<int, int>* ShatterRender::getAABBMap()
     {
         return &aabb_map;
