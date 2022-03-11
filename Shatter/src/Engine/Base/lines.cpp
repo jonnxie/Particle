@@ -137,6 +137,7 @@ void DLinePool::reallocated(){
     {
         TaskPool::popUpdateTask(tool::combine("LinePoolBasic",id));
     }
+    vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer);
     lineResolveCount *= 2;
     init();

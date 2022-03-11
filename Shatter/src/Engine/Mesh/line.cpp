@@ -148,7 +148,7 @@ DrawLinePool::DrawLinePool() {
                 point.pos = realPos;
                 input::LineColor(point.color, STATE_OUT);
                 pool->lines[pool->lineCount-1].end = point;
-                printPoint(point.pos);
+//                printPoint(point.pos);
 //                Line* ptr = (Line*)buffer->mapped;
 //                ptr += pool->lineCount-1;
 //                auto* pointPtr = (Point*)ptr;
