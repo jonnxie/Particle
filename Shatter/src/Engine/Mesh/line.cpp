@@ -146,11 +146,12 @@ DrawLinePool::DrawLinePool() {
                 Point point{};
                 point.pos = realPos;
                 input::LineColor(point.color, STATE_OUT);
-                Line* ptr = (Line*)buffer->mapped;
-                ptr += pool->lineCount-1;
-                auto* pointPtr = (Point*)ptr;
-                pointPtr++;
-                memcpy(pointPtr, &point, PointSize);
+                pool->lines[pool->lineCount-1].end = point;
+//                Line* ptr = (Line*)buffer->mapped;
+//                ptr += pool->lineCount-1;
+//                auto* pointPtr = (Point*)ptr;
+//                pointPtr++;
+//                memcpy(pointPtr, &point, PointSize);
             });
             draw = true;
         };

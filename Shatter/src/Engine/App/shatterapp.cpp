@@ -156,6 +156,19 @@ namespace Shatter::app{
                 }
             }
 
+            if(key == GLFW_KEY_F6)
+            {
+                static bool drawLinePool = true;
+                if(drawLinePool)
+                {
+                    drawLinePool = false;
+                    appendListener("drawLinePool",new DrawLinePool);
+                }else{
+                    deleteListener("drawLinePool");
+                    drawLinePool = true;
+                }
+            }
+
         }
 
         if(action == GLFW_REPEAT)

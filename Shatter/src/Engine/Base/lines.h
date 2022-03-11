@@ -39,6 +39,7 @@ public:
     bool                updateFunc;
     bool                changed = true;
     int                 lineCount;
+    size_t              poolSize;
     int                 lineResolveCount;
     int                 id;
 };
