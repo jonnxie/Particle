@@ -1605,6 +1605,7 @@ namespace Shatter::render{
                 vkCmdExecuteCommands(graphics_buffers[i], 1, &composite_buffers[i]);
             }
             vkCmdNextSubpass(graphics_buffers[i], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+            inheritanceInfo.subpass = SubpassTransparency;
 
             /*
              * normal object pass
@@ -1613,7 +1614,6 @@ namespace Shatter::render{
                 if(!normal_vec.empty())
                 {
                     std::vector<VkCommandBuffer> normalBuffers(normal_vec.size());
-                    inheritanceInfo.subpass = SubpassTransparency;
                     threadIndex = 0;
                     for(size_t normal_index = 0; normal_index < normal_vec.size(); normal_index++)
                     {
