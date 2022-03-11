@@ -39,7 +39,7 @@ private:
     std::string                 m_pipeline;
     std::vector<std::string>    m_sets;
     int                         m_id;
-    int                         m_animation_index = 0;
+    int                         m_animation_index = 1;
 };
 
 
