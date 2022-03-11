@@ -14,44 +14,6 @@ static std::mutex lock;
 
 GUI *GUI::getGUI() {
     pushUI("default",[&](){
-        static bool enable_dock = Config::getConfig("enableDockSpace");
-        static bool dock_space_open = true;
-        static bool fullscreen = Config::getConfig("enableFullScreenPersistant");
-        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (fullscreen)
-        {
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-
-        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace", &dock_space_open, window_flags);
-        ImGui::PopStyleVar();
-
-        if (fullscreen) ImGui::PopStyleVar(2);
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 370.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
-        style.WindowMinSize.x = minWinSizeX;
-
         ImGui::Begin("Setting");
 
         static char buf[32] = "1";
@@ -71,34 +33,7 @@ GUI *GUI::getGUI() {
         ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
         ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
 
-//        ImGui::Checkbox("Display logos", &uiSettings.displayLogos);
         ImGui::End();// End setting
-
-//        ImGui::ShowDemoWindow();
-//        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-//        ImGui::Begin("Viewport");
-//        auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-//        auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-//        auto viewportOffset = ImGui::GetWindowPos();
-//        bool m_ViewportFocused = false, m_ViewportHovered = false;
-//        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-//        glm::vec2 m_ViewportBounds[2];
-//        m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-//        m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-//
-//        m_ViewportFocused = ImGui::IsWindowFocused();
-//        m_ViewportHovered = ImGui::IsWindowHovered();
-//
-//        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-//        m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-//
-//        uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-//        ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-//
-//        // Gizmos
-//
-//        ImGui::End();//Viewport
-//        ImGui::PopStyleVar();
 
         ImGui::Begin("ViewPort");
 
@@ -106,9 +41,7 @@ GUI *GUI::getGUI() {
 
         ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
 
-        ImGui::End();
-
-        ImGui::End();// End DockSpace
+        ImGui::End();//ViewPort
     });
     return gui;
 }
@@ -475,9 +408,58 @@ void GUI::newFrame(bool updateFrameGraph) {
 
     // Init imGui windows and elements
 
+    static bool enable_dock = Config::getConfig("enableDockSpace");
+    static bool dock_space_open = true;
+    static bool fullscreen = Config::getConfig("enableFullScreenPersistant");
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+    if(enable_dock)
+    {
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        if (fullscreen)
+        {
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
+            ImGui::SetNextWindowViewport(viewport->ID);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        }
+
+        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("DockSpace", &dock_space_open, window_flags);
+        ImGui::PopStyleVar();
+
+        if (fullscreen) ImGui::PopStyleVar(2);
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
+        float minWinSizeX = style.WindowMinSize.x;
+        style.WindowMinSize.x = 370.0f;
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        }
+        style.WindowMinSize.x = minWinSizeX;
+    }
+
     for(auto& [id,task] : m_tasks)
     {
         task();
+    }
+
+    ImGui::ShowDemoWindow();
+
+    if(enable_dock)
+    {
+        ImGui::End();// End DockSpace
     }
 
     // Renderer to generate draw buffers

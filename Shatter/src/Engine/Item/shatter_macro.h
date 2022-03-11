@@ -35,15 +35,6 @@ if(map.count(_id) != 0)    \
      std::cout << _id + "is already exit" << std::endl;       \
 }
 
-//#define findMap(map) \
-//int num = 0;          \
-//for(auto &i:map){     \
-//    if(i.first != _id) num++;                 \
-//}                     \
-//if(num == map.size()){\
-//    std::cout << _id + "is not exit"<< std::endl;                      \
-//}
-
 #define findMap(map) \
 if(map.count(_id) == 0){\
     std::cout << _id + "is not exit"<< std::endl;                      \
@@ -195,6 +186,21 @@ Class& operator = (Class&&) = delete
             m_offscreen_id_vec.erase(index);\
         }                           \
     }
+
+#define ClassElement(elementName, elementType, funcName) \
+    private:                                             \
+    elementType elementName{};                           \
+    public:                                              \
+    void set##funcName(const elementType& _in)           \
+    {                                                    \
+        elementName = _in;                               \
+    }                                                    \
+    elementType get##funcName()                          \
+    {                                                    \
+        return elementName;                              \
+    }
+
+
 
 
 

@@ -1254,9 +1254,10 @@ namespace Shatter::render{
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = graphic_commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        allocInfo.commandBufferCount = 1;
+        allocInfo.commandBufferCount = m_swapChainFramebuffers.size();
+        gui_buffer.resize(m_swapChainFramebuffers.size());
 
-        if (vkAllocateCommandBuffers(device, &allocInfo, &gui_buffer) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(device, &allocInfo, gui_buffer.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate gui command buffer!");
         }
 
@@ -1693,11 +1694,11 @@ namespace Shatter::render{
                     commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
                     commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-                    vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo);
+                    vkBeginCommandBuffer(gui_buffer[i], &commandBufferBeginInfo);
 
-                    imGui->drawFrame(gui_buffer);
+                    imGui->drawFrame(gui_buffer[i]);
 
-                    vkEndCommandBuffer(gui_buffer);
+                    vkEndCommandBuffer(gui_buffer[i]);
                 }
             },Config::getConfig("enableScreenGui"));
 
@@ -1709,7 +1710,7 @@ namespace Shatter::render{
             gui_thread.join();
             if(Config::getConfig("enableScreenGui"))
             {
-                commandBuffers.push_back(gui_buffer);
+                commandBuffers.push_back(gui_buffer[i]);
             }
 
             // Execute render commands from the secondary command buffer
@@ -1830,6 +1831,7 @@ namespace Shatter::render{
             vkCmdExecuteCommands(graphics_buffers[_index], transparency_vec.size(), pre_trans_buffer[_index].data());
         }
 
+
         if(Config::getConfig("enableScreenGui"))
         {
             VkCommandBufferBeginInfo commandBufferBeginInfo {};
@@ -1838,13 +1840,13 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-            vkBeginCommandBuffer(gui_buffer, &commandBufferBeginInfo);
+            vkBeginCommandBuffer(gui_buffer[_index], &commandBufferBeginInfo);
 
-            imGui->drawFrame(gui_buffer);
+            imGui->drawFrame(gui_buffer[_index]);
 
-            vkEndCommandBuffer(gui_buffer);
+            vkEndCommandBuffer(gui_buffer[_index]);
 
-            commandBuffers.push_back(gui_buffer);
+            commandBuffers.push_back(gui_buffer[_index]);
         }
 
         // Execute render commands from the secondary command buffer
@@ -1960,7 +1962,7 @@ namespace Shatter::render{
         }
 
         vkFreeCommandBuffers(device,graphic_commandPool,graphics_buffers.size(),graphics_buffers.data());
-        vkFreeCommandBuffers(device,graphic_commandPool,1,&gui_buffer);
+        vkFreeCommandBuffers(device,graphic_commandPool,gui_buffer.size(),gui_buffer.data());
         vkFreeCommandBuffers(device,graphic_commandPool,offscreen_buffers.size(),offscreen_buffers.data());
         vkFreeCommandBuffers(device,compute_commandPool,1,&compute_buffer);
 

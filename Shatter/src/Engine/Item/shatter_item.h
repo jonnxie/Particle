@@ -892,6 +892,8 @@ namespace tool{
 
     std::string combineModel(const std::string& _shaderName);
 
+    std::string combineAnimation(const std::string& _animationName);
+
     template<class T>
     void printNum(T _num)
     {

@@ -294,7 +294,7 @@ namespace Shatter{
             VkDescriptorPool descriptorPool{};
 
             std::vector<VkCommandBuffer> graphics_buffers;
-            VkCommandBuffer gui_buffer{};
+            std::vector<VkCommandBuffer> gui_buffer{};
             VkCommandBuffer compute_buffer{};
             std::vector<VkCommandBuffer> offscreen_buffers;
 

@@ -697,6 +697,10 @@ namespace tool {
         return ModelFilePath + _shaderName;
     }
 
+    std::string combineAnimation(const std::string& _animationName){
+        return AnimationPath + _animationName;
+    }
+
     VkPipelineShaderStageCreateInfo createShaderStage(const std::string& _filename,ShaderType _type)
     {
         if(!file::fileExists(_filename)){
