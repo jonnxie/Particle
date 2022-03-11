@@ -401,16 +401,19 @@ void GUI::updateBuffers() {
 }
 
 void GUI::newFrame(bool updateFrameGraph) {
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    // Init imGui windows and elements
-
     static bool enable_dock = Config::getConfig("enableDockSpace");
     static bool dock_space_open = true;
     static bool fullscreen = Config::getConfig("enableFullScreenPersistant");
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+    if(enable_dock)
+    {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+    }
+    ImGui::NewFrame();
+
+    // Init imGui windows and elements
+
     if(enable_dock)
     {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -463,8 +466,10 @@ void GUI::newFrame(bool updateFrameGraph) {
 
     // Renderer to generate draw buffers
     ImGui::Render();
-
-    ImGui::UpdatePlatformWindows();
+    if(enable_dock)
+    {
+        ImGui::UpdatePlatformWindows();
+    }
 }
 
 void GUI::init(float width, float height) {

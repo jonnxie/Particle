@@ -2597,11 +2597,12 @@ namespace Shatter::render{
         initInfo.Allocator = nullptr;
         initInfo.CheckVkResultFn = check_vk_result;
 
-        ImGui_ImplGlfw_InitForVulkan(window, true);
-        ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
-
         if(Config::getConfig("enableDockSpace"))
         {
+            ImGui_ImplGlfw_InitForVulkan(window, true);
+            ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+
+
             for(size_t index = 0; index < m_swapchainImages.size(); index++)
             {
                 m_swapChainSets[index] = ImGui_ImplVulkan_AddTexture(m_swapChainSamplers[index],
