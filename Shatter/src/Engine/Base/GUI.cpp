@@ -135,7 +135,6 @@ void GUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::s
 
     VkCommandBuffer commandBuffer = ShatterRender::getRender().beginSingleTimeCommands();
 
-
     // Prepare for transfer
     tool::setImageLayout(
             commandBuffer,
