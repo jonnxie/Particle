@@ -40,8 +40,6 @@ void genRotateFromQuaternion(const glm::vec4 *_in, glm::mat4 *_out) {
     (*_out)[3][1] = 0.0f;
     (*_out)[3][2] = 0.0f;
     (*_out)[3][3] = 1.0f;
-
-
 }
 
 void genRotateFromEulerAngle(glm::vec3* _angle,glm::mat4* _matrix){

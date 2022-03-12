@@ -519,8 +519,10 @@ void GUI::init(float width, float height) {
 }
 
 GUI::~GUI() {
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
+    if(Config::getConfig("enableDockSpace")) {
+        ImGui_ImplVulkan_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+    }
     ImGui::DestroyContext();
     // Release all Vulkan resources required for rendering imGui
     vertexBuffer.release();
