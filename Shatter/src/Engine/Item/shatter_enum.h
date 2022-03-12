@@ -396,6 +396,8 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 
 #define numObjectsPerThread 2
 
+#define TreeSize 8
+
 #define ObjectCatalog      "Engine/Object/object.h"
 #define CObjectCatalog     "Engine/Object/cobject.h"
 #define DObjectCatalog     "Engine/Object/dobject.h"
