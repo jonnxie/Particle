@@ -1834,6 +1834,7 @@ namespace Shatter::render{
 
         if(Config::getConfig("enableScreenGui"))
         {
+            inheritanceInfo.subpass = SubpassTransparency;
             VkCommandBufferBeginInfo commandBufferBeginInfo {};
             commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
