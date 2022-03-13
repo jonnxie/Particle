@@ -201,6 +201,14 @@ Class& operator = (Class&&) = delete
     }
 
 
+#define ClassReferenceElement(elementName, elementType, funcName) \
+    private:                                                      \
+    elementType elementName{};                                    \
+    public:                                                       \
+    elementType& get##funcName()                                  \
+    {                                                             \
+        return elementName;                                       \
+    }
 
 
 

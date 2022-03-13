@@ -41,6 +41,7 @@
 #include "Engine/Event/delayevent.h"
 
 #include "Engine/Planets/Planet.h"
+#include "Engine/Base/CrossTree.h"
 
 void initSet()
 {
@@ -155,6 +156,9 @@ int main() {
     auto& camera = Camera::getCamera();
     auto thread_pool = ThreadPool::pool();
     initTransparentSet();
+
+//    auto tree = CrossTree(glm::dvec3(0,0,0),glm::vec3(10,10,10),0);
+//    tree.split();
 
     std::vector<int> coor_line;
     {
