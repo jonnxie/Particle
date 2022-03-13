@@ -7,5 +7,5 @@
 
 void AABBVisitor::visitor(std::vector<glm::vec3> &_buffer, Object &_obj) {
     auto aabbPool = MPool<AABB>::getPool();
-    genVertexBufferFromAABB(*(*aabbPool)[_obj.m_aabbIndex], _buffer);
+    genFaceVertexBufferFromAABB(*(*aabbPool)[_obj.m_aabbIndex], _buffer);
 }

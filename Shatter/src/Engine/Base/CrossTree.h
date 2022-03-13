@@ -13,6 +13,7 @@
 #include <memory>
 #include "Engine/Object/object.h"
 #include "Engine/Particle/RandomDirection.h"
+#include "lines.h"
 
 class CrossTree {
 public:
@@ -71,21 +72,16 @@ private:
     ParticleGroup*          m_delegate{};
 };
 
-class ParticleGroup : public Object{
+class ParticleGroup{
 public:
     explicit ParticleGroup(size_t _size,
                            glm::dvec3 _begin,
     glm::dvec3 _end, bool _random = true, size_t _leafSize = 5);
     DefineUnCopy(ParticleGroup);
 
-public:
-    void constructG() override;
-    void constructD() override;
-    void constructC() override{};
-    void update(float) override{};
-
     ClassElement(m_leafSize, size_t, LeafSize);
     ClassReferenceElement(m_groups, std::vector<DParticle>, GroupRef);
+    ClassReferenceElement(m_lines, std::unique_ptr<DLines>, Lines);
 private:
     glm::dvec3                      m_begin;
     glm::dvec3                      m_end;

@@ -203,7 +203,7 @@ void genLocalCoordinateFromZ(const glm::vec3& _f,glm::vec3& _x,glm::vec3& _y,glm
     _y = glm::cross(_z,_x);
 }
 
-void genVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer){
+void genFaceVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer){
     glm::vec3 minPos = _box.m_min_edgy;
     glm::vec3 maxPos = _box.m_max_edgy;
     //bottom
@@ -259,6 +259,50 @@ void genVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer){
     _buffer.emplace_back(glm::vec3(minPos.x, minPos.y, minPos.z));
     _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, maxPos.z));
     _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, minPos.z));
+}
+
+void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vector<glm::vec3>& _buffer)
+{
+    glm::vec3 minPos = _min;
+    glm::vec3 maxPos = _max;
+    //bottom
+    _buffer.emplace_back(minPos);
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, minPos.z));
+
+    _buffer.emplace_back(minPos);
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, minPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, minPos.z));
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, minPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, minPos.z));
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, minPos.z));
+
+    //top
+    _buffer.emplace_back(glm::vec3(minPos.x, minPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, maxPos.z));
+
+    _buffer.emplace_back(glm::vec3(minPos.x, minPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, maxPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, maxPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, maxPos.z));
+
+    //other
+    _buffer.emplace_back(glm::vec3(minPos.x, minPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(minPos.x, minPos.y, minPos.z));
+
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, minPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(maxPos.x, minPos.y, minPos.z));
+
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, maxPos.z));
+    _buffer.emplace_back(glm::vec3(maxPos.x, maxPos.y, minPos.z));
 }
 
 void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm::vec3 &_rotation, glm::vec3 &_scale) {

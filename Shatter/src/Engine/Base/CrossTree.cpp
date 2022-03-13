@@ -3,6 +3,8 @@
 //
 
 #include "CrossTree.h"
+#include "Engine/Item/configs.h"
+#include "Engine/Object/inputaction.h"
 
 CrossTree::CrossTree(const glm::dvec3 &_begin, const glm::dvec3 &_end, char _localIndex):
 m_begin(_begin),
@@ -46,6 +48,18 @@ m_delegate(_group)
     m_width = dis.x;
     m_height = dis.y;
     m_depth = dis.z;
+    std::vector<glm::vec3> cubeBuffer{};
+    genLineVertexBuffer(m_begin, m_end, cubeBuffer);
+    std::vector<Line> line(cubeBuffer.size() / 2);
+    glm::vec3 color;
+    input::LineColor(color, STATE_OUT);
+    for (int i = 0; i < line.size(); ++i) {
+        line[i].begin = {cubeBuffer[2 * i],
+                         color};
+        line[i].end = {cubeBuffer[2 * i + 1],
+                       color};
+    }
+    m_delegate->getLines()->pushLines(line);
 }
 
 void ParticleNode::split() {
@@ -126,6 +140,7 @@ m_end(_end)
             p.color.z = rndCDist(rndGen);
         }
     }
+    m_lines = std::make_unique<DLines>(std::vector<Line>{});
     m_tree = std::make_unique<ParticleNode>(m_begin, m_end, 0, this);
     m_tree->getGroupRef() = std::vector<size_t>(_size);
     for (int i = 0; i < _size; ++i)
@@ -136,12 +151,5 @@ m_end(_end)
     {
         m_tree->split();
     }
-}
-
-void ParticleGroup::constructG() {
-    Object::constructG();
-}
-
-void ParticleGroup::constructD() {
-    Object::constructD();
+    m_lines->init();
 }

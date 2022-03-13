@@ -44,7 +44,9 @@ void genLocalCoordinateFromZ(const glm::vec3& _f, glm::vec3& _x, glm::vec3& _y, 
 
 struct AABB;
 
-void genVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer);
+void genFaceVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer);
+
+void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vector<glm::vec3>& _buffer);
 
 void decomposeTransform(const glm::mat4& _transform,glm::vec3& _transition,glm::vec3& _rotation,glm::vec3& _scale);
 
