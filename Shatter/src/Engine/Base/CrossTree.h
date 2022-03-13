@@ -75,21 +75,45 @@ class ParticleGroup : public Object{
 public:
     explicit ParticleGroup(size_t _size,
                            glm::dvec3 _begin,
-    glm::dvec3 _end, bool _random = true, size_t _leafSize = 5);
+    glm::dvec3 _end, bool _random = true, size_t _leafSize = 5):
+            m_leafSize(_leafSize),
+            m_begin(_begin),
+            m_end(_end)
+    {
+        m_groups = std::vector<DParticle>(_size);
+        if(_random)
+        {
+            for(auto& p : m_groups)
+            {
+                p.pos.x = genRandomInRange<double>(m_begin.x, m_end.x);
+                p.pos.y = genRandomInRange<double>(m_begin.y, m_end.y);
+                p.pos.z = genRandomInRange<double>(m_begin.z, m_end.z);
+
+                p.color.x = genRandomInRange<double>(0.0, 1.0);
+                p.color.y = genRandomInRange<double>(0.0, 1.0);
+                p.color.z = genRandomInRange<double>(0.0, 1.0);
+            }
+        }
+        m_tree = std::make_unique<ParticleNode>(m_begin, m_end, 0, this);
+    }
     DefineUnCopy(ParticleGroup);
 
 public:
-    void constructG() override;
-    void constructD() override;
+    void constructG() override{
+
+    };
+    void constructD() override{
+
+    };
     void constructC() override{};
     void update(float) override{};
 
 ClassElement(m_leafSize, size_t, LeafSize);
 ClassReferenceElement(m_groups, std::vector<DParticle>, GroupRef);
 private:
-    glm::dvec3              m_begin;
-    glm::dvec3              m_end;
-    std::unique_ptr<ParticleNode> m_tree{};
+    glm::dvec3                      m_begin;
+    glm::dvec3                      m_end;
+    std::unique_ptr<ParticleNode>   m_tree{};
 };
 
 #endif //MAIN_CROSSTREE_H

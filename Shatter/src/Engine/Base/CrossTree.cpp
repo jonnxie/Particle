@@ -90,37 +90,3 @@ bool ParticleNode::check(){
         return false;
     }
 }
-
-ParticleGroup::ParticleGroup(size_t _size, glm::dvec3 _begin, glm::dvec3 _end, bool _random, size_t _treeCount) :
-m_leafSize(_treeCount),
-m_begin(_begin),
-m_end(_end)
-{
-    m_groups = std::vector<DParticle>(_size);
-    if(_random)
-    {
-        for(auto& p : m_groups)
-        {
-            p.pos = {
-                     genRandomInRange<double>(m_begin.x, m_end.x),
-                     genRandomInRange<double>(m_begin.y, m_end.y),
-                     genRandomInRange<double>(m_begin.z, m_end.z)
-            };
-            p.color = {
-                    genRandomInRange<double>(0.0, 1.0),
-                    genRandomInRange<double>(0.0, 1.0),
-                    genRandomInRange<double>(0.0, 1.0)
-            };
-        }
-    }
-    m_tree = std::make_unique<ParticleNode>(m_begin, m_end, 0, this);
-}
-
-void ParticleGroup::constructD() {
-    Object::constructD();
-}
-
-void ParticleGroup::constructG() {
-    Object::constructG();
-}
-
