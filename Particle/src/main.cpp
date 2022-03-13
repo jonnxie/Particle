@@ -157,6 +157,9 @@ int main() {
     auto thread_pool = ThreadPool::pool();
     initTransparentSet();
 
+    glm::vec3 color = GOLD_COLOR;
+    input::LineColor(color, STATE_IN);
+
     auto p =  ParticleGroup(10000,
                             {0, 0, 0},
                             {25, 25, 25});

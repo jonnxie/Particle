@@ -48,18 +48,21 @@ m_delegate(_group)
     m_width = dis.x;
     m_height = dis.y;
     m_depth = dis.z;
-    std::vector<glm::vec3> cubeBuffer{};
-    genLineVertexBuffer(m_begin, m_end, cubeBuffer);
-    std::vector<Line> line(cubeBuffer.size() / 2);
-    glm::vec3 color;
-    input::LineColor(color, STATE_OUT);
-    for (int i = 0; i < line.size(); ++i) {
-        line[i].begin = {cubeBuffer[2 * i],
-                         color};
-        line[i].end = {cubeBuffer[2 * i + 1],
-                       color};
+    if(!check())
+    {
+        std::vector<glm::vec3> cubeBuffer{};
+        genLineVertexBuffer(m_begin, m_end, cubeBuffer);
+        std::vector<Line> line(cubeBuffer.size() / 2);
+        glm::vec3 color;
+        input::LineColor(color, STATE_OUT);
+        for (int i = 0; i < line.size(); ++i) {
+            line[i].begin = {cubeBuffer[2 * i],
+                             color};
+            line[i].end = {cubeBuffer[2 * i + 1],
+                           color};
+        }
+        m_delegate->getLines()->pushLines(line);
     }
-    m_delegate->getLines()->pushLines(line);
 }
 
 void ParticleNode::split() {
