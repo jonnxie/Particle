@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include "Engine/Item/shatter_enum.h"
+#include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_math.h"
 
 #define RandomSend 007u
@@ -18,7 +19,9 @@
 template<class T>
 T genRandom(const T& _average,const T& _variance)
 {
+//    static auto RandomSeed = 000u;
     std::default_random_engine engine(RandomSend);
+//    std::default_random_engine engine(RandomSeed++);
     std::normal_distribution<T> normalDistribution(_average, _variance);
     T val = normalDistribution(engine);
     return val;

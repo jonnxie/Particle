@@ -61,14 +61,15 @@ void ParticleNode::split() {
     }
     std::vector<DParticle>& particles = m_delegate->getGroupRef();
 
-    index= 0;
     for(auto& p : m_groups)
     {
+        index= 0;
         move = (particles[p].pos - m_begin);
         if(move.x > dis.x) index |= 1;
         if(move.y > dis.y) index |= (1 << 1);
         if(move.z > dis.z) index |= (1 << 2);
         m_child[index]->getGroupRef().push_back(p);
+//        std::cout << index << std::endl;
     }
 
     for(size_t i = 0; i < TreeSize; i++)
@@ -89,4 +90,58 @@ bool ParticleNode::check(){
         m_leaf = true;
         return false;
     }
+}
+
+ParticleGroup::ParticleGroup(size_t _size, glm::dvec3 _begin, glm::dvec3 _end, bool _random, size_t _leafSize):
+m_leafSize(_leafSize),
+m_begin(_begin),
+m_end(_end)
+{
+    m_groups = std::vector<DParticle>(_size);
+    if(_random)
+    {
+        std::vector<glm::vec3> colors =
+                {
+                        glm::vec3(1.0f, 1.0f, 1.0f),
+                        glm::vec3(1.0f, 0.0f, 0.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f),
+                        glm::vec3(0.0f, 0.0f, 1.0f),
+                        glm::vec3(1.0f, 1.0f, 0.0f),
+                };
+
+        std::default_random_engine rndGen( (unsigned)time(nullptr));
+        std::uniform_real_distribution<double> rndXDist(m_begin.x, m_end.x);
+        std::uniform_real_distribution<double> rndYDist(m_begin.y, m_end.y);
+        std::uniform_real_distribution<double> rndZDist(m_begin.z, m_end.z);
+        std::uniform_real_distribution<double> rndCDist(0, 1);
+
+        for(auto& p : m_groups)
+        {
+            p.pos.x = rndXDist(rndGen);
+            p.pos.y = rndYDist(rndGen);
+            p.pos.z = rndZDist(rndGen);
+//            printPoint(p.pos);
+            p.color.x = rndCDist(rndGen);
+            p.color.y = rndCDist(rndGen);
+            p.color.z = rndCDist(rndGen);
+        }
+    }
+    m_tree = std::make_unique<ParticleNode>(m_begin, m_end, 0, this);
+    m_tree->getGroupRef() = std::vector<size_t>(_size);
+    for (int i = 0; i < _size; ++i)
+    {
+        m_tree->getGroupRef()[i] = i;
+    }
+    if(m_tree->check())
+    {
+        m_tree->split();
+    }
+}
+
+void ParticleGroup::constructG() {
+    Object::constructG();
+}
+
+void ParticleGroup::constructD() {
+    Object::constructD();
 }

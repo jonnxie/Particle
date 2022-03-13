@@ -157,8 +157,9 @@ int main() {
     auto thread_pool = ThreadPool::pool();
     initTransparentSet();
 
-//    auto tree = CrossTree(glm::dvec3(0,0,0),glm::vec3(10,10,10),0);
-//    tree.split();
+    auto p =  ParticleGroup(10000,
+                            {0, 0, 0},
+                            {25, 25, 25});
 
     std::vector<int> coor_line;
     {
