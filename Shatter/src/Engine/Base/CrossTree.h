@@ -76,7 +76,7 @@ class ParticleGroup{
 public:
     explicit ParticleGroup(size_t _size,
                            glm::dvec3 _begin,
-    glm::dvec3 _end, bool _random = true, size_t _leafSize = 5);
+    glm::dvec3 _end, bool _random = true, size_t _leafSize = 10);
     DefineUnCopy(ParticleGroup);
 
     ClassElement(m_leafSize, size_t, LeafSize);
