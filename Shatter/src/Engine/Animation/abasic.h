@@ -34,12 +34,13 @@ public:
     void constructC() override {};
     void update(float) override {};
 
+    ClassElement(m_animation_index, int, AnimationIndex);
+
 private:
     vkglTF::Model*              m_model;
     std::string                 m_pipeline;
     std::vector<std::string>    m_sets;
     int                         m_id;
-    int                         m_animation_index = 1;
 };
 
 

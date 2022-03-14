@@ -11,6 +11,7 @@
 class AnimationHandle {
 public:
     AnimationHandle();
+    ~AnimationHandle();
     DefineUnCopy(AnimationHandle);
     void loadAnimation(const std::string& _files);
     ClassElement(m_pos, glm::vec3, Pos);

@@ -28,6 +28,7 @@
 #include "Engine/Base/basic.h"
 #include "Engine/Base/tbasic.h"
 #include "Engine/Animation/abasic.h"
+#include "Engine/Animation/AnimationHandle.h"
 #include "Engine/Base/gcoor.h"
 #include "Engine/Base/lines.h"
 #include "Engine/Base/tris.h"
@@ -164,6 +165,8 @@ int main() {
                             {0, 0, 0},
                             {25, 25, 25});
 
+//    auto ah = new AnimationHandle();
+
     std::vector<int> coor_line;
     {
         line_pool->malloc(3,coor_line);
@@ -280,6 +283,7 @@ int main() {
                              glm::vec3(1.0f),
                              0,
                              "ABasic");
+    abasic->setAnimationIndex(0);
 
     auto* build = new Basic(std::string(ModelFilePath) + std::string("samplebuilding.gltf"),
                              glm::vec3(0.0f),
@@ -310,6 +314,7 @@ int main() {
         buffer_pool.release();
         delete coordinate;
         delete skybox;
+//        delete ah;
         SingleOffScreen.release();
         SingleCascade.release();
         delete abasic;
