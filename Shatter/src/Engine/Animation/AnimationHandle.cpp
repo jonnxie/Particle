@@ -32,6 +32,10 @@ static void ShowHelpMarker(const char* desc)
 }
 
 AnimationHandle::AnimationHandle() {
+
+}
+
+void AnimationHandle::pushUI() {
     GUI::pushUI("AnimationHandle",[&](){
         ImGui::Begin("AnimationSetting");
         static char buf[32] = "default";
@@ -60,7 +64,6 @@ AnimationHandle::AnimationHandle() {
         if (ImGui::TreeNode("Select Pipeline"))
         {
             static int selected = -1;
-            SinglePPool.m_map;
             int num = 0;
             for(auto& [id, val] : SinglePPool.m_map)
             {
@@ -70,6 +73,24 @@ AnimationHandle::AnimationHandle() {
                 {
                     selected = num;
                     m_pipeline = id;
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Animation Index"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& a : m_animation->getModel()->animations)
+            {
+                char buf[32];
+                sprintf(buf, a.name.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    m_animation->setAnimationIndex(num);
                 }
                 num++;
             }
@@ -95,8 +116,10 @@ AnimationHandle::AnimationHandle() {
                         {
                             s = 0;
                         }
+                        m_sets.clear();
                     }// Clear selection when CTRL is not held
                     selection[num] ^= 1;
+                    m_sets.push_back(id);
                 }
                 num++;
             }
@@ -118,6 +141,7 @@ void AnimationHandle::loadAnimation(const std::string &_files) {
                                            mallocId(),
                                            m_pipeline,
                                            m_sets);
+    pushUI();
     SingleRender.normalChanged = true;
 }
 

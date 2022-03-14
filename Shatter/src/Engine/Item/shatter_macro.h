@@ -200,6 +200,20 @@ Class& operator = (Class&&) = delete
         return elementName;                              \
     }
 
+#define ClassPointerElement(pointerElementName, pointerElementType, funcName)   \
+    private:                                                                    \
+    pointerElementType pointerElementName{};                                    \
+    public:                                                                     \
+    void set##funcName(pointerElementType _in)                                  \
+    {                                                                           \
+        pointerElementName = _in;                                               \
+    }                                                                           \
+    pointerElementType get##funcName()                                          \
+    {                                                                           \
+        return pointerElementName;                                              \
+    }
+
+
 
 #define ClassReferenceElement(elementName, elementType, funcName) \
     private:                                                      \

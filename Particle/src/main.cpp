@@ -165,7 +165,23 @@ int main() {
                             {0, 0, 0},
                             {25, 25, 25});
 
-//    auto ah = new AnimationHandle();
+    auto ah = new AnimationHandle();
+    ah->setPos(glm::vec3(-10.0f,-10.0f,0.0f));
+    ah->setRotationAxis(glm::vec3(1.0f,0.0f,0.0f));
+    ah->setAngle(-half_pai);
+    ah->setScale(glm::vec3(1.0f));
+    ah->setId(0);
+    ah->setPipeline("ABasic");
+    ah->setSets(std::vector<std::string>{"Camera", "Planet"});
+    ah->loadAnimation(tool::combineModel("BoxAnimated.gltf"));
+
+//    ABasic(tool::combineModel("BoxAnimated.gltf"),
+//           glm::vec3(-10.0f,-10.0f,0.0f),
+//           glm::vec3(1.0f,0.0f,0.0f),
+//           -half_pai,
+//           glm::vec3(1.0f),
+//           0,
+//           "ABasic")
 
     std::vector<int> coor_line;
     {
@@ -276,14 +292,14 @@ int main() {
 //                                      half_pai,
 //                                      glm::vec3(0.25f),
 //                                      0);
-    auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
-                             glm::vec3(-10.0f,-10.0f,0.0f),
-                             glm::vec3(1.0f,0.0f,0.0f),
-                             -half_pai,
-                             glm::vec3(1.0f),
-                             0,
-                             "ABasic");
-    abasic->setAnimationIndex(0);
+//    auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
+//                             glm::vec3(-10.0f,-10.0f,0.0f),
+//                             glm::vec3(1.0f,0.0f,0.0f),
+//                             -half_pai,
+//                             glm::vec3(1.0f),
+//                             0,
+//                             "ABasic");
+//    abasic->setAnimationIndex(0);
 
     auto* build = new Basic(std::string(ModelFilePath) + std::string("samplebuilding.gltf"),
                              glm::vec3(0.0f),
@@ -314,10 +330,10 @@ int main() {
         buffer_pool.release();
         delete coordinate;
         delete skybox;
-//        delete ah;
+        delete ah;
         SingleOffScreen.release();
         SingleCascade.release();
-        delete abasic;
+//        delete abasic;
         delete build;
         delete glass;
 //        delete a;

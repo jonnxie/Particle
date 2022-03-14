@@ -35,9 +35,8 @@ public:
     void update(float) override {};
 
     ClassElement(m_animation_index, int, AnimationIndex);
-
+    ClassPointerElement(m_model, vkglTF::Model*, Model);
 private:
-    vkglTF::Model*              m_model;
     std::string                 m_pipeline;
     std::vector<std::string>    m_sets;
     int                         m_id;

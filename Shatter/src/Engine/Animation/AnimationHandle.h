@@ -6,6 +6,7 @@
 #define MAIN_ANIMATIONHANDLE_H
 
 #include "abasic.h"
+#include <set>
 #include "Engine/Item/shatter_macro.h"
 
 class AnimationHandle {
@@ -13,6 +14,7 @@ public:
     AnimationHandle();
     ~AnimationHandle();
     DefineUnCopy(AnimationHandle);
+    void pushUI();
     void loadAnimation(const std::string& _files);
     ClassElement(m_pos, glm::vec3, Pos);
     ClassElement(m_rotationAxis, glm::vec3, RotationAxis);
