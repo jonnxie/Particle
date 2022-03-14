@@ -33,7 +33,8 @@ public:
            float _radius = 5.0f,
            glm::vec3 _color = BLUE_COLOR,
            std::string  _pipeline = "Planet_Face",
-           std::vector<std::string>  _sets = {"Camera", "Planet"});
+           std::vector<std::string>  _sets = {"Camera", "Planet"},
+           DrawObjectType _type = DrawObjectType::Normal);
     ~Planet();
     DefineUnCopy(Planet);
     void generateMesh();

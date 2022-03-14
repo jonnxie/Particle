@@ -247,11 +247,16 @@ int main() {
     auto line = std::make_unique<DLines>(lines);
     line->init();
 
-    auto planet = new Planet(20,
+    auto planet = new Planet(10,
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
-                             glm::vec3(1.0f));
+                             glm::vec3(1.0f),
+                             5.0f,
+                             BLUE_COLOR,
+                             "GPlanet",
+                             {"Camera", "Planet"},
+                             DrawObjectType::Default);
 
     TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
         auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);

@@ -9,7 +9,6 @@
 #include <glm.hpp>
 #include <string>
 
-
 enum class ShaderName{
     CPU_Particle,
     Default,

@@ -26,9 +26,10 @@ ABasic::ABasic(const std::string& _files,
              std::vector<std::string>  _sets,
              DrawObjectType _type):
         m_pipeline(std::move(_pipeline)),
-        m_sets{std::move(_sets)},
-        m_draw_type(_type)
+        m_sets{std::move(_sets)}
+//        m_draw_type(_type)
 {
+    setDrawType(_type);
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
     m_scale = glm::scale(glm::mat4(1.0f),_scale);
@@ -77,7 +78,7 @@ void ABasic::constructD()
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
         m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
     };
-    if(m_draw_type == DrawObjectType::Default)
+    if(getDrawType() == DrawObjectType::Default)
     {
         (*dpool)[d]->m_gGraphics = func;
     }else{
@@ -87,7 +88,7 @@ void ABasic::constructD()
     TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,d](float _abs_time){
         m_model->updateAnimation(m_animation_index, _abs_time,m_world);
     });
-    insertRenderObject(m_draw_type, d);
+    insertRenderObject(d);
 
     int model_index = ModelSetPool::getPool().malloc();
     TaskPool::pushUpdateTask(tool::combine("BasicAnimationWorld",m_id),[&,model_index](float _abs_time){

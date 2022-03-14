@@ -174,7 +174,7 @@ public:
     void update();
     void prepare(const glm::mat4& _matrix,int _model_index,DrawType _draw_type,VkDeviceSize _vertex_offset,
                  const std::string& _vertex_buffer,uint32_t _vertex_num,const std::string& _index_buffer,uint32_t _index_num,
-                 VkDeviceSize _index_offset,const std::string& _pipeline,std::vector<Set_id>& _set);
+                 VkDeviceSize _index_offset,const std::string& _pipeline,std::vector<Set_id>& _set,const std::string& _gPipeline = "Build",std::vector<Set_id> _gSet = {"Camera"});
 
     void insertPre(const std::function<void(VkCommandBuffer)>&);
 

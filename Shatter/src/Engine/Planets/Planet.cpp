@@ -20,7 +20,9 @@
 
 Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle, glm::vec3 _scale, float _radius,
                glm::vec3 _color,
-               std::string  _pipeline, std::vector<std::string>  _sets){
+               std::string  _pipeline, std::vector<std::string>  _sets,
+               DrawObjectType _type){
+    setDrawType(_type);
     m_pipeline = std::move(_pipeline);
     m_sets = std::move(_sets);
     m_radius = _radius;
@@ -115,13 +117,16 @@ void Planet::constructD() {
                          m_indices.size(),
                          0,
                          m_pipeline,
+                         m_sets,
+                         m_pipeline,
                          m_sets);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("Planet", m_id),[&,ms_index,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
-    SingleRender.getNObjects()->push_back(d);
+//    SingleRender.getNObjects()->push_back(d);
+    insertRenderObject(d);
 }
 
 void Planet::constructC() {

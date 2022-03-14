@@ -24,6 +24,31 @@ void Object::draw(VkCommandBuffer _cb) {
     }
 }
 
+void Object::insertRenderObject(int _id){
+    switch (m_draw_type) {
+        case DrawObjectType::Default:
+        {
+            SingleRender.getDObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::OffScreen:
+        {
+            SingleRender.getOffDObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::Transparency:
+        {
+            SingleRender.getTObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::Normal:
+        {
+            SingleRender.getNObjects()->push_back(_id);
+            break;
+        }
+    }
+}
+
 void Object::insertRenderObject(DrawObjectType _type, int _id){
     switch (_type) {
         case DrawObjectType::Default:

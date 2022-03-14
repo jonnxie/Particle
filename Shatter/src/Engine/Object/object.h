@@ -35,6 +35,7 @@ public:
     void init();
     virtual void update(float){};
     virtual void imguiRender(){};
+    void insertRenderObject(int _id);
     void insertRenderObject(DrawObjectType _type, int _id);
     void insertDObject(int);
     void insertGObject(int);
@@ -49,6 +50,8 @@ public:
     virtual void constructG(){};
     virtual void constructD(){};
     virtual void constructC(){};
+ClassElement(m_draw_type, DrawObjectType, DrawType);
+
 protected:
     glm::mat4   m_world{};
     glm::mat4   m_scale{};

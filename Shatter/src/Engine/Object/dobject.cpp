@@ -156,7 +156,7 @@ void DObject::update() {
 
 void DObject::prepare(const glm::mat4& _matrix, int _model_index, DrawType _draw_type, VkDeviceSize _vertex_offset,
                       const std::string &_vertex_buffer, uint32_t _vertex_num, const std::string& _index_buffer, uint32_t _index_num,
-                      VkDeviceSize _index_offset, const std::string &_pipeline, std::vector<Set_id> &_set) {
+                      VkDeviceSize _index_offset, const std::string &_pipeline, std::vector<Set_id> &_set,const std::string& _gPipeline,std::vector<Set_id> _gSet) {
     m_matrix = _matrix;
     /*
      * 获取模型矩阵的偏移索引
@@ -184,10 +184,14 @@ void DObject::prepare(const glm::mat4& _matrix, int _model_index, DrawType _draw
     */
     m_gp = _pipeline;
 
+    m_gGP = _gPipeline;
+
     /*
      * descriptor set
      */
     m_descriptorSet = _set;
+
+    m_gDescriptorSet = std::move(_gSet);
 }
 
 void DObject::loopPre(VkCommandBuffer _cb) {
