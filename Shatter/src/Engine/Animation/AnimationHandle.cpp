@@ -91,6 +91,7 @@ void AnimationHandle::pushUI() {
                 {
                     selected = num;
                     m_animation->setAnimationIndex(num);
+                    m_animation->getModel()->resetAnimation();
                 }
                 num++;
             }

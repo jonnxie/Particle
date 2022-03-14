@@ -528,6 +528,12 @@ vkglTF::Mesh::~Mesh() {
 /*
 	glTF node
 */
+void vkglTF::Node::resetMatrix(){
+    translation = glm::vec3{};
+    rotation = glm::quat{};
+    scale = glm::vec3{1.0f};
+}
+
 glm::mat4 vkglTF::Node::localMatrix() {
 	return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
 }
@@ -1934,6 +1940,13 @@ void vkglTF::Model::getSceneDimensions()
 	dimensions.radius = glm::distance(dimensions.min, dimensions.max) / 2.0f;
 }
 
+void vkglTF::Model::resetAnimation()
+{
+    for (auto &node : nodes) {
+        node->resetMatrix();
+    }
+}
+
 void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix)
 {
 	if (index > static_cast<uint32_t>(animations.size()) - 1) {
@@ -1942,7 +1955,13 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 	}
 	Animation &animation = animations[index];
 
-    int times = time / animation.end;
+    static int times = 0;
+    int tmp_times = time / animation.end;
+    if(tmp_times != times)
+    {
+        times = tmp_times;
+        resetAnimation();
+    }
     float local_time = time - float(times) * animation.end;
 	bool updated = false;
 	for (auto& channel : animation.channels) {

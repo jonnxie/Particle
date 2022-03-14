@@ -165,6 +165,7 @@ namespace vkglTF
 		glm::vec3 translation{};
 		glm::vec3 scale{ 1.0f };
 		glm::quat rotation{};
+        void resetMatrix();
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
@@ -324,7 +325,8 @@ namespace vkglTF
 		void draw(VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
 		void getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& max);
 		void getSceneDimensions();
-		void updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix);
+        void resetAnimation();
+        void updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix);
 		Node* findNode(Node* parent, uint32_t index);
 		Node* nodeFromIndex(uint32_t index);
 		void prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLayout descriptorSetLayout);
