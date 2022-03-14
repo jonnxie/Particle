@@ -141,7 +141,8 @@ void AnimationHandle::loadAnimation(const std::string &_files) {
                                            m_scale,
                                            mallocId(),
                                            m_pipeline,
-                                           m_sets);
+                                           m_sets,
+                                           m_drawType);
     pushUI();
     SingleRender.normalChanged = true;
 }

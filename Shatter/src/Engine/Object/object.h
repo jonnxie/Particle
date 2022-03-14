@@ -9,6 +9,7 @@
 #include <vector>
 #include "aabb.h"
 #include "Engine/Item/shatter_macro.h"
+#include "Engine/Item/shatter_enum.h"
 
 static int initCaptureIdVal = 1;
 static std::mutex captureIdLock;
@@ -34,6 +35,7 @@ public:
     void init();
     virtual void update(float){};
     virtual void imguiRender(){};
+    void insertRenderObject(DrawObjectType _type, int _id);
     void insertDObject(int);
     void insertGObject(int);
     void insertCObject(int);

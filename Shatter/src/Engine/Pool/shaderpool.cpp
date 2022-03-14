@@ -86,6 +86,9 @@ void ShaderPool::init() {
     createShaderStage("build_vs",tool::combineShader("g/gbuffer_vert.spv"),VertexShader);
     createShaderStage("build_fs",tool::combineShader("g/gbuffer_frag.spv"),FragmentShader);
 
+    createShaderStage("agbasic_vs",tool::combineShader("agbasic/vert.spv"),VertexShader);
+    createShaderStage("agbasic_fs",tool::combineShader("agbasic/frag.spv"),FragmentShader);
+
     createShaderStage("transparent_vs",tool::combineShader("pass/transparent_vert.spv"),VertexShader);
     createShaderStage("transparent_fs",tool::combineShader("pass/transparent_frag.spv"),FragmentShader);
 

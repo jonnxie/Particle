@@ -11,6 +11,7 @@
 #include "Engine/pool/modelsetpool.h"
 #include SetPoolCatalog
 #include DeviceCatalog
+#include RenderCatalog
 
 Object::~Object(){
     release();
@@ -20,6 +21,31 @@ void Object::draw(VkCommandBuffer _cb) {
     auto pool = MPool<DObject>::getPool();
     for(auto i : m_dobjs){
         (*pool)()[i].draw(_cb);
+    }
+}
+
+void Object::insertRenderObject(DrawObjectType _type, int _id){
+    switch (_type) {
+        case DrawObjectType::Default:
+        {
+            SingleRender.getDObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::OffScreen:
+        {
+            SingleRender.getOffDObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::Transparency:
+        {
+            SingleRender.getTObjects()->push_back(_id);
+            break;
+        }
+        case DrawObjectType::Normal:
+        {
+            SingleRender.getNObjects()->push_back(_id);
+            break;
+        }
     }
 }
 

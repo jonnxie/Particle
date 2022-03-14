@@ -23,7 +23,8 @@ public:
                    glm::vec3 _scale,
                    int _id,
                    std::string  _pipeline = "ABasic",
-                   std::vector<std::string>  _sets = {"Camera", "Planet"});
+                   std::vector<std::string>  _sets = {"Camera", "Planet"},
+                   DrawObjectType _type = DrawObjectType::Normal);
 
     DefineUnCopy(ABasic);
     ~ABasic(){
@@ -35,6 +36,7 @@ public:
     void update(float) override {};
 
     ClassElement(m_animation_index, int, AnimationIndex);
+    ClassElement(m_draw_type, DrawObjectType, DrawType);
     ClassPointerElement(m_model, vkglTF::Model*, Model);
 private:
     std::string                 m_pipeline;

@@ -101,6 +101,19 @@ void PPool::init() {
                  RenderPassType::Default,
                  SubpassG);
 
+        createGP("AGBasic",
+                 std::vector<Input_Type>{Input_Type::GLTF},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("agbasic_vs"),
+                                                              ShaderPool::getPool().Get("agbasic_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
+                 std::vector<Sl_id> {"Default","Camera", "Planet"},
+                 RenderPassType::Default,
+                 SubpassG);
+
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("composition_vs"),
@@ -249,7 +262,6 @@ void PPool::init() {
                  std::vector<Sl_id>{"Default", "Cascade"},
                  RenderPassType::CascadeShadow,
                  0);
-
     }
 }
 

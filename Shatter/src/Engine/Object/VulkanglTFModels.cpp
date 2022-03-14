@@ -1956,7 +1956,7 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 	Animation &animation = animations[index];
 
     static int times = 0;
-    int tmp_times = time / animation.end;
+    int tmp_times = int(time / animation.end);
     if(tmp_times != times)
     {
         times = tmp_times;

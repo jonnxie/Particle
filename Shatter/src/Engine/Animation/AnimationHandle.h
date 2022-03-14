@@ -23,7 +23,7 @@ public:
     ClassElement(m_id, int, Id);
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
-
+    ClassElement(m_drawType, DrawObjectType, DrawType);
 private:
     std::unique_ptr<ABasic> m_animation{nullptr};
 };

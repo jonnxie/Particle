@@ -171,10 +171,10 @@ int main() {
     ah->setAngle(-half_pai);
     ah->setScale(glm::vec3(1.0f));
     ah->setId(0);
-    ah->setPipeline("ABasic");
+    ah->setPipeline("AGBasic");
     ah->setSets(std::vector<std::string>{"Camera", "Planet"});
+    ah->setDrawType(DrawObjectType::Default);
     ah->loadAnimation(tool::combineModel("BoxAnimated.gltf"));
-
 //    ABasic(tool::combineModel("BoxAnimated.gltf"),
 //           glm::vec3(-10.0f,-10.0f,0.0f),
 //           glm::vec3(1.0f,0.0f,0.0f),
