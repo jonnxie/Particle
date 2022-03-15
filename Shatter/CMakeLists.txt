@@ -11,12 +11,6 @@ file(GLOB CORE
         "src/Platform/*/*.cpp"
         "src/Platform/*/*.h"
         )
-
-#file(GLOB IMGUI
-#        "vendor/imgui-master/*.cpp"
-#        "vendor/imgui-master/backends/imgui_impl_glfw.*"
-#        "vendor/imgui-master/backends/imgui_impl_vulkan.*"
-#        "vendor/imgui-master/*.h")
 file(GLOB IMGUI
         "vendor/imgui-docking/*.cpp"
         "vendor/imgui-docking/backends/imgui_impl_glfw.*"
@@ -66,8 +60,6 @@ add_library(Shatter SHARED ${CORE} ${IMGUI})
 find_package(Vulkan REQUIRED)
 
 target_include_directories(Shatter PUBLIC
-#        vendor/imgui-master
-#        vendor/imgui-master/backends
         vendor/imgui-docking
         vendor/imgui-docking/backends
         src/
@@ -77,6 +69,7 @@ target_include_directories(Shatter PUBLIC
         vendor/tinygltf/
         vendor/glfw-3.3.4.bin.WIN64/include/
         vendor/glm/
+        vendor/Entt/
         ${Vulkan_INCLUDE_DIRS})
 
 target_link_libraries(Shatter ktx glfw3 ${Vulkan_LIBRARIES})

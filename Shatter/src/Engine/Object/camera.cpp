@@ -7,9 +7,9 @@
 #include "Engine/Renderer/shatter_render_include.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 #include "inputaction.h"
-#include "Engine/pool/setpool.h"
+#include "Engine/Pool/setpool.h"
 #include "Engine/Item/shatter_item.h"
-#include "Engine/pool/bpool.h"
+#include "Engine/Pool/bpool.h"
 #include "device.h"
 #include <mutex>
 

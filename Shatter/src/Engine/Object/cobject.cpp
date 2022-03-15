@@ -6,13 +6,12 @@
 #include "cobject.h"
 #include "Engine/Renderer/pipeline.h"
 #include "Engine/Buffer/shatterbuffer.h"
-#include "Engine/pool/ppool.h"
-#include "Engine/pool/bpool.h"
-#include "Engine/pool/mpool.h"
-#include "Engine/pool/setpool.h"
+#include "Engine/Pool/ppool.h"
+#include "Engine/Pool/bpool.h"
+#include "Engine/Pool/mpool.h"
+#include "Engine/Pool/setpool.h"
 #include "device.h"
 #include <algorithm>
-
 
 void CObject::compute(VkCommandBuffer _cb)
 {
