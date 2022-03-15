@@ -7,11 +7,12 @@
 #include "dobject.h"
 #include "gobject.h"
 #include BufferCatalog
-#include "Engine/pool/mpool.h"
-#include "Engine/pool/modelsetpool.h"
+#include "Engine/Pool/mpool.h"
+#include "Engine/Pool/modelsetpool.h"
 #include SetPoolCatalog
 #include DeviceCatalog
 #include RenderCatalog
+#include TaskCatalog
 
 Object::~Object(){
     release();
@@ -72,6 +73,26 @@ void Object::insertRenderObject(DrawObjectType _type, int _id){
             break;
         }
     }
+}
+
+void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max){
+    int model_index = ModelSetPool::getPool().malloc();
+    int d = m_dobjs[0];
+    TaskPool::pushUpdateTask(tool::combine("Capture", d),[&, model_index, d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
+    });
+    auto aabbPool = MPool<AABB>::getPool();
+    (*aabbPool)[m_aabbIndex]->addInternalPoint(_min);
+    (*aabbPool)[m_aabbIndex]->addInternalPoint(_max);
+    (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
+    SingleRender.aabb_map[m_capture_id] = m_aabbIndex;
+
+    std::vector<glm::vec3> aabbBuffer{};
+    genFaceVertexBufferFromAABB(*(*SingleAABBPool)[m_aabbIndex], aabbBuffer);
+    SingleBPool.freeBuffer(tool::combine("Capture", d), Buffer_Type::Vertex_Buffer);
+    SingleBPool.createVertexBuffer(tool::combine("Capture", d), aabbBuffer.size() * one_vec3, aabbBuffer.data());
+    ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", d), Buffer_Type::Vertex_Buffer);
 }
 
 void Object::insertDObject(int _obj){
