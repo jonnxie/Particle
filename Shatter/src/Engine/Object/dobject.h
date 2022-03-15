@@ -17,6 +17,7 @@
 #include <type_traits>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
+#include "Engine/Item/shatter_item.h"
 #include "Engine/pool/bpool.h"
 
 template<class CommandBuffer>
@@ -212,6 +213,8 @@ public:
     std::function<void(VkCommandBuffer)> m_gGraphics;
 
     VkCommandBuffer gCMB;
+
+    ClassPointerElement(data, void*, Data);
 public:
     /*
      * index buffer

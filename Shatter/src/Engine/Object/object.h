@@ -50,8 +50,7 @@ public:
     virtual void constructG(){};
     virtual void constructD(){};
     virtual void constructC(){};
-ClassElement(m_draw_type, DrawObjectType, DrawType);
-
+    ClassElement(m_draw_type, DrawObjectType, DrawType);
 protected:
     glm::mat4   m_world{};
     glm::mat4   m_scale{};

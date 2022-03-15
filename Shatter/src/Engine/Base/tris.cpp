@@ -52,7 +52,7 @@ void DTris::constructD(){
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("TrisBasic",id),[&,ms_index,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getNObjects()->push_back(d);

@@ -179,7 +179,7 @@ int main() {
     glm::vec3 color = GOLD_COLOR;
     input::LineColor(color, STATE_IN);
 
-    auto p =  ParticleGroup(5000,
+    auto p = new ParticleGroup(5000,
                             {0, 0, 0},
                             {25, 25, 25});
 
@@ -205,11 +205,11 @@ int main() {
     {
         line_pool->malloc(3,coor_line);
         auto line = (*line_pool)[coor_line[0]];
-        line->setLine(glm::vec3(0,0,0),glm::vec3(1,0,0));
+        line->setLine(glm::vec3(0, 0, 0),glm::vec3(1, 0, 0));
         line = (*line_pool)[coor_line[1]];
-        line->setLine(glm::vec3(0,0,0),glm::vec3(0,1,0));
+        line->setLine(glm::vec3(0, 0, 0),glm::vec3(0, 1, 0));
         line = (*line_pool)[coor_line[2]];
-        line->setLine(glm::vec3(0,0,0),glm::vec3(0,0,1));
+        line->setLine(glm::vec3(0, 0, 0),glm::vec3(0, 0, 1));
     }
     std::vector<glm::vec3> aabbBuffer{};
     auto coordinate = GCoor::createGCoor(coor_line);
@@ -236,7 +236,7 @@ int main() {
     /*
      * Plane
      */
-    auto plane = new Plane(dvec3{0,0,1},dvec3{5,5,5});
+    auto plane = new Plane(dvec3{ 0, 0, 1},dvec3{ 5, 5, 5});
     plane->draw();
 
     /*
@@ -284,19 +284,19 @@ int main() {
                 Line{
                         Point{center,
                               PURPLE_COLOR},
-                        Point{center+target.x_coordinate,
+                        Point{center + target.x_coordinate,
                               RED_COLOR}
                 },
                 Line{
                         Point{center,
                               PURPLE_COLOR},
-                        Point{center+target.y_coordinate,
+                        Point{center + target.y_coordinate,
                               CYAN_COLOR}
                 },
                 Line {
                         Point{center,
                               PURPLE_COLOR},
-                        Point{center+target.z_coordinate,
+                        Point{center + target.z_coordinate,
                               GREEN_COLOR}
                 },
         };
@@ -345,8 +345,6 @@ int main() {
 
     try {
         app.update();
-//        MPool<Line3d>::release();
-//        MPool<glm::mat4>::release();
         slb_pool.release();
         shader_pool.release();
         set_pool.release();
@@ -354,6 +352,7 @@ int main() {
         buffer_pool.release();
         delete coordinate;
         delete skybox;
+        delete p;
         delete ah;
         SingleOffScreen.release();
         SingleCascade.release();

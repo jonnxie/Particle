@@ -53,7 +53,8 @@ void ABasic::constructD()
 
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    auto func = [&](VkCommandBuffer _cb){
+    (*dpool)[d]->setData(m_model);
+    auto func = [&, d](VkCommandBuffer _cb){
         VkViewport tmp = getViewPort();
         vkCmdSetViewport(_cb,0,1,&tmp);
 
@@ -76,7 +77,8 @@ void ABasic::constructD()
 
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
-        m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
+        ((vkglTF::Model*)(*SingleDPool)[d]->getData())->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
+//        m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
     };
     if(getDrawType() == DrawObjectType::Default)
     {
@@ -85,15 +87,15 @@ void ABasic::constructD()
         (*dpool)[d]->m_newDraw = func;
     }
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("BasicAnimation",m_id),[&,d](float _abs_time){
-        m_model->updateAnimation(m_animation_index, _abs_time,m_world);
+    TaskPool::pushUpdateTask(tool::combine("BasicAnimation", m_id),[&, d](float _abs_time){
+        ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);
     });
     insertRenderObject(d);
 
     int model_index = ModelSetPool::getPool().malloc();
-    TaskPool::pushUpdateTask(tool::combine("BasicAnimationWorld",m_id),[&,model_index](float _abs_time){
+    TaskPool::pushUpdateTask(tool::combine("BasicAnimationWorld", m_id),[&, model_index, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + model_index, &m_world, one_matrix);
+        memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
     auto aabbPool = MPool<AABB>::getPool();
     (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.min);
