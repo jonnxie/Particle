@@ -13,6 +13,7 @@
 #include "Engine/pool/bpool.h"
 #include "Engine/pool/mpool.h"
 #include "Engine/Object/line3d.h"
+#include "Engine/Object/cobject.h"
 #include "Engine/Event/threadpool.h"
 #include "Engine/pool/modelsetpool.h"
 #include "Engine/Object/camera.h"
@@ -40,9 +41,21 @@
 #include "Engine/Mesh/aabbVisiter.h"
 //#include "Engine/Animation/animation.h"
 #include "Engine/Event/delayevent.h"
-
 #include "Engine/Planets/Planet.h"
 #include "Engine/Base/CrossTree.h"
+
+void releasePool()
+{
+    MPool<Line3d>::getPool()->release();
+    MPool<Plane3d>::getPool()->release();
+    MPool<DObject>::getPool()->release();
+    MPool<GObject>::getPool()->release();
+    MPool<CObject>::getPool()->release();
+    MPool<VkDescriptorSet>::getPool()->release();
+    MPool<glm::mat4>::getPool()->release();
+    MPool<ObjectBox>::getPool()->release();
+    MPool<AABB>::getPool()->release();
+}
 
 void initSet()
 {
@@ -154,6 +167,11 @@ int main() {
     auto& offScreen = SingleOffScreen;
 
     auto line_pool = MPool<Line3d>::getPool();
+    {
+        auto cPool = MPool<CObject>::getPool();
+        auto c = cPool->malloc();
+        (*cPool)[c]->compute(VkCommandBuffer{});
+    }
     auto& camera = Camera::getCamera();
     auto thread_pool = ThreadPool::pool();
     initTransparentSet();
@@ -218,7 +236,7 @@ int main() {
     /*
      * Plane
      */
-    auto plane = std::make_unique<Plane>(dvec3{0,0,1},dvec3{5,5,5});
+    auto plane = new Plane(dvec3{0,0,1},dvec3{5,5,5});
     plane->draw();
 
     /*
@@ -244,7 +262,7 @@ int main() {
                             GREEN_COLOR}
             },
     };
-    auto line = std::make_unique<DLines>(lines);
+    auto line = new DLines(lines);
     line->init();
 
     auto planet = new Planet(10,
@@ -327,7 +345,8 @@ int main() {
 
     try {
         app.update();
-        line_pool->release();
+//        MPool<Line3d>::release();
+//        MPool<glm::mat4>::release();
         slb_pool.release();
         shader_pool.release();
         set_pool.release();
@@ -342,10 +361,13 @@ int main() {
         delete build;
         delete glass;
 //        delete a;
+        delete plane;
+        delete line;
         delete planet;
         Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
         SingleDelaySystem.release();
+        releasePool();
     }
     catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

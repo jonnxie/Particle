@@ -30,6 +30,11 @@ public:
         init();
     }
 
+    ~MPool(){
+        delete[] m_ptr;
+//        m_ptr = nullptr;
+    }
+
     DefineUnCopy(MPool);
 public:
 
@@ -83,8 +88,8 @@ public:
     }
 
     void release() {
-        delete m_ptr;
-        m_ptr = nullptr;
+//        delete m_ptr;
+//        m_ptr = nullptr;
         if constexpr (std::is_same_v<Object_Type,Line3d>)
         {
             delete m_line3d_pool;
@@ -101,13 +106,13 @@ public:
         {
             delete m_gobject_pool;
         }
-        else if constexpr (std::is_same_v<Object_Type,VkDescriptorSet>)
-        {
-            delete m_set_pool;
-        }
         else if constexpr(std::is_same_v<Object_Type,CObject>)
         {
             delete m_cobject_pool;
+        }
+        else if constexpr (std::is_same_v<Object_Type,VkDescriptorSet>)
+        {
+            delete m_set_pool;
         }
         else if constexpr(std::is_same_v<Object_Type,ObjectBox>)
         {
@@ -116,6 +121,10 @@ public:
         else if constexpr(std::is_same_v<Object_Type,AABB>)
         {
             delete m_aabb_pool;
+        }
+        else if constexpr(std::is_same_v<Object_Type,glm::mat4>)
+        {
+            delete m_model_matrix_pool;
         }
     }
 
@@ -173,13 +182,17 @@ public:
         {
             return m_gobject_pool;
         }
+        else if constexpr(std::is_same_v<Object_Type,CObject>)
+        {
+            return m_cobject_pool;
+        }
         else if constexpr (std::is_same_v<Object_Type,VkDescriptorSet>)
         {
             return m_set_pool;
         }
-        else if constexpr(std::is_same_v<Object_Type,CObject>)
+        else if constexpr(std::is_same_v<Object_Type,glm::mat4>)
         {
-            return m_cobject_pool;
+            return m_model_matrix_pool;
         }
         else if constexpr(std::is_same_v<Object_Type,ObjectBox>)
         {
@@ -191,8 +204,6 @@ public:
         }
         return nullptr;
     }
-
-    static void initMPool();
 
 public:
     Object_Type* m_ptr;

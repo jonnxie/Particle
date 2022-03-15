@@ -20,6 +20,8 @@ public:
 
     Plane3d(glm::vec3&, const float&);
 
+    ~Plane3d() = default;
+
     inline bool operator==(const Plane3d&) const;
 
     inline bool operator!=(const Plane3d&) const;

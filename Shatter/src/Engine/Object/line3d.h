@@ -13,7 +13,7 @@ public:
     Line3d() : m_begin(0,0,0), m_end(1,1,1) {}
     Line3d(float _xbegin, float _ybegin, float _zbegin, float _xend, float _yend, float _zend) : m_begin(_xbegin, _ybegin, _zbegin),m_end(_xend, _yend, _zend) {}
     Line3d(const glm::vec3& _begin, const glm::vec3& _end) : m_begin(_begin), m_end(_end) {}
-
+    ~Line3d() = default;
 
     Line3d operator+(const glm::vec3& _point) const { return Line3d(m_begin + _point, m_end + _point); }
     Line3d& operator+=(const glm::vec3& _point) { m_begin += _point; m_end += _point; return *this; }

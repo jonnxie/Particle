@@ -100,6 +100,9 @@ public:
  */
 class CObject {
 public:
+    CObject() = default;
+    ~CObject() = default;
+public:
     virtual void compute(VkCommandBuffer _cb);
 
     void prepare(const std::vector<P_id>& _pipeline,
