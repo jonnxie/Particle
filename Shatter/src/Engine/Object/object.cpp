@@ -75,7 +75,7 @@ void Object::insertRenderObject(DrawObjectType _type, int _id){
     }
 }
 
-void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId){
+void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId) const{
     int model_index = ModelSetPool::getPool().malloc();
     int d = _dId;
     TaskPool::pushUpdateTask(tool::combine("Capture", m_aabbIndex),[&, model_index, d](float _abs_time){

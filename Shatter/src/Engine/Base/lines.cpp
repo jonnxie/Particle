@@ -20,6 +20,11 @@
 DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
     lines = _lines;
     id = mallocId();
+    for(auto& line : lines)
+    {
+        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.begin.pos);
+        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.end.pos);
+    }
 }
 
 void DLines::constructG(){
@@ -55,14 +60,22 @@ void DLines::constructD(){
         });
     }
     SingleRender.getNObjects()->push_back(d);
+    addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
 }
 
 void DLines::pushLine(const Line &_line) {
     lines.push_back(_line);
+    (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(_line.begin.pos);
+    (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(_line.end.pos);
 }
 
 void DLines::pushLines(const std::vector<Line>& _lines) {
     lines.insert(lines.end(),_lines.begin(),_lines.end());
+    for(auto& line : _lines)
+    {
+        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.begin.pos);
+        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.end.pos);
+    }
 }
 
 DLinePool::DLinePool(const std::vector<Line>& _lines, bool _updateFunc): updateFunc(_updateFunc){
