@@ -1416,12 +1416,8 @@ namespace Shatter::render{
                 vkCmdSetViewport(captureBuffers[index], 0, 1, &tmp);
                 vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
                 vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
-                std::vector<glm::vec3> aabbBuffer{};
-                genFaceVertexBufferFromAABB(*(*SingleAABBPool)[Id], aabbBuffer);
                 int model_index = (*SingleAABBPool)[Id]->m_model_index;
-                SingleBPool.freeBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), Buffer_Type::Vertex_Buffer);
-                SingleBPool.createVertexBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine(tool::combine("AABBBox ", _imageIndex), Id), Buffer_Type::Vertex_Buffer);
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", Id), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
                 set_array[0] = *(*set_pool)[model_index];
@@ -1436,7 +1432,7 @@ namespace Shatter::render{
                                         0,
                                         nullptr
                 );
-                vkCmdDraw(captureBuffers[index], aabbBuffer.size(), 1, 0, 0);
+                vkCmdDraw(captureBuffers[index], CaptureBoxVertexCount, 1, 0, 0);
                 vkEndCommandBuffer(captureBuffers[index]);
             });
             if(threadIndex >= SingleThreadPool->m_thread_count){

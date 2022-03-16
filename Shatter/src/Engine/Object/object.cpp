@@ -75,10 +75,10 @@ void Object::insertRenderObject(DrawObjectType _type, int _id){
     }
 }
 
-void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max){
+void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId){
     int model_index = ModelSetPool::getPool().malloc();
-    int d = m_dobjs[0];
-    TaskPool::pushUpdateTask(tool::combine("Capture", d),[&, model_index, d](float _abs_time){
+    int d = _dId;
+    TaskPool::pushUpdateTask(tool::combine("Capture", m_aabbIndex),[&, model_index, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
@@ -90,9 +90,7 @@ void Object::addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max
 
     std::vector<glm::vec3> aabbBuffer{};
     genFaceVertexBufferFromAABB(*(*SingleAABBPool)[m_aabbIndex], aabbBuffer);
-    SingleBPool.freeBuffer(tool::combine("Capture", d), Buffer_Type::Vertex_Buffer);
-    SingleBPool.createVertexBuffer(tool::combine("Capture", d), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-    ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", d), Buffer_Type::Vertex_Buffer);
+    SingleBPool.createVertexBuffer(tool::combine("Capture", m_aabbIndex), aabbBuffer.size() * one_vec3, aabbBuffer.data());
 }
 
 void Object::insertDObject(int _obj){

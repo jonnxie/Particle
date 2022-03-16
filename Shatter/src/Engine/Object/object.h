@@ -37,7 +37,7 @@ public:
     virtual void imguiRender(){};
     void insertRenderObject(int _id);
     void insertRenderObject(DrawObjectType _type, int _id);
-    void addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max);
+    void addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId);
     void insertDObject(int);
     void insertGObject(int);
     void insertCObject(int);

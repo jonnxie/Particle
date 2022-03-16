@@ -91,15 +91,5 @@ void ABasic::constructD()
         ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);
     });
     insertRenderObject(d);
-
-    int model_index = ModelSetPool::getPool().malloc();
-    TaskPool::pushUpdateTask(tool::combine("BasicAnimationWorld", m_id),[&, model_index, d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
-    });
-    auto aabbPool = MPool<AABB>::getPool();
-    (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.min);
-    (*aabbPool)[m_aabbIndex]->addInternalPoint(m_model->dimensions.max);
-    (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
-    SingleRender.aabb_map[m_capture_id] = m_aabbIndex;
+    addGPUCaptureComponent(m_model->dimensions.min, m_model->dimensions.max, d);
 }
