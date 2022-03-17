@@ -27,14 +27,14 @@ namespace Shatter{
 
     OutputPoint::OutputPoint() {
         m_action[Event::SingleClick] = [](){
-            glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
-            float depth = center.z / center.w;
-            input::targetDepth(depth, STATE_IN);
-//        glm::mat4 p = SingleCamera.m_camera.proj;
-            glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPressPos(),depth,1.0f);
-            view /= view.w;
+//            glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
+//            float depth = center.z / center.w;
+//            input::targetDepth(depth, STATE_IN);
+////        glm::mat4 p = SingleCamera.m_camera.proj;
+//            glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPressPos(),depth,1.0f);
+//            view /= view.w;
             glm::vec3& world = input::getCursor();
-            world = glm::inverse(SingleCamera.m_camera.view) * view;
+//            world = glm::inverse(SingleCamera.m_camera.view) * view;
 //            glm::vec3 world = glm::inverse(SingleCamera.m_camera.view) * view;
 //            input::cursor(world, STATE_IN);
 

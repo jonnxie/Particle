@@ -52,6 +52,7 @@ private:
 class DrawLinePool : public Shatter::Listener{
 public:
     DrawLinePool();
+    ~DrawLinePool();
 private:
     std::unique_ptr<DLinePool> pool;
 };

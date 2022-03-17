@@ -62,6 +62,7 @@ std::ostream & operator<<(std::ostream& _in,const Plane& _plane);
 class DrawPlane : public Shatter::Listener{
 public:
     DrawPlane();
+    ~DrawPlane(){};
 private:
     std::deque<std::unique_ptr<Plane>> planes;
 };

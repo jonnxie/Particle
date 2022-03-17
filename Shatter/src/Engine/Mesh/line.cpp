@@ -98,12 +98,12 @@ DrawLine::DrawLine() {
                 lines.pop_back();
                 int id = localLine->line->id;
 
-                glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
-                float depth = center.z / center.w;
-
-                glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(),depth,1.0f);
-                view /= view.w;
-                realPos = glm::inverse(SingleCamera.m_camera.view) * view;
+//                glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
+//                float depth = center.z / center.w;
+//
+//                glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(),depth,1.0f);
+//                view /= view.w;
+                realPos = input::getCursor();
 
                 auto buffer = SingleBPool.getBuffer(tool::combine("DLines", id), Buffer_Type::Vertex_Host_Buffer);
                 Point point{};
@@ -126,24 +126,23 @@ DrawLinePool::DrawLinePool() {
     SingleRender.normalChanged = true;
     m_action[Event::SingleClick] = [&]() {
         static bool draw = false;
-        static glm::vec3 pre_pos;
-        static glm::vec3 realPos;
 //        static VkDevice localDevice = SingleDevice();
         if (draw) {
             TaskPool::popUpdateTask("DrawLinePoolUpdate");
             draw = false;
         } else {
 //            input::cursor(pre_pos, STATE_OUT);
-            pre_pos = input::getCursor();
+            glm::vec3& pre_pos = input::getCursor();
             auto line = makeLine(pre_pos);
             pool->pushLine(line);
             TaskPool::pushUpdateTask("DrawLinePoolUpdate", [&](float _abs_time){
-                glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
-                float depth = center.z / center.w;
-
-                glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(), depth,1.0f);
-                view /= view.w;
-                realPos = glm::inverse(SingleCamera.m_camera.view) * view;
+//                glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
+//                float depth = center.z / center.w;
+//
+//                glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(), depth,1.0f);
+//                view /= view.w;
+//                realPos = glm::inverse(SingleCamera.m_camera.view) * view;
+                glm::vec3& realPos = input::getCursor();
 
 //                auto buffer = SingleBPool.getBuffer(tool::combine("DLinePool", pool->id), Buffer_Type::Vertex_Host_Buffer);
                 Point point{};
@@ -160,4 +159,8 @@ DrawLinePool::DrawLinePool() {
             draw = true;
         };
     };
+}
+
+DrawLinePool::~DrawLinePool() {
+    TaskPool::popUpdateTask("DrawLinePoolUpdate");
 }

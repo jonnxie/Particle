@@ -28,6 +28,7 @@
 #include "Engine/Pool/ppool.h"
 #include "pipeline.h"
 #include "Engine/Object/aabb.h"
+#include "Engine/Object/camera.h"
 
 namespace Shatter::render{
     bool render_created = false;
@@ -1941,8 +1942,8 @@ namespace Shatter::render{
 //            input::MousePressCoordiante(coordinate, STATE_IN);
             pressMouse(button);
             glm::vec2& tmp = getCursorPressPos();
-            tmp.x = xpos / getViewPort().view.width;
-            tmp.y = ypos / getViewPort().view.height;
+            tmp.x = coordinate.x / getViewPort().view.width;
+            tmp.y = coordinate.y / getViewPort().view.height;
             tmp *= 2.0f;
             tmp -= 1.0f;
 //            updateCursorPressPos(tmp);
@@ -2446,6 +2447,7 @@ namespace Shatter::render{
         app->mouseEventCallback(button, action, xpos, ypos);
     }
 
+
     void ShatterRender::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos){
         static glm::vec2& cursor = input::getCursorWindow();
         cursor.x = xpos;
@@ -2458,6 +2460,17 @@ namespace Shatter::render{
         tmp -= 1.0f;
 //        updateCursor(tmp);
 //        input::cursorWindow(cursor,STATE_IN);
+
+        glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
+        float& depth = input::getTargetDepth();
+        depth = center.z / center.w;
+//        input::targetDepth(depth, STATE_IN);
+//        glm::mat4 p = SingleCamera.m_camera.proj;
+        glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPressPos(), depth, 1.0f);
+        view /= view.w;
+        glm::vec3& world = input::getCursor();
+        world = glm::inverse(SingleCamera.m_camera.view) * view;
+
         {
             ImGuiIO& io = ImGui::GetIO();
             bool handled = io.WantCaptureMouse;

@@ -124,6 +124,10 @@ void DLinePool::constructD(){
     SingleRender.getNObjects()->push_back(d);
 }
 
+DLinePool::~DLinePool(){
+    TaskPool::popUpdateTask(tool::combine("LinePoolBasic", id));
+}
+
 void DLinePool::pushLine(const Line &_line) {
     lines.push_back(_line);
     poolSize += LineSize;

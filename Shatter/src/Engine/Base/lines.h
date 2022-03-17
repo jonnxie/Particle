@@ -26,6 +26,7 @@ static int mallocId()
 class DLinePool : public Object{
 public:
     explicit DLinePool(const std::vector<Line>& _lines, bool _updateFunc = true);
+    ~DLinePool();
     void constructG() override;
     void constructD() override;
     void constructC() override{};
