@@ -183,8 +183,6 @@ namespace animation {
 
         void constructC() override{};
 
-        void update(float) override {};
-
         void initAnimation();
 
         void initVertexData();

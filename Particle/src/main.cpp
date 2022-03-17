@@ -211,9 +211,9 @@ int main() {
         line = (*line_pool)[coor_line[2]];
         line->setLine(glm::vec3(0, 0, 0),glm::vec3(0, 0, 1));
     }
-    std::vector<glm::vec3> aabbBuffer{};
+//    std::vector<glm::vec3> aabbBuffer{};
     auto coordinate = GCoor::createGCoor(coor_line);
-    AABBVisitor::visitor(aabbBuffer, *coordinate);
+//    AABBVisitor::visitor(aabbBuffer, *coordinate);
     {
 //        auto gline = new GLine({0,0,0},{5,5,5});
 //        gline->draw();

@@ -32,11 +32,10 @@ public:
     }
     void constructG() override;
     void constructD() override;
-    void constructC() override {};
-    void update(float) override {};
+    void constructC() override{};
 
     ClassElement(m_animation_index, int, AnimationIndex);
-//    ClassElement(m_draw_type, DrawObjectType, DrawType);
+
     ClassPointerElement(m_model, vkglTF::Model*, Model);
 
     ClassElement(m_update, bool, Update);

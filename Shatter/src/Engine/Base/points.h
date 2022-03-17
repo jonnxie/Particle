@@ -31,7 +31,6 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-    void update(float) override {};
     void pushPoint(const Point3dColorSize& _point);
     void pushPoint(const std::vector<Point3dColorSize>& _points);
 

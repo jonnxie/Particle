@@ -10,6 +10,14 @@
 #include "aabb.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/shatter_enum.h"
+#include "dobject.h"
+#include "Engine/Pool/mpool.h"
+#include SetPoolCatalog
+#include DeviceCatalog
+#include RenderCatalog
+#include "Engine/Pool/modelsetpool.h"
+#include TaskCatalog
+#include BufferCatalog
 
 static int initCaptureIdVal = 1;
 static std::mutex captureIdLock;
@@ -27,29 +35,153 @@ struct CaptureObject{
 
 class Object {
 public:
-    Object();
-    ~Object();
+    Object()
+    {
+        m_capture_id = mallocCaptureId();
+        auto aabbPool = MPool<AABB>::getPool();
+        m_aabbIndex = aabbPool->malloc();
+
+        SingleBPool.createUniformBuffer(tool::combine("Capture",m_capture_id), 4);
+        auto buffer = SingleBPool.getBuffer(tool::combine("Capture",m_capture_id),Buffer_Type::Uniform_Buffer);
+        buffer->map();
+        memcpy(buffer->mapped, &m_capture_id, 4);
+        buffer->unmap();
+        SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*aabbPool)[m_aabbIndex]->m_capture_set);
+
+        VkDescriptorBufferInfo descriptorBufferInfos{buffer->Get_Buffer(), 0, 4};
+        VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*aabbPool)[m_aabbIndex]->m_capture_set,
+                                                                            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                                            0,
+                                                                            &descriptorBufferInfos);
+
+        vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
+    };
+    virtual ~Object()
+    {
+        release();
+    };
     DefineUnCopy(Object);
 public:
-    void draw(VkCommandBuffer _cb);
-    void init();
-    virtual void update(float){};
-    virtual void imguiRender(){};
-    void insertRenderObject(int _id);
-    void insertRenderObject(DrawObjectType _type, int _id);
-    void addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId) const;
-    void insertDObject(int);
-    void insertGObject(int);
-    void insertCObject(int);
-    virtual void release();
+    void init()
+    {
+        construct();
+    };
+    void insertRenderObject(int _id)
+    {
+        switch (m_draw_type) {
+            case DrawObjectType::Default:
+            {
+                SingleRender.getDObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::OffScreen:
+            {
+                SingleRender.getOffDObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::Transparency:
+            {
+                SingleRender.getTObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::Normal:
+            {
+                SingleRender.getNObjects()->push_back(_id);
+                break;
+            }
+        }
+    };
+
+    void insertRenderObject(DrawObjectType _type, int _id)
+    {
+        switch (_type) {
+            case DrawObjectType::Default:
+            {
+                SingleRender.getDObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::OffScreen:
+            {
+                SingleRender.getOffDObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::Transparency:
+            {
+                SingleRender.getTObjects()->push_back(_id);
+                break;
+            }
+            case DrawObjectType::Normal:
+            {
+                SingleRender.getNObjects()->push_back(_id);
+                break;
+            }
+        }
+    };
+    void addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId) const
+    {
+        int model_index = ModelSetPool::getPool().malloc();
+        int d = _dId;
+        TaskPool::pushUpdateTask(tool::combine("Capture", m_aabbIndex),[&, model_index, d](float _abs_time){
+            glm::mat4* ptr = SingleBPool.getModels();
+            memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
+        });
+        auto aabbPool = MPool<AABB>::getPool();
+        (*aabbPool)[m_aabbIndex]->addInternalPoint(_min);
+        (*aabbPool)[m_aabbIndex]->addInternalPoint(_max);
+        (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
+        SingleRender.aabb_map[m_capture_id] = m_aabbIndex;
+
+        std::vector<glm::vec3> aabbBuffer{};
+        genFaceVertexBufferFromAABB(*(*SingleAABBPool)[m_aabbIndex], aabbBuffer);
+        SingleBPool.createVertexBuffer(tool::combine("Capture", m_aabbIndex), aabbBuffer.size() * one_vec3, aabbBuffer.data());
+
+    };
+    void insertDObject(int _obj)
+    {
+        m_dobjs.emplace_back(_obj);
+    };
+    void insertGObject(int _obj)
+    {
+        m_gobjs.emplace_back(_obj);
+    };
+    void insertCObject(int _obj)
+    {
+        m_cobjs.emplace_back(_obj);
+    };
+    void release()
+    {
+        auto& model_pool = ModelSetPool::getPool();
+        auto dpool = MPool<DObject>::getPool();
+        for(auto i : m_dobjs){
+            dpool->free(i);
+            model_pool.free((*dpool)[i]->m_model_index);
+        }
+        auto gpool = MPool<GObject>::getPool();
+        for(auto i: m_gobjs){
+            gpool->free(i);
+        }
+
+        auto cpool = MPool<CObject>::getPool();
+        for(auto i: m_cobjs){
+            cpool->free(i);
+        }
+    };
     std::vector<int> m_dobjs{};
     std::vector<int> m_gobjs{};
     std::vector<int> m_cobjs{};
     int m_aabbIndex;
 public:
-    void construct();
+    void construct()
+    {
+        constructG();
+        constructC();
+        constructD();
+    };
+
     virtual void constructG(){};
+
     virtual void constructD(){};
+
     virtual void constructC(){};
     ClassElement(m_draw_type, DrawObjectType, DrawType);
 protected:

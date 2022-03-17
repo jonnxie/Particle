@@ -38,10 +38,9 @@ public:
     ~Planet();
     DefineUnCopy(Planet);
     void generateMesh();
-    void constructG()  override;
-    void constructD()  override;
-    void constructC()  override;
-    void update(float) override {};
+    void constructG() override;
+    void constructD() override;
+    void constructC() override;
 public:
     uint32_t            m_id;
     uint32_t            m_resolution{};

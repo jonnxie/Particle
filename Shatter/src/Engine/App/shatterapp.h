@@ -25,8 +25,6 @@
 
 class Camera;
 
-class Object;
-
 
 namespace Shatter{
     class Listener;

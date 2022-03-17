@@ -29,7 +29,6 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-    void update(float) override {};
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
     void reallocated();
@@ -50,7 +49,6 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-    void update(float) override {};
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
 

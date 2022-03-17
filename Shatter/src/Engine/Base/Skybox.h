@@ -23,7 +23,6 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override {};
-    void update(float) override {};
 private:
     vkglTF::Model* m_model;
     std::vector<GltfPoint> m_point;

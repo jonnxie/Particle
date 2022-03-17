@@ -8,10 +8,10 @@
 #include "precompiledhead.h"
 #include "Engine/Object/aabb.h"
 #include "Engine/Object/object.h"
-
-class AABBVisitor{
-public:
-    static void visitor(std::vector<glm::vec3>& _buffer, Object& _obj);
-};
+//
+//class AABBVisitor{
+//public:
+//    static void visitor(std::vector<glm::vec3>& _buffer, Object& _obj);
+//};
 
 #endif //MAIN_AABBVISITER_H

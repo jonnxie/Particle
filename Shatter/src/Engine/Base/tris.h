@@ -30,7 +30,6 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-    void update(float) override {};
     void pushTri(const Tri& _line);
     void pushTris(const std::vector<Tri>& _tris);
 
