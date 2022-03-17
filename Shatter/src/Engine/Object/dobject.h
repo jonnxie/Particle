@@ -215,6 +215,10 @@ public:
     VkCommandBuffer gCMB;
 
     ClassPointerElement(data, void*, Data);
+
+    ClassElement(m_update, bool, Update);
+
+    ClassElement(m_localTime, float, LocalTime);
 public:
     /*
      * index buffer

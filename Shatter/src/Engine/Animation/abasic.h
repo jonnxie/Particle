@@ -38,6 +38,10 @@ public:
     ClassElement(m_animation_index, int, AnimationIndex);
 //    ClassElement(m_draw_type, DrawObjectType, DrawType);
     ClassPointerElement(m_model, vkglTF::Model*, Model);
+
+    ClassElement(m_update, bool, Update);
+
+    ClassElement(m_localTime, float, LocalTime);
 private:
     std::string                 m_pipeline;
     std::vector<std::string>    m_sets;

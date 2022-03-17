@@ -54,6 +54,7 @@ void ABasic::constructD()
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->setData(m_model);
+    (*dpool)[d]->setUpdate(true);
     auto func = [&, d](VkCommandBuffer _cb){
         VkViewport tmp = getViewPort();
         vkCmdSetViewport(_cb,0,1,&tmp);
@@ -88,7 +89,12 @@ void ABasic::constructD()
     }
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("BasicAnimation", m_id),[&, d](float _abs_time){
-        ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);
+        if(m_update)
+        {
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);
+        }else{
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix);
+        }
     });
     insertRenderObject(d);
     addGPUCaptureComponent(m_model->dimensions.min, m_model->dimensions.max, d);

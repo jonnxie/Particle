@@ -91,11 +91,22 @@ void AnimationHandle::pushUI() {
                 {
                     selected = num;
                     m_animation->setAnimationIndex(num);
+                    m_animation->setUpdate(true);
                     m_animation->getModel()->resetAnimation();
                 }
                 num++;
             }
             ImGui::TreePop();
+        }
+        static float local_time = 0.0f;
+        static float pre_time = 0.0f;
+        if(ImGui::SliderFloat("AnimationLocalTime",
+                              &local_time,
+                              m_animation->getModel()->animations[m_animation->getAnimationIndex()].start,
+                              m_animation->getModel()->animations[m_animation->getAnimationIndex()].end))
+        {
+            m_animation->setUpdate(false);
+            m_animation->setLocalTime(local_time);
         }
 
         if (ImGui::TreeNode("Select Descriptor Sets"))
@@ -103,7 +114,6 @@ void AnimationHandle::pushUI() {
             ShowHelpMarker("Hold CTRL and click to select multiple items.");
             auto count = SingleSetPool.m_map.size();
             auto static selection = std::vector<int>(count);
-//            static bool selection[count] = { false, false, false, false, false };
             int num = 0;
             for(auto& [id, val] : SingleSetPool.m_map)
             {
@@ -126,8 +136,6 @@ void AnimationHandle::pushUI() {
             }
             ImGui::TreePop();
         }
-
-//        m_sets
 
         ImGui::End();// End setting
     });

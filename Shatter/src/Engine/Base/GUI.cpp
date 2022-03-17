@@ -35,13 +35,13 @@ GUI *GUI::getGUI() {
 
         ImGui::End();// End setting
 
-        ImGui::Begin("ViewPort");
-
-        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
-
-        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
-
-        ImGui::End();//ViewPort
+//        ImGui::Begin("ViewPort");
+//
+//        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
+//
+//        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
+//
+//        ImGui::End();//ViewPort
     });
     return gui;
 }
