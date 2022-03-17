@@ -88,7 +88,8 @@ DrawLine::DrawLine() {
             TaskPool::popUpdateTask("DrawLineUpdate");
             draw = false;
         } else {
-            input::cursor(pre_pos, STATE_OUT);
+//            input::cursor(pre_pos, STATE_OUT);
+            pre_pos = input::getCursor();
             auto line = std::make_unique<GLine>(pre_pos,pre_pos);
             line->draw();
             lines.push_back(std::move(line));
@@ -132,7 +133,8 @@ DrawLinePool::DrawLinePool() {
             TaskPool::popUpdateTask("DrawLinePoolUpdate");
             draw = false;
         } else {
-            input::cursor(pre_pos, STATE_OUT);
+//            input::cursor(pre_pos, STATE_OUT);
+            pre_pos = input::getCursor();
             auto line = makeLine(pre_pos);
             pool->pushLine(line);
             TaskPool::pushUpdateTask("DrawLinePoolUpdate", [&](float _abs_time){

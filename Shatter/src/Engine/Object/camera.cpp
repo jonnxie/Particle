@@ -35,7 +35,7 @@ void Camera::generateLookAt(){
 }
 
 void Camera::generateProj(){
-    m_aspect = getViewPort().width / getViewPort().height;
+    m_aspect = getViewPort().view.width / getViewPort().view.height;
     m_camera.proj = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
     m_camera.proj[1][1] *= -1;
 }
@@ -86,7 +86,7 @@ void Camera::alphaPlus(float _num) {
 }
 
 void Camera::update(bool& cameraChanged) {
-    glm::vec2 cursor_pos;
+    glm::vec2& cursor_pos = getCursorPos();
     if(cameraChanged)
     {
         if(checkMouse(GLFW_MOUSE_BUTTON_LEFT))

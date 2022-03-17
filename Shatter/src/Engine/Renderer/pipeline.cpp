@@ -432,8 +432,8 @@ GP::GP() {
 
     m_defaultViewport.x = 0.0f;
     m_defaultViewport.y = 0.0f;
-    m_defaultViewport.width = (float)getViewPort().width;
-    m_defaultViewport.height = (float)getViewPort().height;
+    m_defaultViewport.width = (float)getViewPort().view.width;
+    m_defaultViewport.height = (float)getViewPort().view.height;
 
 //    m_defaultViewport.width = (float)SingleRender.getExtent2D().width;
 //    m_defaultViewport.height = (float)SingleRender.getExtent2D().height;

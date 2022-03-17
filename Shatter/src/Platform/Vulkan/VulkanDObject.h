@@ -35,10 +35,10 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        VkViewport tmp = getViewPort();
-        vkCmdSetViewport(_cb,0,1,&tmp);
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
-        VkRect2D scissor = getScissor();
+        VkRect2D& scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
@@ -77,10 +77,10 @@ public:
                     vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
                 }
             }
-            VkViewport tmp = getViewPort();
-            vkCmdSetViewport(_cb,0,1,&tmp);
+            UnionViewPort& tmp = getViewPort();
+            vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
-            VkRect2D scissor = getScissor();
+            VkRect2D& scissor = getScissor();
             vkCmdSetScissor(_cb,0,1,&scissor);
             std::vector<VkDescriptorSet> set_vec;
             set_vec.resize(0);
@@ -123,10 +123,10 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        VkViewport tmp = getViewPort();
-        vkCmdSetViewport(_cb,0,1,&tmp);
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
-        VkRect2D scissor = getScissor();
+        VkRect2D& scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();

@@ -70,11 +70,13 @@ void releaseMouse(int _mouse){
 }
 
 namespace input{
-    genInOut(cursor, glm::vec3);
+    genReferenceItem(Cursor, glm::vec3);
+    genReferenceItem(CursorWindow, glm::vec2);
+    genReferenceItem(MousePressCoordiante, glm::uvec2);
+
     genInOut(mouseRay, glm::vec3);
     genInOut(captureObject, uint32_t);
     genInOut(LineColor, glm::vec3);
-    genInOut(MousePressCoordiante, glm::u32vec2);
     genInOut(inputMode, InputMode);
     genInOut(targetDepth, float);
     genInOut(cursorWindow, glm::vec2);

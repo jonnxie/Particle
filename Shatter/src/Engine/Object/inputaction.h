@@ -44,11 +44,13 @@ void pressMouse(int);
 void releaseMouse(int);
 
 namespace input{
-    delInOut(cursor, glm::vec3);
+    delReferenceItem(Cursor, glm::vec3);
+    delReferenceItem(CursorWindow, glm::vec2);
+    delReferenceItem(MousePressCoordiante, glm::uvec2);
+
     delInOut(mouseRay, glm::vec3);
-    delInOut(captureObject,uint32_t);
+    delInOut(captureObject, uint32_t);
     delInOut(LineColor, glm::vec3);
-    delInOut(MousePressCoordiante,glm::u32vec2);
     delInOut(inputMode, InputMode);
     delInOut(targetDepth, float);
     delInOut(cursorWindow, glm::vec2);

@@ -23,7 +23,7 @@ OffScreen &OffScreen::getOffScreen() {
     std::lock_guard<std::mutex> lockGuard(lock);
     if(!ready)
     {
-        screen.setup(SingleDevice.logicalDevice,getViewPort().width,getViewPort().height);
+        screen.setup(SingleDevice.logicalDevice,getViewPort().view.width,getViewPort().view.height);
         ready = true;
     }
     return screen;

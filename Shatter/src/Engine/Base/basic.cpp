@@ -54,10 +54,10 @@ void Basic::constructD()
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_gGraphics = [&,modelIndex](VkCommandBuffer _cb){
-        VkViewport tmp = getViewPort();
-        vkCmdSetViewport(_cb,0,1,&tmp);
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
-        VkRect2D scissor = getScissor();
+        VkRect2D& scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         auto set_pool = MPool<VkDescriptorSet>::getPool();

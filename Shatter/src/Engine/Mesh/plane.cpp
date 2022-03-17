@@ -168,15 +168,16 @@ DrawPlane::DrawPlane() {
         static bool draw = false;
         static glm::vec3 pre_pos;
         if (draw) {
-            glm::vec3 pos;
-            input::cursor(pos, STATE_OUT);
+            glm::vec3& pos = input::getCursor();
+//            input::cursor(pos, STATE_OUT);
             auto plane = std::make_unique<Plane>(pre_pos,pos - pre_pos);
             plane->draw();
             planes.push_back(std::move(plane));
             draw = false;
             SingleRender.normalChanged = true;
         } else {
-            input::cursor(pre_pos, STATE_OUT);
+            pre_pos = input::getCursor();
+//            input::cursor(pre_pos, STATE_OUT);
             draw = true;
         };
     };

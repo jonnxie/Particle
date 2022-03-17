@@ -33,11 +33,13 @@ namespace Shatter {
             int success = glfwInit();
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             glfwSetErrorCallback(GLFWErrorCallback);
-            setViewPort(VkViewport{0,0,
-                                   float(m_info.m_width),
-                                   float(m_info.m_height),
-                                   0,
-                                   1.0f});
+            setViewPort(UnionViewPort{
+                    VkViewport{0, 0,
+                               float(m_info.m_width),
+                               float(m_info.m_height),
+                               0,
+                               1.0f}
+            });
 
             setScissor(VkRect2D{
                     VkOffset2D{0,0},
@@ -57,7 +59,9 @@ namespace Shatter {
         {
             if(width == 0 || height == 0) return;
 
-            setViewPort(VkViewport{0,0,float(width),float(height),0,1});
+            setViewPort(UnionViewPort{
+                    VkViewport{0, 0, float(width), float(height), 0, 1}
+            });
 
             setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
@@ -105,7 +109,7 @@ namespace Shatter {
                 double xpos, ypos;
                 glfwGetCursorPos(window,&xpos,&ypos);
                 pressMouse(button);
-                glm::vec2 tmp(xpos/getViewPort().width, ypos/getViewPort().height);
+                glm::vec2 tmp(xpos/getViewPort().view.width, ypos/getViewPort().view.height);
                 tmp *= 2.0f;
                 tmp -= 1.0f;
                 updateCursorPressPos(tmp);
@@ -128,13 +132,15 @@ namespace Shatter {
         //done
         glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
         {
-            glm::vec2 cursor(xPos,yPos);
-            VkViewport viewport = getViewPort();
+            glm::vec2& cursor = input::getCursorWindow();
+            cursor.x = xPos;
+            cursor.y = yPos;
+            VkViewport viewport = getViewPort().view;
             glm::vec2 tmp(xPos/viewport.width,yPos/viewport.height);
             tmp *= 2.0f;
             tmp -= 1.0f;
             updateCursor(tmp);
-            input::cursorWindow(cursor,STATE_IN);
+//            input::cursorWindow(cursor,STATE_IN);
             {
                 ImGuiIO& io = ImGui::GetIO();
                 bool handled = io.WantCaptureMouse;

@@ -46,7 +46,7 @@ namespace Shatter::render{
     const std::vector<const char *> validationLayers = {
 //            "VK_LAYER_NV_optimus",
 //            "VK_LAYER_AMD_switchable_graphics",
-//            "VK_LAYER_RENDERDOC_Capture",
+            "VK_LAYER_RENDERDOC_Capture",
 //            "VK_LAYER_LUNARG_monitor"
             "VK_LAYER_KHRONOS_validation"
 //            "VK_LAYER_LUNARG_device_simulation"
@@ -178,11 +178,14 @@ namespace Shatter::render{
 
         window = glfwCreateWindow(SingleAPP.getScreenWidth(), SingleAPP.getScreenHeight(), "Vulkan", nullptr, nullptr);
 
-        setViewPort(VkViewport{0,0,
-                               float(SingleAPP.getScreenWidth()),
-                               float(SingleAPP.getScreenHeight()),
-        0,
-        1.0f});
+        setViewPort(UnionViewPort{
+                VkViewport{0,
+                           0,
+                           float(SingleAPP.getScreenWidth()),
+                           float(SingleAPP.getScreenHeight()),
+                           0,
+                           1.0f}
+        });
 
         setScissor(VkRect2D{
             VkOffset2D{0,0},
@@ -401,7 +404,7 @@ namespace Shatter::render{
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D extent = ::chooseSwapExtent(swapChainSupport.capabilities,getViewPort().width,getViewPort().height);
+        VkExtent2D extent = ::chooseSwapExtent(swapChainSupport.capabilities,getViewPort().view.width,getViewPort().view.height);
 
         setSwapChainFormat(surfaceFormat);
 
@@ -525,8 +528,8 @@ namespace Shatter::render{
     void ShatterRender::createCaptureFramebuffers()
     {
         FrameBufferSpecification spec{};
-        spec.Width = getViewPort().width;
-        spec.Height = getViewPort().height;
+        spec.Width = getViewPort().view.width;
+        spec.Height = getViewPort().view.height;
         spec.formats = {{m_captureFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
                         {m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}};
         spec.Samples = 1;
@@ -603,8 +606,8 @@ namespace Shatter::render{
         VkImageCreateInfo image = tool::imageCreateInfo();
         image.imageType = VK_IMAGE_TYPE_2D;
         image.format = _format;
-        image.extent.width = getViewPort().width;
-        image.extent.height = getViewPort().height;
+        image.extent.width = getViewPort().view.width;
+        image.extent.height = getViewPort().view.height;
 //        image.extent.width = swapchain_extent.width;
 //        image.extent.height = swapchain_extent.height;
         image.extent.depth = 1;
@@ -1395,8 +1398,8 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
         }
-        VkViewport tmp = getViewPort();
-        VkRect2D scissor = getScissor();
+        VkViewport tmp = getViewPort().view;
+        VkRect2D& scissor = getScissor();
 
         int threadIndex = 0;
         for(auto& pair: aabb_map)
@@ -1583,9 +1586,9 @@ namespace Shatter::render{
                 commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
                 vkBeginCommandBuffer(composite_buffers[i], &commandBufferBeginInfo);
-                VkViewport tmp = getViewPort();
-                vkCmdSetViewport(composite_buffers[i],0,1,&tmp);
-                VkRect2D scissor = getScissor();
+                UnionViewPort& tmp = getViewPort();
+                vkCmdSetViewport(composite_buffers[i], 0, 1, &tmp.view);
+                VkRect2D& scissor = getScissor();
                 vkCmdSetScissor(composite_buffers[i],0,1,&scissor);
 
                 std::array<VkDescriptorSet,2> sets{};
@@ -1668,10 +1671,10 @@ namespace Shatter::render{
                     commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
                     vkBeginCommandBuffer(offscreen_buffers[i], &commandBufferBeginInfo);
-                    VkViewport tmp = getViewPort();
-                    vkCmdSetViewport(offscreen_buffers[i],0,1,&tmp);
+                    UnionViewPort& tmp = getViewPort();
+                    vkCmdSetViewport(offscreen_buffers[i], 0, 1, &tmp.view);
 
-                    VkRect2D scissor = getScissor();
+                    VkRect2D& scissor = getScissor();
                     vkCmdSetScissor(offscreen_buffers[i],0,1,&scissor);
                     VkDescriptorSet tmp_set = SingleSetPool["OffScreen"];
                     vkCmdBindDescriptorSets(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipelineLayout(), 0, 1, &tmp_set, 0, nullptr);
@@ -1930,15 +1933,19 @@ namespace Shatter::render{
     }
 
     void ShatterRender::mouseEventCallback(int button, int action, double xpos, double ypos){
-        glm::uvec2 coordinate{xpos, ypos};
         if(action == GLFW_PRESS)
         {
-            input::MousePressCoordiante(coordinate, STATE_IN);
+            glm::uvec2& coordinate = input::getMousePressCoordiante();
+            coordinate.x = xpos;
+            coordinate.y = ypos;
+//            input::MousePressCoordiante(coordinate, STATE_IN);
             pressMouse(button);
-            glm::vec2 tmp(xpos/getViewPort().width, ypos/getViewPort().height);
+            glm::vec2& tmp = getCursorPressPos();
+            tmp.x = xpos / getViewPort().view.width;
+            tmp.y = ypos / getViewPort().view.height;
             tmp *= 2.0f;
             tmp -= 1.0f;
-            updateCursorPressPos(tmp);
+//            updateCursorPressPos(tmp);
         }else if(action == GLFW_RELEASE)
         {
             releaseMouse(button);
@@ -2415,7 +2422,9 @@ namespace Shatter::render{
 
         auto *app = reinterpret_cast<ShatterRender *>(glfwGetWindowUserPointer(window));
 
-        setViewPort(VkViewport{0,0,float(width),float(height),0,1});
+        setViewPort(UnionViewPort{
+                VkViewport{0,0,float(width),float(height),0,1}
+        });
 
         setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
 
@@ -2438,13 +2447,17 @@ namespace Shatter::render{
     }
 
     void ShatterRender::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos){
-        glm::vec2 cursor(xpos,ypos);
-        VkViewport viewport = getViewPort();
-        glm::vec2 tmp(xpos/viewport.width,ypos/viewport.height);
+        static glm::vec2& cursor = input::getCursorWindow();
+        cursor.x = xpos;
+        cursor.y = ypos;
+        UnionViewPort& viewport = getViewPort();
+        glm::vec2& tmp = getCursorPos();
+        tmp.x = cursor.x * viewport.inverseWidth;
+        tmp.y = cursor.y * viewport.inverseHeight;
         tmp *= 2.0f;
         tmp -= 1.0f;
-        updateCursor(tmp);
-        input::cursorWindow(cursor,STATE_IN);
+//        updateCursor(tmp);
+//        input::cursorWindow(cursor,STATE_IN);
         {
             ImGuiIO& io = ImGui::GetIO();
             bool handled = io.WantCaptureMouse;
@@ -2613,11 +2626,11 @@ namespace Shatter::render{
     void ShatterRender::updateUI() {
         ImGuiIO& io = ImGui::GetIO();
         
-        io.DisplaySize = ImVec2((float)getViewPort().width,(float)getViewPort().height);
+        io.DisplaySize = ImVec2((float)getViewPort().view.width,(float)getViewPort().view.height);
         io.DeltaTime = 1.0f;
 
-        glm::vec2 pos;
-        input::cursorWindow(pos,STATE_OUT);
+        glm::vec2& pos = input::getCursorWindow();
+//        input::cursorWindow(pos,STATE_OUT);
         io.MousePos = ImVec2(pos.x, pos.y);
 
         io.MouseWheelH += getScrollPos().x;

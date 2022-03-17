@@ -140,6 +140,16 @@ void func(type& _in,bool _inout){ \
 #define delInOut(func,type) \
 void func(type& _in,bool _inout);
 
+
+#define genReferenceItem(func,type) \
+type& get##func(){                  \
+    static type val;                \
+    return val;                     \
+}
+
+#define delReferenceItem(func, type) \
+type& get##func()
+
 #define STATE_IN true
 
 #define STATE_OUT false

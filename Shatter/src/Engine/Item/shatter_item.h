@@ -797,15 +797,29 @@ QueueFamilyIndices getIndices();
 
 void setIndices(const QueueFamilyIndices& _indices);
 
-static VkViewport viewPort;
+struct UnionViewPort{
+    VkViewport  view;
+    float       inverseWidth;
+    float       inverseHeight;
+    VkViewport operator()(){
+        return view;
+    };
+    UnionViewPort() = default;
+    explicit UnionViewPort(VkViewport _view):view(_view){
+        inverseHeight = 1.0f / view.height;
+        inverseWidth = 1.0f / view.width;
+    }
+};
 
-VkViewport getViewPort();
+static UnionViewPort viewPort;
 
-void setViewPort(VkViewport _viewport);
+UnionViewPort& getViewPort();
+
+void setViewPort(UnionViewPort _viewport);
 
 static VkRect2D scissor;
 
-VkRect2D getScissor();
+VkRect2D& getScissor();
 
 void setScissor(VkRect2D _scissor);
 

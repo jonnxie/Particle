@@ -56,10 +56,10 @@ void ABasic::constructD()
     (*dpool)[d]->setData(m_model);
     (*dpool)[d]->setUpdate(true);
     auto func = [&, d](VkCommandBuffer _cb){
-        VkViewport tmp = getViewPort();
-        vkCmdSetViewport(_cb,0,1,&tmp);
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
-        VkRect2D scissor = getScissor();
+        VkRect2D& scissor = getScissor();
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         std::vector<VkDescriptorSet> sets{};

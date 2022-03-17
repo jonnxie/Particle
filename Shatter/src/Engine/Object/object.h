@@ -183,6 +183,7 @@ public:
     virtual void constructD(){};
 
     virtual void constructC(){};
+
     ClassElement(m_draw_type, DrawObjectType, DrawType);
 protected:
     glm::mat4   m_world{};
