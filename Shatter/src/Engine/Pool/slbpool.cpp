@@ -52,6 +52,16 @@ void SlbPool::init(){
             nullptr}
     };
 
+
+    m_map["ViewPort"] = std::vector<VkDescriptorSetLayoutBinding>{
+            VkDescriptorSetLayoutBinding{
+                    0,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    1,
+                    VK_SHADER_STAGE_ALL_GRAPHICS,
+                    nullptr}
+    };
+
     /*
      * camera: view matrix and proj matrix
      */

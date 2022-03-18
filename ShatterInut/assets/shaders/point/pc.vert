@@ -20,9 +20,19 @@ out gl_PerVertex{
     vec4 gl_Position;
     float gl_PointSize;
 };
+//
+//void main() {
+//    gl_Position = c.proj * c.view * m.model * vec4(inPosition, 1.0);
+//    gl_PointSize = inSize;
+//    fragColor = inColor;
+//}
 
-void main() {
-    gl_Position = c.proj * c.view * m.model * vec4(inPosition, 1.0);
-    gl_PointSize = inSize;
-    fragColor = inColor;
-}
+
+//void main() {
+//    gl_Position = c.proj * c.view * m.model * vec4(inPosition, 1.0);
+//    vec3 view_pos = vec3(c.view * m.model * vec4(inPosition, 1.0));
+//    vec3 target = vec3(view_pos.)
+//
+//    gl_PointSize = inSize;
+//    fragColor = inColor;
+//}

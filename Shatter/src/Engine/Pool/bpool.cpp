@@ -237,6 +237,7 @@ void BPool::init() {
     createUniformBuffer("AnimationUniform",sizeof(float));
     createUniformBuffer("CascadeShadow",CascadeShadowSize);
     createUniformBuffer("CascadeIndex",4);
+    createUniformBuffer("ViewPort",8);
 
     createTexture(ImageType::KTXDimension,"glass",tool::combineTexture("colored_glass_rgba.ktx"));
     createVertexHostBuffer("CameraTargetPlane",CameraBufferSize);
@@ -246,6 +247,10 @@ void BPool::init() {
     m_uniform_map["CascadeShadow"]->map();
     m_uniform_map["CascadeIndex"]->map();
     m_vertex_map["CameraTargetPlane"]->map();
+
+    m_uniform_map["ViewPort"]->map();
+    float view[2] = {getViewPort().view.width, getViewPort().view.height};
+    memcpy(m_uniform_map["ViewPort"]->mapped, view, 8);
 
     m_idle_model.resize(m_model_count);
     for(auto i = 0 ; i < m_model_count ; i++){
