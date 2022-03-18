@@ -547,6 +547,20 @@ struct Tri{
 
 #define TriSize 72
 
+/*
+ * 3  2
+ * 0  1
+ */
+
+struct NPlane{
+    struct Point{
+        glm::vec3 pos;
+        glm::vec2 uv;
+    }points[4]{};
+};
+
+#define NPlaneSize 100
+
 struct TagetPlane
 {
     glm::vec3 x_coordinate;

@@ -40,4 +40,18 @@ public:
     int                 id;
 };
 
+class DPlane : public Object{
+public:
+    explicit DPlane(const NPlane& _plane, MeshDrawType _type = MeshDrawType::Line);
+    void constructG() override;
+    void constructD() override;
+    void constructC() override{};
+
+public:
+    NPlane              plane;
+    MeshDrawType        type;
+    bool                changed = true;
+    int                 id;
+};
+
 #endif //GAME_TRIS_H

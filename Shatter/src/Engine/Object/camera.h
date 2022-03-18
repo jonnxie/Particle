@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_item.h"
-#include "Engine/pool/bpool.h"
+#include "Engine/Pool/bpool.h"
 
 class Camera {
 public:
