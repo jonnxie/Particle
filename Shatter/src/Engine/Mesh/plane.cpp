@@ -183,6 +183,7 @@ DrawPlane::DrawPlane() {
     };
 }
 
+DrawPlane::~DrawPlane()= default;
 
 
 

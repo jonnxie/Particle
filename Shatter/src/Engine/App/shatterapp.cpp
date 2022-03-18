@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2020/11/13.
 //
+#include <Engine/Base/tris.h>
 #include "precompiledhead.h"
 #include "shatterapp.h"
 #include "Engine/Object/camera.h"
@@ -166,6 +167,19 @@ namespace Shatter::app{
                 }else{
                     deleteListener("drawLinePool");
                     drawLinePool = true;
+                }
+            }
+
+            if(key == GLFW_KEY_F7)
+            {
+                static bool drawNPlane = true;
+                if(drawNPlane)
+                {
+                    drawNPlane = false;
+                    appendListener("drawNPlane",new DrawNPlane);
+                }else{
+                    deleteListener("drawNPlane");
+                    drawNPlane = true;
                 }
             }
 

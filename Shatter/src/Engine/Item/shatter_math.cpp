@@ -308,7 +308,6 @@ void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vect
 }
 
 void genPlane(const glm::vec3& _min, const glm::vec3& _max, NPlane& _plane){
-    uint32_t indices[6]{0, 2, 1, 0, 3, 2};
     _plane.points[0] = std::move(NPlane::Point{_min,
                                      {.0f,.0f}});
     _plane.points[1] = std::move(NPlane::Point{{_max.x, _min.y, _min.z},

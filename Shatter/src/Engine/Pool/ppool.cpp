@@ -127,6 +127,19 @@ void PPool::init() {
                  RenderPassType::Default,
                  SubpassG);
 
+        createGP("GPlane",
+                 std::vector<Input_Type>{Input_Type::Point3dUV},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("plane_vs"),
+                                                              ShaderPool::getPool().Get("plane_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
+                 std::vector<Sl_id> {"Default", "Camera", "Planet"},
+                 RenderPassType::Default,
+                 SubpassG);
+
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("composition_vs"),

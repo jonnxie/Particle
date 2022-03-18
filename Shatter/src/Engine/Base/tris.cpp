@@ -15,6 +15,7 @@
 #include OffScreenCatalog
 #include AppCatalog
 #include CameraCatalog
+#include "Engine/Object/inputaction.h"
 
 DTris::DTris(size_t _initCount, MeshDrawType _type): type(_type){
     tris = std::vector<Tri>(_initCount);
@@ -75,11 +76,11 @@ static int mallocId()
     return initIdVal++;
 }
 
-DPlane::DPlane(const NPlane& _plane, MeshDrawType _type)
-:plane(_plane),
-type(_type)
+DPlane::DPlane(const NPlane& _plane)
+:plane(_plane)
 {
     id = mallocId();
+    init();
 };
 
 void DPlane::constructG(){
@@ -94,8 +95,9 @@ void DPlane::constructD(){
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
 
-    std::vector<std::string> s_vec(1);
+    std::vector<std::string> s_vec(2);
     s_vec[0]="Camera";
+    s_vec[1]="Planet";
     (*dpool)[d]->m_type = DType::Normal;
 
     glm::mat4 matrix{
@@ -114,7 +116,7 @@ void DPlane::constructD(){
                          tool::combine("DPlane",id),
                          6,
                          0,
-                         type == MeshDrawType::Face ? "TriangleFace":"TriangleLine",
+                         "GPlane",
                          s_vec);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("TrisBasic",id),[&,ms_index,d](float _abs_time){
@@ -125,6 +127,46 @@ void DPlane::constructD(){
     SingleRender.getNObjects()->push_back(d);
 };
 
+DrawNPlane::~DrawNPlane() {
+    TaskPool::popUpdateTask("DrawPlaneUpdate");
+}
+
+
+DrawNPlane::DrawNPlane() {
+    m_action[Event::SingleClick] = [&]() {
+        static bool draw = false;
+        static glm::vec3 pre_pos;
+        static glm::vec3 realPos;
+        static NPlane plane;
+        static VkDevice localDevice = SingleDevice();
+        if (draw) {
+            TaskPool::popUpdateTask("DrawPlaneUpdate");
+            draw = false;
+        } else {
+            pre_pos = input::getCursor();
+            pre_pos = SingleCamera.m_targetPlane.x_coordinate * glm::dot(SingleCamera.m_targetPlane.x_coordinate, pre_pos - SingleCamera.center)
+                    + SingleCamera.m_targetPlane.y_coordinate * glm::dot(SingleCamera.m_targetPlane.y_coordinate, pre_pos - SingleCamera.center);
+            genPlane(pre_pos, pre_pos, plane);
+            auto p = std::make_unique<DPlane>(plane);
+            planes.push_back(std::move(p));
+            TaskPool::pushUpdateTask("DrawPlaneUpdate",[&](float _abs_time){
+                auto localPlane = std::move(planes.back());
+                planes.pop_back();
+                int id = localPlane->id;
+                realPos = input::getCursor();
+                realPos = SingleCamera.m_targetPlane.x_coordinate * glm::dot(SingleCamera.m_targetPlane.x_coordinate, realPos - SingleCamera.center)
+                          + SingleCamera.m_targetPlane.y_coordinate * glm::dot(SingleCamera.m_targetPlane.y_coordinate, realPos - SingleCamera.center);
+                genPlane(pre_pos, realPos, plane);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DPlane", id), Buffer_Type::Vertex_Host_Buffer);
+                auto* ptr = (Point*)buffer->mapped;
+                memcpy(ptr, &plane, NPlaneSize);
+                planes.push_back(std::move(localPlane));
+            });
+            SingleRender.normalChanged = true;
+            draw = true;
+        };
+    };
+}
 
 
 

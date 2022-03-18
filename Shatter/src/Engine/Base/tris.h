@@ -11,6 +11,7 @@
 #include DObjectCatalog
 #include MPoolCatalog
 #include DeviceCatalog
+#include ListenerCatalog
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
 
@@ -42,16 +43,23 @@ public:
 
 class DPlane : public Object{
 public:
-    explicit DPlane(const NPlane& _plane, MeshDrawType _type = MeshDrawType::Line);
+    explicit DPlane(const NPlane& _plane);
     void constructG() override;
     void constructD() override;
     void constructC() override{};
 
 public:
     NPlane              plane;
-    MeshDrawType        type;
     bool                changed = true;
     int                 id;
+};
+
+class DrawNPlane : public Shatter::Listener{
+public:
+    DrawNPlane();
+    ~DrawNPlane() override;
+private:
+    std::deque<std::unique_ptr<DPlane>> planes;
 };
 
 #endif //GAME_TRIS_H
