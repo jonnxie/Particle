@@ -44,6 +44,7 @@ public:
 class DPlane : public Object{
 public:
     explicit DPlane(const NPlane& _plane);
+    ~DPlane() override;
     void constructG() override;
     void constructD() override;
     void constructC() override{};

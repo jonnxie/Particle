@@ -91,7 +91,7 @@ void Camera::update(bool& cameraChanged) {
     {
         if(checkMouse(GLFW_MOUSE_BUTTON_LEFT))
         {
-            getCursor(cursor_pos);
+//            getCursor(cursor_pos);
             glm::vec2 dis = cursor_pos - getCursorPressPos();
             m_alpha = static_cast<float>(m_pre_alpha) + (dis.y);
             m_gamma = static_cast<float>(m_pre_gamma) - (dis.x);
@@ -144,7 +144,7 @@ void Camera::update(bool& cameraChanged) {
 
     if(checkMouse(GLFW_MOUSE_BUTTON_MIDDLE))
     {
-        getCursor(cursor_pos);
+//        getCursor(cursor_pos);
         center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) + m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y);
     }else{
         pre_center = center;
