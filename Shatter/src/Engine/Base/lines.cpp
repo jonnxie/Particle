@@ -27,6 +27,10 @@ DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_up
     }
 }
 
+DLines::~DLines(){
+    TaskPool::popUpdateTask(tool::combine("LinesBasic",id));
+}
+
 void DLines::constructG(){
     SingleBPool.createVertexHostBuffer(tool::combine("DLines",id),LineSize * lines.size(),lines.data());
     SingleBPool.getBuffer(tool::combine("DLines",id),Buffer_Type::Vertex_Host_Buffer)->map();

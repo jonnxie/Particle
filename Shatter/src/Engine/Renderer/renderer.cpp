@@ -2466,10 +2466,11 @@ namespace Shatter::render{
         depth = center.z / center.w;
 //        input::targetDepth(depth, STATE_IN);
 //        glm::mat4 p = SingleCamera.m_camera.proj;
-        glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPressPos(), depth, 1.0f);
+        glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(), depth, 1.0f);
         view /= view.w;
         glm::vec3& world = input::getCursor();
         world = glm::inverse(SingleCamera.m_camera.view) * view;
+//        printPoint(world);
 
         {
             ImGuiIO& io = ImGui::GetIO();

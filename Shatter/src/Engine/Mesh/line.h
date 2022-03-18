@@ -45,6 +45,7 @@ public:
 class DrawLine : public Shatter::Listener{
 public:
     DrawLine();
+    ~DrawLine() override;
 private:
     std::deque<std::unique_ptr<GLine>> lines;
 };
@@ -52,7 +53,7 @@ private:
 class DrawLinePool : public Shatter::Listener{
 public:
     DrawLinePool();
-    ~DrawLinePool();
+    ~DrawLinePool() override;
 private:
     std::unique_ptr<DLinePool> pool;
 };

@@ -47,6 +47,7 @@ public:
 class DLines : public Object{
 public:
     explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true);
+    ~DLines();
     void constructG() override;
     void constructD() override;
     void constructC() override{};
