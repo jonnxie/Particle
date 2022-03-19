@@ -78,5 +78,13 @@ public:
     int                 id;
 };
 
+class DrawCube : public Shatter::Listener{
+public:
+    DrawCube();
+    ~DrawCube() override;
+private:
+    std::deque<std::unique_ptr<DCube>> cubes;
+};
+
 
 #endif //GAME_TRIS_H

@@ -183,6 +183,20 @@ namespace Shatter::app{
                 }
             }
 
+            if(key == GLFW_KEY_F8)
+            {
+                static bool drawCube = true;
+                if(drawCube)
+                {
+                    drawCube = false;
+                    appendListener("drawCube",new DrawCube);
+                }else{
+                    deleteListener("drawCube");
+                    drawCube = true;
+                }
+            }
+
+
         }
 
         if(action == GLFW_REPEAT)

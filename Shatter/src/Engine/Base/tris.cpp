@@ -185,6 +185,7 @@ DCube::DCube(const Cube &_cube):
 cube(_cube)
 {
     id = mallocCubeId();
+    init();
 }
 
 DCube::~DCube() {
@@ -198,12 +199,13 @@ void DCube::constructG() {
     uint32_t planeIndices[6]{0, 2, 1, 0, 3, 2};
     for (int i = 0; i < static_cast<int>(CubePlane::PlaneCount); ++i) {
         int base_count = i * static_cast<int>(CubePlane::PlaneCount);
-        indices[base_count]     = planeIndices[0] + base_count;
-        indices[base_count + 1] = planeIndices[1] + base_count;
-        indices[base_count + 2] = planeIndices[2] + base_count;
-        indices[base_count + 3] = planeIndices[3] + base_count;
-        indices[base_count + 4] = planeIndices[4] + base_count;
-        indices[base_count + 5] = planeIndices[5] + base_count;
+        int vertex_count = i * 4;
+        indices[base_count]     = planeIndices[0] + vertex_count;
+        indices[base_count + 1] = planeIndices[1] + vertex_count;
+        indices[base_count + 2] = planeIndices[2] + vertex_count;
+        indices[base_count + 3] = planeIndices[3] + vertex_count;
+        indices[base_count + 4] = planeIndices[4] + vertex_count;
+        indices[base_count + 5] = planeIndices[5] + vertex_count;
     }
     SingleBPool.createIndexBuffer(tool::combine("DCube",id), 144, indices);
 }
@@ -219,10 +221,10 @@ void DCube::constructD() {
     (*dpool)[d]->m_type = DType::Normal;
 
     glm::mat4 matrix{
-            glm::vec4{SingleCamera.m_targetPlane.x_coordinate,0.0f},
-            glm::vec4{SingleCamera.m_targetPlane.y_coordinate,0.0f},
-            glm::vec4{SingleCamera.m_targetPlane.z_coordinate,0.0f},
-            glm::vec4{glm::vec3{0.0f},1.0f},
+            glm::vec4{SingleCamera.m_targetPlane.x_coordinate, 0.0f},
+            glm::vec4{SingleCamera.m_targetPlane.y_coordinate, 0.0f},
+            glm::vec4{SingleCamera.m_targetPlane.z_coordinate, 0.0f},
+            glm::vec4{glm::vec3{0.0f}, 1.0f},
     };
 //    matrix = glm::inverse(matrix);
     (*dpool)[d]->prepare(matrix,
@@ -230,13 +232,13 @@ void DCube::constructD() {
                          DrawType::Index,
                          0,
                          tool::combine("DCube", id),
-                         4,
+                         24,
                          tool::combine("DCube", id),
-                         6,
+                         36,
                          0,
-                         "GPlane",
+                         "GCube",
                          s_vec,
-                         "GPlane",
+                         "GCube",
                          s_vec);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("DCube",id),[&, ms_index, d](float _abs_time){
@@ -245,4 +247,57 @@ void DCube::constructD() {
     });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.getDObjects()->push_back(d);
+}
+
+DrawCube::~DrawCube() {
+    TaskPool::popUpdateTask("DrawCubeUpdate");
+}
+
+DrawCube::DrawCube() {
+    m_action[Event::SingleClick] = [&]() {
+        static bool draw_plane = false;
+        static bool draw_cube = false;
+        static glm::vec2 pre_pos;
+        static glm::vec2 realPos;
+        static float height;
+        static Cube cube;
+        if(draw_cube)
+        {
+            TaskPool::popUpdateTask("DrawCubeUpdate");
+            draw_cube = false;
+        }else if (draw_plane) {
+            TaskPool::popUpdateTask("DrawCubeUpdate");
+            TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
+                auto localCube = std::move(cubes.back());
+                cubes.pop_back();
+                int id = localCube->id;
+                height =  glm::dot(SingleCamera.m_targetPlane.z_coordinate, input::getCursor() - SingleCamera.center);
+                genCube(pre_pos, realPos, 1.0, cube);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
+                memcpy(buffer->mapped, &cube, CubeSize);
+                cubes.push_back(std::move(localCube));
+            });
+            draw_plane = false;
+            draw_cube = true;
+        } else {
+            pre_pos = glm::vec2(1.0f, 0.0f) * glm::dot(SingleCamera.m_targetPlane.x_coordinate, input::getCursor() - SingleCamera.center)
+                    + glm::vec2(0.0f, 1.0f) * glm::dot(SingleCamera.m_targetPlane.y_coordinate, input::getCursor() - SingleCamera.center);
+            genCube(pre_pos, pre_pos, .0f, cube);
+            auto p = std::make_unique<DCube>(cube);
+            cubes.push_back(std::move(p));
+            TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
+                auto localCube = std::move(cubes.back());
+                cubes.pop_back();
+                int id = localCube->id;
+                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleCamera.m_targetPlane.x_coordinate, input::getCursor() - SingleCamera.center)
+                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleCamera.m_targetPlane.y_coordinate, input::getCursor() - SingleCamera.center);
+                genCube(pre_pos, realPos, .0f, cube);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
+                memcpy(buffer->mapped, &cube, CubeSize);
+                cubes.push_back(std::move(localCube));
+            });
+            SingleRender.drawChanged = true;
+            draw_plane = true;
+        };
+    };
 }
