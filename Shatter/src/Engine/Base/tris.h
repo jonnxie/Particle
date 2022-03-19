@@ -63,4 +63,20 @@ private:
     std::deque<std::unique_ptr<DPlane>> planes;
 };
 
+
+class DCube : public Object{
+public:
+    explicit DCube(const Cube& _cube);
+    ~DCube() override;
+    void constructG() override;
+    void constructD() override;
+    void constructC() override{};
+
+public:
+    Cube                cube;
+    bool                changed = true;
+    int                 id;
+};
+
+
 #endif //GAME_TRIS_H

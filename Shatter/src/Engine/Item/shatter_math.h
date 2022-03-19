@@ -51,6 +51,9 @@ void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vect
 struct NPlane;
 void genPlane(const glm::vec3& _min, const glm::vec3& _max, NPlane& _plane);
 
+struct Cube;
+void genCube(const glm::vec2& _min, const glm::vec2& _max, float _height, Cube& _cube);
+
 void decomposeTransform(const glm::mat4& _transform,glm::vec3& _transition,glm::vec3& _rotation,glm::vec3& _scale);
 
 #ifdef SHATTER_SIMD

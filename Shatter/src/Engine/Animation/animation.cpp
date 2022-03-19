@@ -483,7 +483,7 @@ namespace animation {
                 Shatter::app::ShatterApp::getApp().cameraChanged = true;
             }
 
-            TagetPlane localPlane{};
+            TargetPlane localPlane{};
             localPlane.z_coordinate = glm::vec3(0.0f, 0.0f, 1.0f);
             localPlane.x_coordinate = glm::normalize(glm::cross(localPlane.z_coordinate, camera.m_targetPlane.z_coordinate));
             localPlane.y_coordinate = glm::normalize(glm::cross(localPlane.z_coordinate, localPlane.x_coordinate));

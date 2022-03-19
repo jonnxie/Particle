@@ -38,8 +38,8 @@ namespace Shatter{
             ~ShatterApp();
             DefineUnCopy(ShatterApp);
         public:
-            int getScreenWidth(){return m_width;};
-            int getScreenHeight(){return m_height;};
+            int getScreenWidth() const {return m_width;};
+            int getScreenHeight() const {return m_height;};
         public:
             void update();
             std::vector<int>* getDObjects();
@@ -52,6 +52,8 @@ namespace Shatter{
             void listener(Listener* _listener);
             void appendListener(const std::string& _name,Listener* _listener);
             void deleteListener(const std::string& _name);
+            TargetPlane& getTargetPlane();
+            glm::vec3&   getTargetCenter();
         private:
             ShatterApp();
 
@@ -68,7 +70,6 @@ namespace Shatter{
             std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
-
         private:
             float lastTime;
             bool showFPS;

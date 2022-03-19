@@ -57,7 +57,7 @@ public:
 
     ComputeCullUniform m_cull{};
 
-    TagetPlane m_targetPlane{};
+    TargetPlane m_targetPlane{};
 
     glm::mat4 m_vp{};
 };

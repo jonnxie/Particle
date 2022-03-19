@@ -561,7 +561,29 @@ struct NPlane{
 
 #define NPlaneSize 100
 
-struct TagetPlane
+enum class CubePlane{
+    Front = 0,
+    Back,
+    Left,
+    Right,
+    Top,
+    Bottom,
+    PlaneCount,
+};
+
+struct Cube{
+    struct Plane{
+        struct Point{
+            glm::vec3 pos;
+            glm::vec3 normal;
+            glm::vec2 uv;
+        } points[4];
+    } planes[int(CubePlane::PlaneCount)];
+};
+
+#define CubeSize 768
+
+struct TargetPlane
 {
     glm::vec3 x_coordinate;
     glm::vec3 y_coordinate;
@@ -570,6 +592,11 @@ struct TagetPlane
 #define TargetPlaneSize 36
 
 #define TargetPlaneDoubleCoordinateSize 144
+
+struct Target{
+    TargetPlane plane;
+    glm::vec3   center;
+};
 
 static struct Material{
     float roughness;

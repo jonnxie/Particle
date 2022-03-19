@@ -173,11 +173,76 @@ DrawNPlane::DrawNPlane() {
     };
 }
 
+static int mallocCubeId()
+{
+    static int initIdVal = 0;
+    static std::mutex idLock;
+    std::lock_guard<std::mutex> lockGuard(idLock);
+    return initIdVal++;
+}
 
+DCube::DCube(const Cube &_cube):
+cube(_cube)
+{
+    id = mallocCubeId();
+}
 
+DCube::~DCube() {
+    TaskPool::popUpdateTask(tool::combine("DCube",id));
+}
 
+void DCube::constructG() {
+    SingleBPool.createVertexHostBuffer(tool::combine("DCube",id), CubeSize, &cube);
+    SingleBPool.getBuffer(tool::combine("DCube",id),Buffer_Type::Vertex_Host_Buffer)->map();
+    uint32_t indices[36];
+    uint32_t planeIndices[6]{0, 2, 1, 0, 3, 2};
+    for (int i = 0; i < PlaneCount; ++i) {
+        int base_count = i * PlaneCount;
+        indices[base_count]     = planeIndices[0] + base_count;
+        indices[base_count + 1] = planeIndices[1] + base_count;
+        indices[base_count + 2] = planeIndices[2] + base_count;
+        indices[base_count + 3] = planeIndices[3] + base_count;
+        indices[base_count + 4] = planeIndices[4] + base_count;
+        indices[base_count + 5] = planeIndices[5] + base_count;
+    }
+    SingleBPool.createIndexBuffer(tool::combine("DCube",id), 144, indices);
+}
 
+void DCube::constructD() {
+    auto dpool = MPool<DObject>::getPool();
+    auto d = dpool->malloc();
+    int ms_index = ModelSetPool::getPool().malloc();
 
+    std::vector<std::string> s_vec(2);
+    s_vec[0]="Camera";
+    s_vec[1]="Planet";
+    (*dpool)[d]->m_type = DType::Normal;
 
-
-
+    glm::mat4 matrix{
+            glm::vec4{SingleCamera.m_targetPlane.x_coordinate,0.0f},
+            glm::vec4{SingleCamera.m_targetPlane.y_coordinate,0.0f},
+            glm::vec4{SingleCamera.m_targetPlane.z_coordinate,0.0f},
+            glm::vec4{glm::vec3{0.0f},1.0f},
+    };
+//    matrix = glm::inverse(matrix);
+    (*dpool)[d]->prepare(matrix,
+                         ms_index,
+                         DrawType::Index,
+                         0,
+                         tool::combine("DCube", id),
+                         4,
+                         tool::combine("DCube", id),
+                         6,
+                         0,
+                         "GPlane",
+                         s_vec,
+                         "GPlane",
+                         s_vec);
+    insertDObject(d);
+    TaskPool::pushUpdateTask(tool::combine("DCube",id),[&, ms_index, d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
+    });
+//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
+    SingleRender.getDObjects()->push_back(d);
+}
