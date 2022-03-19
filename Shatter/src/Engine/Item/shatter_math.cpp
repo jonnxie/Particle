@@ -308,14 +308,10 @@ void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vect
 }
 
 void genPlane(const glm::vec3& _min, const glm::vec3& _max, NPlane& _plane){
-    _plane.points[0] = NPlane::Point{_min,
-                                     {.0f,.0f}};
-    _plane.points[1] = NPlane::Point{{_max.x, _min.y, _min.z},
-                                     {.0f,.0f}};
-    _plane.points[2] = NPlane::Point{_max,
-                                     {.0f,.0f}};
-    _plane.points[3] = NPlane::Point{{_min.x, _max.y, _min.z},
-                                     {.0f,.0f}};
+    new ((void*)&_plane.points[0])NPlane::Point{_min, {.0f,.0f}};
+    new ((void*)&_plane.points[1])NPlane::Point{{_max.x, _min.y, _min.z}, {1.0f,.0f}};
+    new ((void*)&_plane.points[2])NPlane::Point{_max, {1.0f,1.0f}};
+    new ((void*)&_plane.points[3])NPlane::Point{{_min.x, _max.y, _min.z}, {.0f,1.0f}};
 }
 
 void genCube(const glm::vec2& _min, const glm::vec2& _max, float _height, Cube& _cube)
@@ -323,118 +319,116 @@ void genCube(const glm::vec2& _min, const glm::vec2& _max, float _height, Cube& 
     /*
      * front
      */
-    _cube.planes[int(CubePlane::Front)].points[0] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Front)].points[0]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
                                                                        glm::vec3{.0f, 1.0f, .0f},
                                                                        glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Front)].points[1] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Front)].points[1]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
                                                                        glm::vec3{.0f, 1.0f, .0f},
                                                                        glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Front)].points[2] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Front)].points[2]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
                                                                        glm::vec3{.0f, 1.0f, .0f},
                                                                        glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Front)].points[3] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Front)].points[3]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
                                                                        glm::vec3{.0f, 1.0f, .0f},
                                                                        glm::vec2{0.0f, 1.0f}};
 
     /*
     * back
     */
-    _cube.planes[int(CubePlane::Back)].points[0] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Back)].points[0]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
                                                                        glm::vec3{.0f, -1.0f, .0f},
                                                                        glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Back)].points[1] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Back)].points[1]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
                                                                        glm::vec3{.0f, -1.0f, .0f},
                                                                        glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Back)].points[2] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Back)].points[2]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
                                                                        glm::vec3{.0f, -1.0f, .0f},
                                                                        glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Back)].points[3] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Back)].points[3]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
                                                                        glm::vec3{.0f, -1.0f, .0f},
                                                                        glm::vec2{0.0f, 1.0f}};
 
     /*
     * left
     */
-    _cube.planes[int(CubePlane::Left)].points[0] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Left)].points[0]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
                                                                       glm::vec3{-1.0f, .0f, .0f},
                                                                       glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Left)].points[1] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Left)].points[1]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
                                                                       glm::vec3{-1.0f, .0f, .0f},
                                                                       glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Left)].points[2] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Left)].points[2]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
                                                                       glm::vec3{-1.0f, .0f, .0f},
                                                                       glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Left)].points[3] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Left)].points[3]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
                                                                       glm::vec3{-1.0f, .0f, .0f},
                                                                       glm::vec2{0.0f, 1.0f}};
-
 
     /*
     * right
     */
-    _cube.planes[int(CubePlane::Right)].points[0] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Right)].points[0]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
                                                                       glm::vec3{1.0f, .0f, .0f},
                                                                       glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Right)].points[1] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Right)].points[1]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
                                                                       glm::vec3{1.0f, .0f, .0f},
                                                                       glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Right)].points[2] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Right)].points[2]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
                                                                       glm::vec3{1.0f, .0f, .0f},
                                                                       glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Right)].points[3] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Right)].points[3]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
                                                                       glm::vec3{1.0f, .0f, .0f},
                                                                       glm::vec2{0.0f, 1.0f}};
 
     /*
     * bottom
     */
-    _cube.planes[int(CubePlane::Top)].points[0] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Top)].points[0]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, .0f},
                                                                       glm::vec3{.0f, .0f, -1.0f},
                                                                       glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Top)].points[1] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Top)].points[1]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, .0f},
                                                                      glm::vec3{.0f, .0f, -1.0f},
                                                                      glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Top)].points[2] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Top)].points[2]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, .0f},
                                                                      glm::vec3{.0f, .0f, -1.0f},
                                                                      glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Top)].points[3] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
+    new ((void*)&_cube.planes[int(CubePlane::Top)].points[3]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, .0f},
                                                                      glm::vec3{.0f, .0f, -1.0f},
                                                                      glm::vec2{0.0f, 1.0f}};
 
     /*
     * top
     */
-    _cube.planes[int(CubePlane::Bottom)].points[0] = Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Bottom)].points[0]) Cube::Plane::Point{glm::vec3{_min.x, _min.y, _height},
                                                                         glm::vec3{.0f, .0f, 1.0f},
                                                                         glm::vec2{0.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Bottom)].points[1] = Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Bottom)].points[1]) Cube::Plane::Point{glm::vec3{_max.x, _min.y, _height},
                                                                         glm::vec3{.0f, .0f, 1.0f},
                                                                         glm::vec2{1.0f, 0.0f}};
 
-    _cube.planes[int(CubePlane::Bottom)].points[2] = Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Bottom)].points[2]) Cube::Plane::Point{glm::vec3{_max.x, _max.y, _height},
                                                                         glm::vec3{.0f, .0f, 1.0f},
                                                                         glm::vec2{1.0f, 1.0f}};
 
-    _cube.planes[int(CubePlane::Bottom)].points[3] = Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
+    new ((void*)&_cube.planes[int(CubePlane::Bottom)].points[3]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
                                                                         glm::vec3{.0f, .0f, 1.0f},
                                                                         glm::vec2{0.0f, 1.0f}};
-
 }
 
 void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm::vec3 &_rotation,  glm::vec3 &_scale) {

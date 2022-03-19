@@ -196,8 +196,8 @@ void DCube::constructG() {
     SingleBPool.getBuffer(tool::combine("DCube",id),Buffer_Type::Vertex_Host_Buffer)->map();
     uint32_t indices[36];
     uint32_t planeIndices[6]{0, 2, 1, 0, 3, 2};
-    for (int i = 0; i < PlaneCount; ++i) {
-        int base_count = i * PlaneCount;
+    for (int i = 0; i < static_cast<int>(CubePlane::PlaneCount); ++i) {
+        int base_count = i * static_cast<int>(CubePlane::PlaneCount);
         indices[base_count]     = planeIndices[0] + base_count;
         indices[base_count + 1] = planeIndices[1] + base_count;
         indices[base_count + 2] = planeIndices[2] + base_count;

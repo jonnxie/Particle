@@ -149,6 +149,20 @@ void initTransparentSet()
 //    });
 }
 
+void test()
+{
+    glm::vec3 min(0.0f, .0f, 0.0f);
+    glm::vec3 max(1.0f, 1.f, 1.0f);
+    NPlane p1;
+    time_point begin1 = std::chrono::system_clock::now();
+    for (int i = 0; i < 1000000; ++i) {
+        genPlane(min, max, p1);
+    }
+    auto end1 = std::chrono::system_clock::now();
+    int64_t abs_time_f = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - begin1).count();
+    std::cout << abs_time_f / 1000.0f << std::endl;
+}
+
 int main() {
     Shatter::app::ShatterApp& app = Shatter::app::ShatterApp::getApp();
     /*
