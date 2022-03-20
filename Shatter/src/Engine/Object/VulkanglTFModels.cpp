@@ -529,9 +529,9 @@ vkglTF::Mesh::~Mesh() {
 	glTF node
 */
 void vkglTF::Node::resetMatrix(){
-    translation = glm::vec3{};
-    rotation = glm::quat{};
-    scale = glm::vec3{1.0f};
+    new ((glm::vec3*)&translation) glm::vec3{};
+    new ((glm::quat*)&rotation) glm::quat{};
+    new ((glm::vec3*)&scale) glm::vec3{1.0f};
 }
 
 glm::mat4 vkglTF::Node::localMatrix() {
@@ -575,9 +575,7 @@ void vkglTF::Node::update(const glm::mat4& world_matrix) {
 }
 
 vkglTF::Node::~Node() {
-	if (mesh) {
-		delete mesh;
-	}
+    delete mesh;
 	for (auto& child : children) {
 		delete child;
 	}
