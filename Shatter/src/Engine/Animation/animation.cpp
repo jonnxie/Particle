@@ -114,9 +114,7 @@ namespace animation {
         static glm::mat4 right;
         Amat4Pool->get(_a,left);
         Amat4Pool->get(_b,right);
-        static glm::mat4 dest;
-        dest = left * right;
-        Amat4Pool->set(_des,dest);
+        new ((glm::mat4*)(*Amat4Pool)[_des]) glm::mat4(left * right);
     }
 
     void transform(int _matrix/*mat4*/,int _in,int _out/*vec3*/,Animation *_animation){
@@ -159,9 +157,7 @@ namespace animation {
     }
 
     void loadIdentity(int _matrix,Animation *_animation) {
-        static glm::mat4 mat;
-        setIdentity(&mat);
-        Amat4Pool->set(_matrix,mat);
+        new ((glm::mat4*)(*Amat4Pool)[_matrix])glm::mat4(1.0f);
     }
 
     void constructHeader(unsigned char *_data,int* binaryData_index, Header &_header) {

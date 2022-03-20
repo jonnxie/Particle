@@ -131,6 +131,9 @@ public:
     {
         m_ptr[_index] = _val;
     }
+    ObjectType* operator[](size_t _index){
+        return &m_ptr[_index];
+    }
     void interpolateA(int _left,int _right,float _alpha,int _dest)
     {
         ObjectType left,right,dest;
