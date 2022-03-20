@@ -1976,13 +1976,11 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 				if (u <= 1.0f) {
 					switch (channel.path) {
 					case vkglTF::AnimationChannel::PathType::TRANSLATION: {
-						glm::vec4 trans = glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], u);
-						channel.node->translation = glm::vec3(trans);
+                        new ((glm::vec3*)&channel.node->translation) glm::vec3(glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], u));
 						break;
 					}
 					case vkglTF::AnimationChannel::PathType::SCALE: {
-						glm::vec4 trans = glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], u);
-						channel.node->scale = glm::vec3(trans);
+                        new ((glm::vec3*)&channel.node->scale) glm::vec3(glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], u));
 						break;
 					}
 					case vkglTF::AnimationChannel::PathType::ROTATION: {
@@ -1996,7 +1994,7 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 						q2.y = sampler.outputsVec4[i + 1].y;
 						q2.z = sampler.outputsVec4[i + 1].z;
 						q2.w = sampler.outputsVec4[i + 1].w;
-						channel.node->rotation = glm::normalize(glm::slerp(q1, q2, u));
+                        new ((glm::quat*)&channel.node->rotation) glm::quat(glm::normalize(glm::slerp(q1, q2, u)));
 						break;
 					}
 					}

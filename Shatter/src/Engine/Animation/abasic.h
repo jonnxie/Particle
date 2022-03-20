@@ -38,7 +38,7 @@ public:
 
     ClassPointerElement(m_model, vkglTF::Model*, Model);
 
-    ClassElement(m_update, bool, Update);
+    ClassElementInitial(m_update, bool, Update, true);
 
     ClassElement(m_localTime, float, LocalTime);
 private:
