@@ -101,8 +101,8 @@ namespace animation {
     }
 
     void setTransition(int _des, int _src,Animation *_animation) {
-        glm::mat4 mat;
-        glm::vec3 vec;
+        static glm::mat4 mat;
+        static glm::vec3 vec;
         Amat4Pool->get(_des,mat);
         Avec3Pool->get(_src,vec);
         setTranslate((glm::mat4*)&mat, (glm::vec3*)&vec);
@@ -110,30 +110,27 @@ namespace animation {
     }
 
     void multiple(int _a, int _b,int _des,Animation *_animation) {
-        glm::mat4 left;
-        glm::mat4 right;
+        static glm::mat4 left;
+        static glm::mat4 right;
         Amat4Pool->get(_a,left);
         Amat4Pool->get(_b,right);
-        glm::mat4 dest;
+        static glm::mat4 dest;
         dest = left * right;
         Amat4Pool->set(_des,dest);
     }
 
     void transform(int _matrix/*mat4*/,int _in,int _out/*vec3*/,Animation *_animation){
-        glm::mat4 matrix;
-        glm::vec3 in,out;
+        static glm::mat4 matrix;
+        static glm::vec3 in,out;
         Amat4Pool->get(_matrix,matrix);
         Avec3Pool->get(_in,in);
         out = glm::vec3(matrix * glm::vec4(in,1.0f));
-//        #ifdef SHATTER_SIMD
-//        glm::glm_mat4_matrixCompMult
-//        #endif
-        Avec3Pool->set(_out,out);
+        Avec3Pool->set(_out, out);
     }
 
     void getRotateFromQuaternion(int _quaternion, int _rotate,Animation *_animation) {
-        glm::mat4 mat;
-        glm::vec4 vec;
+        static glm::mat4 mat;
+        static glm::vec4 vec;
 //        Amat4Pool->get(_rotate,mat);
         Avec4Pool->get(_quaternion,vec);
         genRotateFromQuaternion(&vec, &mat);
@@ -141,8 +138,8 @@ namespace animation {
     }
 
     void genRotationFromEulerAngle(int _angle/*vec3*/,int _mat/*matrix*/,Animation *_animation) {
-        glm::vec3 angle;
-        glm::mat4 matrix;
+        static glm::vec3 angle;
+        static glm::mat4 matrix;
         Avec3Pool->get(_angle,angle);
         Amat4Pool->get(_mat,matrix);
         genRotateFromEulerAngle(&angle,&matrix);
@@ -153,8 +150,8 @@ namespace animation {
      * const glm::mat4* _mat,const glm::vec3* _in,glm::vec3* _out
      */
     void invTranAndRotate(int _mat,int _in,int _out,Animation *_animation){
-        glm::mat4 mat;
-        glm::vec3 in,out;
+        static glm::mat4 mat;
+        static glm::vec3 in,out;
         Amat4Pool->get(_mat,mat);
         Avec3Pool->get(_in,in);
         invTransformAndRotate(&mat,&in,&out);
@@ -162,7 +159,7 @@ namespace animation {
     }
 
     void loadIdentity(int _matrix,Animation *_animation) {
-        glm::mat4 mat;
+        static glm::mat4 mat;
         setIdentity(&mat);
         Amat4Pool->set(_matrix,mat);
     }
@@ -369,8 +366,8 @@ namespace animation {
             Avec3Pool->copy(m_transition_help, m_transitions[index - 1].transition); //获取最后一帧的平移数据并返回
         }
         else { //若结束关键帧索引既不为0 也不超过最终关键帧
-            Avec3Pool->interpolateA( m_transitions[index - 1].transition,//上一关键帧的平移数据
-                                     m_transitions[index].transition,//插值用结束关键帧的平移数据
+            Avec3Pool->interpolateA(m_transitions[index - 1].transition,//上一关键帧的平移数据
+                                    m_transitions[index].transition,//插值用结束关键帧的平移数据
                                     (_relativeTime - m_transitions[index - 1].time) / (m_transitions[index].time - m_transitions[index - 1].time),
                                     m_transition_help);//返回当前时刻的平移数据
         }
