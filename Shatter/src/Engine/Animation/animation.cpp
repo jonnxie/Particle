@@ -101,59 +101,30 @@ namespace animation {
     }
 
     void setTransition(int _des, int _src,Animation *_animation) {
-        static glm::mat4 mat;
-        static glm::vec3 vec;
-        Amat4Pool->get(_des,mat);
-        Avec3Pool->get(_src,vec);
-        setTranslate((glm::mat4*)&mat, (glm::vec3*)&vec);
-        Amat4Pool->set(_des,mat);
+        setTranslate((*Amat4Pool)[_des], (*Avec3Pool)[_src]);
     }
 
     void multiple(int _a, int _b,int _des,Animation *_animation) {
-        static glm::mat4 left;
-        static glm::mat4 right;
-        Amat4Pool->get(_a,left);
-        Amat4Pool->get(_b,right);
-        new ((glm::mat4*)(*Amat4Pool)[_des]) glm::mat4(left * right);
+        new ((glm::mat4*)(*Amat4Pool)[_des]) glm::mat4((*(*Amat4Pool)[_a]) * (*(*Amat4Pool)[_b]));
     }
 
     void transform(int _matrix/*mat4*/,int _in,int _out/*vec3*/,Animation *_animation){
-        static glm::mat4 matrix;
-        static glm::vec3 in,out;
-        Amat4Pool->get(_matrix,matrix);
-        Avec3Pool->get(_in,in);
-        out = glm::vec3(matrix * glm::vec4(in,1.0f));
-        Avec3Pool->set(_out, out);
+        new ((glm::vec3*)(*Avec3Pool)[_out]) glm::vec3(glm::mat4(*(*Amat4Pool)[_matrix]) * glm::vec4(*(*Avec3Pool)[_in],1.0f));
     }
 
     void getRotateFromQuaternion(int _quaternion, int _rotate,Animation *_animation) {
-        static glm::mat4 mat;
-        static glm::vec4 vec;
-//        Amat4Pool->get(_rotate,mat);
-        Avec4Pool->get(_quaternion,vec);
-        genRotateFromQuaternion(&vec, &mat);
-        Amat4Pool->set(_rotate,mat);
+        genRotateFromQuaternion((*Avec4Pool)[_quaternion], (*Amat4Pool)[_rotate]);
     }
 
     void genRotationFromEulerAngle(int _angle/*vec3*/,int _mat/*matrix*/,Animation *_animation) {
-        static glm::vec3 angle;
-        static glm::mat4 matrix;
-        Avec3Pool->get(_angle,angle);
-        Amat4Pool->get(_mat,matrix);
-        genRotateFromEulerAngle(&angle,&matrix);
-        Amat4Pool->set(_mat,matrix);
+        genRotateFromEulerAngle((*Avec3Pool)[_angle], (*Amat4Pool)[_mat]);
     }
 
     /*
      * const glm::mat4* _mat,const glm::vec3* _in,glm::vec3* _out
      */
     void invTranAndRotate(int _mat,int _in,int _out,Animation *_animation){
-        static glm::mat4 mat;
-        static glm::vec3 in,out;
-        Amat4Pool->get(_mat,mat);
-        Avec3Pool->get(_in,in);
-        invTransformAndRotate(&mat,&in,&out);
-        Avec3Pool->set(_out,out);
+        invTransformAndRotate((*Amat4Pool)[_mat], (*Avec3Pool)[_in], (*Avec3Pool)[_out]);
     }
 
     void loadIdentity(int _matrix,Animation *_animation) {
