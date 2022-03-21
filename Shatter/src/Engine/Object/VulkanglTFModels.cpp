@@ -781,6 +781,9 @@ vkglTF::Model::~Model()
 	for (auto node : nodes) {
 		delete node;
 	}
+    for (auto skin : skins) {
+        delete skin;
+    }
 	if (descriptorSetLayoutUbo != VK_NULL_HANDLE) {
 		vkDestroyDescriptorSetLayout(device->logicalDevice, descriptorSetLayoutUbo, nullptr);
 		descriptorSetLayoutUbo = VK_NULL_HANDLE;
@@ -800,13 +803,14 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 	newNode->parent = parent;
 	newNode->name = node.name;
 	newNode->skinIndex = node.skin;
-	newNode->matrix = glm::mat4(1.0f);
+    new ((glm::mat4*)&newNode->matrix) glm::mat4(1.0f);
 
 	// Generate local node matrix
-	glm::vec3 translation = glm::vec3(0.0f);
+//	glm::vec3 translation = glm::vec3(0.0f);
 	if (node.translation.size() == 3) {
-		translation = glm::make_vec3(node.translation.data());
-		newNode->translation = translation;
+//		translation = glm::make_vec3(node.translation.data());
+//		newNode->translation = translation;
+        new ((glm::vec3*)&newNode->translation) glm::vec3(glm::make_vec3(node.translation.data()));
 	}
 	glm::mat4 rotation = glm::mat4(1.0f);
 	if (node.rotation.size() == 4) {
@@ -826,9 +830,9 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 	};
 
 	// Node with children
-	if (node.children.size() > 0) {
-		for (auto i = 0; i < node.children.size(); i++) {
-			loadNode(newNode, model.nodes[node.children[i]], node.children[i], model, indexBuffer, vertexBuffer, globalscale);
+	if (!node.children.empty()) {
+		for (int i : node.children) {
+			loadNode(newNode, model.nodes[i], i, model, indexBuffer, vertexBuffer, globalscale);
 		}
 	}
 
@@ -1404,7 +1408,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 				for (size_t index = 0; index < accessor.count; index++) {
 					sampler.inputs.push_back(buf[index]);
 				}
-
+                delete[] buf;
 				for (auto input : sampler.inputs) {
 					if (input < animation.start) {
 						animation.start = input;
@@ -1430,7 +1434,8 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 					for (size_t index = 0; index < accessor.count; index++) {
 						sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
 					}
-					break;
+                    delete[] buf;
+                    break;
 				}
 				case TINYGLTF_TYPE_VEC4: {
 					glm::vec4 *buf = new glm::vec4[accessor.count];
@@ -1438,7 +1443,8 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 					for (size_t index = 0; index < accessor.count; index++) {
 						sampler.outputsVec4.push_back(buf[index]);
 					}
-					break;
+                    delete[] buf;
+                    break;
 				}
 				default: {
 					std::cout << "unknown type" << std::endl;
@@ -1480,7 +1486,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 	}
 }
 
-void vkglTF::Model::loadFromFile(std::string filename,
+void vkglTF::Model::loadFromFile(const std::string& filename,
                                  Device *device,
                                  VkQueue transferQueue,
                                  uint32_t fileLoadingFlags,
@@ -1522,11 +1528,11 @@ void vkglTF::Model::loadFromFile(std::string filename,
 		}
 		loadMaterials(gltfModel);
 		const tinygltf::Scene &scene = gltfModel.scenes[gltfModel.defaultScene > -1 ? gltfModel.defaultScene : 0];
-		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			const tinygltf::Node node = gltfModel.nodes[scene.nodes[i]];
-			loadNode(nullptr, node, scene.nodes[i], gltfModel, indexBuffer, vertexBuffer, scale);
+		for (int i : scene.nodes) {
+			const tinygltf::Node node = gltfModel.nodes[i];
+			loadNode(nullptr, node, i, gltfModel, indexBuffer, vertexBuffer, scale);
 		}
-		if (gltfModel.animations.size() > 0) {
+		if (!gltfModel.animations.empty()) {
 			loadAnimations(gltfModel);
 		}
 		loadSkins(gltfModel);
@@ -1579,7 +1585,7 @@ void vkglTF::Model::loadFromFile(std::string filename,
 		}
 	}
 
-	for (auto extension : gltfModel.extensionsUsed) {
+	for (const auto& extension : gltfModel.extensionsUsed) {
 		if (extension == "KHR_materials_pbrSpecularGlossiness") {
 			std::cout << "Required extension: " << extension;
 			metallicRoughnessWorkflow = false;

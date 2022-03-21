@@ -296,7 +296,7 @@ namespace vkglTF
 		void loadImages(tinygltf::Model& gltfModel, Device* device, VkQueue transferQueue);
 		void loadMaterials(tinygltf::Model& gltfModel);
 		void loadAnimations(tinygltf::Model& gltfModel);
-		void loadFromFile(std::string filename,
+		void loadFromFile(const std::string& filename,
                           Device* device,
                           VkQueue transferQueue,
                           uint32_t fileLoadingFlags = vkglTF::FileLoadingFlags::DontLoadImages,
