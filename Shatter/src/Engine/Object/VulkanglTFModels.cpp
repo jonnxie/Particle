@@ -806,24 +806,17 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
     new ((glm::mat4*)&newNode->matrix) glm::mat4(1.0f);
 
 	// Generate local node matrix
-//	glm::vec3 translation = glm::vec3(0.0f);
 	if (node.translation.size() == 3) {
-//		translation = glm::make_vec3(node.translation.data());
-//		newNode->translation = translation;
         new ((glm::vec3*)&newNode->translation) glm::vec3(glm::make_vec3(node.translation.data()));
 	}
-	glm::mat4 rotation = glm::mat4(1.0f);
 	if (node.rotation.size() == 4) {
-		glm::quat q = glm::make_quat(node.rotation.data());
-		newNode->rotation = glm::mat4(q);
+        new ((glm::quat*)&newNode->rotation) glm::quat(glm::make_quat(node.rotation.data()));
 	}
-	glm::vec3 scale = glm::vec3(1.0f);
 	if (node.scale.size() == 3) {
-		scale = glm::make_vec3(node.scale.data());
-		newNode->scale = scale;
+        new ((glm::vec3*)&newNode->scale) glm::vec3(glm::make_vec3(node.scale.data()));
 	}
 	if (node.matrix.size() == 16) {
-		newNode->matrix = glm::make_mat4x4(node.matrix.data());
+        new ((glm::mat4*)&newNode->matrix) glm::mat4(glm::make_mat4x4(node.matrix.data()));
 		if (globalscale != 1.0f) {
 			//newNode->matrix = glm::scale(newNode->matrix, glm::vec3(globalscale));
 		}

@@ -30,10 +30,10 @@ public:
         init();
     }
 
-    ~MPool(){
+    ~MPool()
+    {
         delete[] m_ptr;
-//        m_ptr = nullptr;
-    }
+    };
 
     DefineUnCopy(MPool);
 public:
@@ -156,7 +156,7 @@ public:
         Object_Type* new_ptr = new Object_Type[m_count*2];
         int old_num = m_count;
         memcpy(new_ptr, m_ptr, m_count * sizeof(Object_Type));
-        delete m_ptr;
+        delete[] m_ptr;
         m_ptr = new_ptr;
         m_count *= 2;
         int num = m_count - old_num;
