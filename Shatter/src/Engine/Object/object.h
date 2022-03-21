@@ -129,12 +129,11 @@ public:
         (*aabbPool)[m_aabbIndex]->addInternalPoint(_min);
         (*aabbPool)[m_aabbIndex]->addInternalPoint(_max);
         (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
-        SingleRender.aabb_map[m_capture_id] = m_aabbIndex;
+        SingleRender.aabb_map[int(m_capture_id)] = m_aabbIndex;
 
         std::vector<glm::vec3> aabbBuffer{};
         genFaceVertexBufferFromAABB(*(*SingleAABBPool)[m_aabbIndex], aabbBuffer);
         SingleBPool.createVertexBuffer(tool::combine("Capture", m_aabbIndex), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-
     };
     void insertDObject(int _obj)
     {

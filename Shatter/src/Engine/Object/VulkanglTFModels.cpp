@@ -523,6 +523,11 @@ vkglTF::Mesh::~Mesh() {
     {
         vkFreeMemory(device->logicalDevice, uniformBuffer.memory, nullptr);
     }
+
+    for(auto& p : primitives)
+    {
+        delete p;
+    }
 }
 
 /*

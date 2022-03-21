@@ -111,6 +111,7 @@ namespace vkglTF
 
 		void setDimensions(glm::vec3 min, glm::vec3 max);
 		Primitive(uint32_t firstIndex, uint32_t indexCount, Material& material) : firstIndex(firstIndex), indexCount(indexCount), material(material) {};
+        ~Primitive() = default;
 	};
 
 	/*
