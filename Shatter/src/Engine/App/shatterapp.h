@@ -52,11 +52,14 @@ namespace Shatter{
             void listener(Listener* _listener);
             void appendListener(const std::string& _name,Listener* _listener);
             void deleteListener(const std::string& _name);
-            TargetPlane& getTargetPlane();
-            glm::vec3&   getTargetCenter();
+            TargetPlane& getWorkTargetPlane();
+            glm::vec3&   getWorkTargetCenter();
+            TargetPlane& getCameraTargetPlane();
         private:
             ShatterApp();
-
+            ClassElementInitial(m_work, bool, Work, false);
+            ClassReferenceElement(m_work_plane, TargetPlane, WorkPlane);
+            ClassReferenceElement(m_work_center, glm::vec3, WorkCenter);
         private:
             /*
              * dobject
@@ -65,7 +68,6 @@ namespace Shatter{
             std::vector<int> m_offscreenobjects;
             std::vector<int> transparency_vec;
             std::vector<int> normal_vec;
-
             std::vector<int> m_cobjects;
             std::vector<Event> m_events;
         public:
@@ -83,6 +85,6 @@ namespace Shatter{
     }
 }
 
-#define SingleAPP app::ShatterApp::getApp()
+#define SingleAPP Shatter::app::ShatterApp::getApp()
 
 #endif //VULKAN_TOTURIOL_SHATTER_APP_H

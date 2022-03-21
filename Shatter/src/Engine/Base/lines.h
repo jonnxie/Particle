@@ -13,6 +13,7 @@
 #include DeviceCatalog
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
+#include ListenerCatalog
 
 static int initIdVal = 0;
 static std::mutex idLock;
@@ -26,7 +27,7 @@ static int mallocId()
 class DLinePool : public Object{
 public:
     explicit DLinePool(const std::vector<Line>& _lines, bool _updateFunc = true);
-    ~DLinePool();
+    ~DLinePool() override;
     void constructG() override;
     void constructD() override;
     void constructC() override{};
@@ -47,7 +48,7 @@ public:
 class DLines : public Object{
 public:
     explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true);
-    ~DLines();
+    ~DLines() override;
     void constructG() override;
     void constructD() override;
     void constructC() override{};

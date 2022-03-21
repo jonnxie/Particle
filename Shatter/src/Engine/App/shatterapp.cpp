@@ -258,12 +258,26 @@ namespace Shatter::app{
         m_otherListener.erase(_name);
     }
 
-    TargetPlane& ShatterApp::getTargetPlane(){
-        return SingleCamera.m_targetPlane;
+    TargetPlane& ShatterApp::getWorkTargetPlane(){
+        if(m_work)
+        {
+            return m_work_plane;
+        }else{
+            return SingleCamera.m_targetPlane;
+        }
     }
 
-    glm::vec3& ShatterApp::getTargetCenter(){
-        return SingleCamera.center;
+    glm::vec3& ShatterApp::getWorkTargetCenter(){
+        if(m_work)
+        {
+            return m_work_center;
+        }else{
+            return SingleCamera.center;
+        }
+    }
+
+    TargetPlane& ShatterApp::getCameraTargetPlane(){
+        return SingleCamera.m_targetPlane;
     }
 
 }

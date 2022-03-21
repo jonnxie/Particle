@@ -293,7 +293,7 @@ int main() {
 
     TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
         auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
-        auto target = SingleCamera.m_targetPlane;
+        auto target = SingleAPP.getCameraTargetPlane();
         auto center = SingleCamera.center;
         std::array<Line,3> lines{
                 Line{
