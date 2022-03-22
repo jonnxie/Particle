@@ -2080,10 +2080,10 @@ namespace Shatter::render{
             }
             setSwapChainIndex(int(imageIndex));
 
-            if(guiChanged || offChanged || drawChanged || normalChanged || transChanged)
+            if(guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged)
             {
                 createGraphicsCommandBuffersMultiple();
-                guiChanged = offChanged = drawChanged = normalChanged = transChanged = false;
+                guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
             }else{
                 if(Config::getConfig("enableScreenGui"))
                 {
@@ -2577,6 +2577,12 @@ namespace Shatter::render{
                 if(iterator != normal_vec.end())
                 {
                     normal_vec.erase(iterator);
+                }
+                break;
+            }
+            case DrawObjectType::AABB:{
+                if(aabb_map.contains(_id)){
+                    aabb_map.erase(_id);
                 }
                 break;
             }

@@ -949,6 +949,7 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
+                    delete[] buf;
 					break;
 				}
 				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
@@ -957,7 +958,8 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
-					break;
+                    delete[] buf;
+                    break;
 				}
 				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
 					uint8_t *buf = new uint8_t[accessor.count];
@@ -965,7 +967,8 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
-					break;
+                    delete[] buf;
+                    break;
 				}
 				default:
 					std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;

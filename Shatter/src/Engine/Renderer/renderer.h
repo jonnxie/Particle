@@ -5,11 +5,17 @@
 #ifndef VULKAN_TOTURIOL_SHATTER_RENDER_H
 #define VULKAN_TOTURIOL_SHATTER_RENDER_H
 
+#ifdef NDEBUG
+static const bool enableValidationLayers = false;
+#else
+static const bool enableValidationLayers = true;
+#endif
+
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
 
 #ifndef  GLFW_INCLUDE_VULKAN
-          #define GLFW_INCLUDE_VULKAN
+  #define GLFW_INCLUDE_VULKAN
 #endif
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -29,11 +35,8 @@
 #include "FrameBuffer.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <memory>
-#ifdef NDEBUG
-static const bool enableValidationLayers = false;
-#else
-static const bool enableValidationLayers = true;
-#endif
+
+
 
 namespace Shatter::buffer{
     class ShatterTexture;
@@ -303,6 +306,7 @@ namespace Shatter{
             bool drawChanged = false;
             bool normalChanged = false;
             bool transChanged = false;
+            bool aabbChanged = false;
             bool windowStill = true;
             std::vector<VkCommandBuffer> pre_compute_buffers;
 
