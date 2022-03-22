@@ -56,6 +56,8 @@ endif()
 
 add_library(Shatter SHARED ${CORE} ${IMGUI})
 
+add_subdirectory(vendor/tinynurbs)
+
 ## VulKan
 find_package(Vulkan REQUIRED)
 
@@ -70,9 +72,15 @@ target_include_directories(Shatter PUBLIC
         vendor/glfw-3.3.4.bin.WIN64/include/
         vendor/glm/
         vendor/Entt/
+        vendor/tinynurbs/include/
         ${Vulkan_INCLUDE_DIRS})
 
-target_link_libraries(Shatter ktx glfw3 ${Vulkan_LIBRARIES})
+target_link_libraries(Shatter
+        ktx
+        glfw3
+        ${Vulkan_LIBRARIES}
+        tinynurbs::tinynurbs
+        )
 
 set(CMAKE_C_FLAGS "-static")
 #set(CMAKE_LINK_LIBRARY_FLAG "-static")
