@@ -5,9 +5,8 @@
 #ifndef MAIN_NURBS_H
 #define MAIN_NURBS_H
 
-#include "tinynurbs/core/basis.h"
 
-class nurbs {
+class Nurbs {
 
 };
 
