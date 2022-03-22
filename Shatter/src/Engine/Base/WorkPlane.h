@@ -19,7 +19,7 @@ public:
     };
     void constructG() override;
     void constructD() override;
-    ~WorkPlane();
+    ~WorkPlane() override;
 private:
     /*
      * index of line3d

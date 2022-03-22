@@ -48,5 +48,6 @@ WorkPlane::~WorkPlane()
     TaskPool::popUpdateTask("WorkPlane");
     vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer("WorkPlane", Buffer_Type::Vertex_Host_Buffer);
+    SingleRender.releaseObject(int(m_capture_id),DrawObjectType::AABB);
     SingleRender.normalChanged = true;
 }

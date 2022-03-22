@@ -233,6 +233,7 @@ namespace Shatter{
             static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             std::vector<int>* getDObjects();
             void releaseObject(int _id, DrawObjectType _type);
+            void releaseComputeObject(int _id);
             std::vector<int>* getCObjects();
             std::vector<int>* getTObjects();
             std::vector<int>* getNObjects();
@@ -245,7 +246,7 @@ namespace Shatter{
             std::vector<int> transparency_vec;
             std::vector<int> normal_vec;
             std::vector<int> computeid_vec;
-            std::unordered_map<int, int> aabb_map;//capture id , object id
+            std::unordered_map<int, int> aabb_map;//capture id , aabb index
             std::vector<buffer::ShatterTexture*> tex_vec;
             GLFWwindow *window{};
 

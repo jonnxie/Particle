@@ -31,6 +31,19 @@ DLines::~DLines(){
     TaskPool::popUpdateTask(tool::combine("LinesBasic",id));
 }
 
+void DLines::destroy(){
+    SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
+    Object::release();
+    if(updateFunc)
+    {
+        TaskPool::popUpdateTask(tool::combine("LinesBasic",id));
+    }
+    vkQueueWaitIdle(SingleRender.graphics_queue);
+    SingleBPool.freeBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer);
+    SingleRender.releaseObject(int(m_capture_id),DrawObjectType::AABB);
+    SingleRender.normalChanged = true;
+}
+
 void DLines::constructG(){
     SingleBPool.createVertexHostBuffer(tool::combine("DLines",id),LineSize * lines.size(),lines.data());
     SingleBPool.getBuffer(tool::combine("DLines",id),Buffer_Type::Vertex_Host_Buffer)->map();

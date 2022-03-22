@@ -2592,6 +2592,14 @@ namespace Shatter::render{
         }
     }
 
+    void ShatterRender::releaseComputeObject(int _id)
+    {
+        auto iterator = std::find(computeid_vec.begin(), computeid_vec.end(), _id);
+        if(iterator != computeid_vec.end())
+        {
+            computeid_vec.erase(iterator);
+        }
+    }
 
     std::unordered_map<int, int>* ShatterRender::getAABBMap()
     {

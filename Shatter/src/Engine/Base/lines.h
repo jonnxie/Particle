@@ -52,6 +52,7 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
+    void destroy();
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
 
