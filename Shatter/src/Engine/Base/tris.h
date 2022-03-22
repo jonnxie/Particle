@@ -71,7 +71,7 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-
+    ClassReferenceElement(m_plane, TargetPlane, TargetPlane);
 public:
     Cube                cube;
     bool                changed = true;

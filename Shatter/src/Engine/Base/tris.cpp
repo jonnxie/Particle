@@ -226,6 +226,7 @@ void DCube::constructD() {
             glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
             glm::vec4{glm::vec3{0.0f}, 1.0f},
     };
+    m_plane = SingleAPP.getWorkTargetPlane();
 //    matrix = glm::inverse(matrix);
     (*dpool)[d]->prepare(matrix,
                          ms_index,
