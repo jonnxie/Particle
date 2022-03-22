@@ -207,18 +207,21 @@ namespace Shatter::app{
     }
 
     void ShatterApp::mouse_event_callback(int button, int action, double xpos, double ypos){
-        if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        if(action == GLFW_PRESS)
         {
-            m_events.push_back(Event::SingleClick);
-        }
-        if(button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE)
-        {
-            cameraChanged = true;
-        }
-        if((button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE) &&
-        action == GLFW_RELEASE)
-        {
-            cameraChanged = false;
+            if(button == GLFW_MOUSE_BUTTON_LEFT)
+            {
+                m_events.push_back(Event::SingleClick);
+                cameraChanged = true;
+            }else if(button == GLFW_MOUSE_BUTTON_MIDDLE)
+            {
+                cameraChanged = true;
+            }
+        }else if(action == GLFW_RELEASE){
+            if(button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE)
+            {
+                cameraChanged = false;
+            }
         }
     }
 

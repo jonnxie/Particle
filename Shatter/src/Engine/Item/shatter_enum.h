@@ -246,6 +246,7 @@ enum class InputMode{
 
 enum class Event{
     SingleClick = 0,
+    MouseClick,
     SinglePress,
     DoubleClick,
     DoublePress,
