@@ -5,6 +5,10 @@
 #include "WorkPlane.h"
 
 void WorkPlane::constructG() {
+    new ((Line*)&m_axis[0]) Line(makeLine(m_coordinate.x_coordinate, m_center));
+    new ((Line*)&m_axis[1]) Line(makeLine(m_coordinate.y_coordinate, m_center));
+    new ((Line*)&m_axis[2]) Line(makeLine(m_coordinate.z_coordinate, m_center));
+
     SingleBPool.createVertexHostBuffer("WorkPlane", TargetPlaneDoubleCoordinateSize, m_axis.data());
     SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->map();
     for(auto& line : m_axis)
@@ -36,7 +40,8 @@ void WorkPlane::constructD() {
     insertDObject(d);
     TaskPool::pushUpdateTask("WorkPlane", [&,ms_index,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
+        memcpy(SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->mapped, m_axis.data(), TargetPlaneDoubleCoordinateSize);
     });
     SingleRender.getNObjects()->push_back(d);
     addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
@@ -48,6 +53,6 @@ WorkPlane::~WorkPlane()
     TaskPool::popUpdateTask("WorkPlane");
     vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer("WorkPlane", Buffer_Type::Vertex_Host_Buffer);
-    SingleRender.releaseObject(int(m_capture_id),DrawObjectType::AABB);
+    SingleRender.releaseObject(int(m_capture_id), DrawObjectType::AABB);
     SingleRender.normalChanged = true;
 }

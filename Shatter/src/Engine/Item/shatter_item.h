@@ -541,6 +541,8 @@ struct Line{
 
 Line makeLine(glm::vec3 _initialPosition);
 
+Line makeLine(glm::vec3& _axis, glm::vec3& _center);
+
 struct Tri{
     Point points[3];
 };

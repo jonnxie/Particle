@@ -27,7 +27,7 @@ public:
                    DrawObjectType _type = DrawObjectType::Normal);
 
     DefineUnCopy(ABasic);
-    ~ABasic(){
+    ~ABasic() override{
         delete m_model;
     }
     void constructG() override;

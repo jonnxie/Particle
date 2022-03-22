@@ -673,6 +673,16 @@ Line makeLine(glm::vec3 _initialPosition)
     return {p, p};
 }
 
+Line makeLine(glm::vec3& _axis, glm::vec3& _center)
+{
+    glm::vec3 color;
+    input::LineColor(color, STATE_OUT);
+    return {
+            {_center, color},
+            {_center + _axis, color}
+    };
+}
+
 Material &getMaterial() {
     return material;
 }

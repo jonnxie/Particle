@@ -16,6 +16,7 @@
 #include "Engine/Mesh/plane.h"
 #include "Engine/Particle/particle.h"
 #include "Engine/Event/threadpool.h"
+#include "Engine/Base/WorkPlane.h"
 
 namespace Shatter::app{
     bool app_created = false;
@@ -261,7 +262,7 @@ namespace Shatter::app{
     TargetPlane& ShatterApp::getWorkTargetPlane(){
         if(m_work)
         {
-            return m_work_plane;
+            return m_work_plane->getCoordinate();
         }else{
             return SingleCamera.m_targetPlane;
         }
@@ -270,7 +271,7 @@ namespace Shatter::app{
     glm::vec3& ShatterApp::getWorkTargetCenter(){
         if(m_work)
         {
-            return m_work_center;
+            return m_work_plane->getCenter();
         }else{
             return SingleCamera.center;
         }

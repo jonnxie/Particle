@@ -11,20 +11,22 @@
 
 class WorkPlane : public Object {
 public:
-    WorkPlane(const Line& _x, const Line& _y, const Line& _z, glm::vec3 _center):m_center(_center){
-        m_axis[0] = _x;
-        m_axis[1] = _y;
-        m_axis[2] = _z;
+    WorkPlane(TargetPlane& _coordinate, glm::vec3 _center):
+    m_center(_center),
+    m_coordinate(_coordinate)
+    {
         init();
     };
     void constructG() override;
     void constructD() override;
     ~WorkPlane() override;
+
+    ClassReferenceElement(m_center, glm::vec3, Center);
+    ClassReferenceElement(m_coordinate, TargetPlane, Coordinate);
 private:
     /*
      * index of line3d
      */
-    glm::vec3 m_center{};
     std::array<Line,3> m_axis{};
 };
 

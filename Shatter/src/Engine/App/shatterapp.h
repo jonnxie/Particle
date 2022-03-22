@@ -25,6 +25,7 @@
 
 class Camera;
 
+class WorkPlane;
 
 namespace Shatter{
     class Listener;
@@ -58,8 +59,7 @@ namespace Shatter{
         private:
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);
-            ClassReferenceElement(m_work_plane, TargetPlane, WorkPlane);
-            ClassReferenceElement(m_work_center, glm::vec3, WorkCenter);
+            WorkPlane* m_work_plane{};
         private:
             /*
              * dobject
