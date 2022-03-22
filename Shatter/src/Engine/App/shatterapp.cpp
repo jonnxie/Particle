@@ -216,6 +216,9 @@ namespace Shatter::app{
             }else if(button == GLFW_MOUSE_BUTTON_MIDDLE)
             {
                 cameraChanged = true;
+            }else if(button == GLFW_MOUSE_BUTTON_RIGHT)
+            {
+                m_events.push_back(Event::MouseClick);
             }
         }else if(action == GLFW_RELEASE){
             if(button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE)

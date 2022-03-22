@@ -101,7 +101,7 @@ DrawLine::DrawLine() {
 DrawLinePool::DrawLinePool() {
     pool = std::make_unique<DLinePool>(std::vector<Line>{}, true);
     SingleRender.normalChanged = true;
-    m_action[Event::SingleClick] = [&]() {
+    m_action[Event::MouseClick] = [&]() {
         static bool draw = false;
         if (draw) {
             TaskPool::popUpdateTask("DrawLinePoolUpdate");
