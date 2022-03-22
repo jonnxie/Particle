@@ -2581,7 +2581,7 @@ namespace Shatter::render{
                 break;
             }
             case DrawObjectType::AABB:{
-                if(aabb_map.contains(_id)){
+                if(aabb_map.count(_id) != 0){
                     aabb_map.erase(_id);
                 }
                 break;

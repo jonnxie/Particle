@@ -10,6 +10,7 @@
 #include "Engine/Item/shatter_macro.h"
 #include <mutex>
 #include <string>
+#include <algorithm>
 
 class Scene{
 public:
@@ -31,7 +32,7 @@ public:
     };
     void releaseAABB(int _captureId, int _aabbIndex){
         std::lock_guard<std::mutex> lockGuard(aabb_lock);
-        if(aabb_map.contains(_captureId))
+        if(aabb_map.count(_captureId) != 0)
         {
             aabb_map.erase(_captureId);
         }
