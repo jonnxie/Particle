@@ -83,7 +83,7 @@ public:
     DrawCube();
     ~DrawCube() override;
 private:
-    std::deque<std::unique_ptr<DCube>> cubes;
+    std::deque<DCube*> cubes;
 };
 
 

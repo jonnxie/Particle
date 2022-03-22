@@ -38,11 +38,11 @@ namespace Shatter::app{
     }
 
     ShatterApp::~ShatterApp(){
-        delete m_listener;
-        for(auto& [name,listener] : m_otherListener)
-        {
-            delete listener;
-        }
+//        delete m_listener;
+//        for(auto& [name,listener] : m_otherListener)
+//        {
+//            delete listener;
+//        }
     }
 
     void ShatterApp::update(){
@@ -77,6 +77,11 @@ namespace Shatter::app{
             render::ShatterRender::getRender().loop();
         }
         vkDeviceWaitIdle(*render::ShatterRender::getRender().getDevice());
+        delete m_listener;
+        for(auto& [name,listener] : m_otherListener)
+        {
+            delete listener;
+        }
     }
 
     void ShatterApp::key_event_callback(int key, int action){
@@ -196,7 +201,6 @@ namespace Shatter::app{
                     drawCube = true;
                 }
             }
-
 
         }
 

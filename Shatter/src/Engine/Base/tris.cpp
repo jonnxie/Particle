@@ -251,10 +251,14 @@ void DCube::constructD() {
 
 DrawCube::~DrawCube() {
     TaskPool::popUpdateTask("DrawCubeUpdate");
+    for(auto cube : cubes)
+    {
+        delete cube;
+    }
 }
 
 DrawCube::DrawCube() {
-    m_action[Event::SingleClick] = [&]() {
+    m_action[Event::MouseClick] = [&]() {
         static bool draw_plane = false;
         static bool draw_cube = false;
         static glm::vec2 pre_pos;
@@ -268,14 +272,12 @@ DrawCube::DrawCube() {
         }else if (draw_plane) {
             TaskPool::popUpdateTask("DrawCubeUpdate");
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
-                auto localCube = std::move(cubes.back());
-                cubes.pop_back();
+                auto localCube = cubes.back();
                 int id = localCube->id;
-                height =  glm::dot(SingleAPP.getWorkTargetPlane().z_coordinate, input::getCursor() - SingleCamera.center);
-                genCube(pre_pos, realPos, 1.0, cube);
+                height =  glm::dot(localCube->getTargetPlane().z_coordinate, input::getCursor() - SingleCamera.center);
+                genCube(pre_pos, realPos, height, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);
-                cubes.push_back(std::move(localCube));
             });
             draw_plane = false;
             draw_cube = true;
@@ -283,18 +285,15 @@ DrawCube::DrawCube() {
             pre_pos = glm::vec2(1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, input::getCursor() - SingleCamera.center)
                     + glm::vec2(0.0f, 1.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, input::getCursor() - SingleCamera.center);
             genCube(pre_pos, pre_pos, .0f, cube);
-            auto p = std::make_unique<DCube>(cube);
-            cubes.push_back(std::move(p));
+            cubes.emplace_back(new DCube(cube));
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
-                auto localCube = std::move(cubes.back());
-                cubes.pop_back();
+                auto localCube = cubes.back();
                 int id = localCube->id;
-                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, input::getCursor() - SingleCamera.center)
-                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, input::getCursor() - SingleCamera.center);
+                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(localCube->getTargetPlane().x_coordinate, input::getCursor() - SingleCamera.center)
+                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(localCube->getTargetPlane().y_coordinate, input::getCursor() - SingleCamera.center);
                 genCube(pre_pos, realPos, .0f, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);
-                cubes.push_back(std::move(localCube));
             });
             SingleRender.drawChanged = true;
             draw_plane = true;
