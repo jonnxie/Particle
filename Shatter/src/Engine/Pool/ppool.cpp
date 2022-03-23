@@ -182,13 +182,13 @@ void PPool::init() {
         createGP("Point",
                  std::vector<Input_Type>{Input_Type::Point3dColorSize},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("particle_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                                                              ShaderPool::getPool().Get("particle_fs")},
                  AssemState::Point_List,
                  RasterState::Point,
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
+                 std::vector<Sl_id> {"Default","Camera","ViewPort"},
                  RenderPassType::Default,
                  SubpassTransparency
         );

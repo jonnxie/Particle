@@ -136,18 +136,25 @@ void initSet()
 
 void initTransparentSet()
 {
-//    TaskPool::pushTask("UpdateGSet",[](){
-        std::vector< VkDescriptorImageInfo> descriptorImageInfos = {
-                tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.positionAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-                tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.normalAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-                tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.albedoAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-        };
-        std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-        for (size_t i = 0; i < descriptorImageInfos.size(); i++) {
-            writeDescriptorSets.push_back(tool::writeDescriptorSet(SingleSetPool["gBuffer"], VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, i, &descriptorImageInfos[i]));
-        }
-        vkUpdateDescriptorSets(SingleDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-//    });
+    std::array<VkDescriptorImageInfo, 3> descriptorImageInfos = {
+            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.positionAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.normalAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.albedoAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+    };
+    std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
+    for (size_t i = 0; i < descriptorImageInfos.size(); i++) {
+        writeDescriptorSets[i] = (tool::writeDescriptorSet(SingleSetPool["gBuffer"], VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, i, &descriptorImageInfos[i]));
+    }
+    vkUpdateDescriptorSets(SingleDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = SingleBPool.getBuffer("ViewPort", Buffer_Type::Uniform_Buffer)->m_buffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = 8;
+
+    VkWriteDescriptorSet writeSet = tool::writeDescriptorSet(SingleSetPool["ViewPort"], VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+
+    vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
 }
 
 void test()

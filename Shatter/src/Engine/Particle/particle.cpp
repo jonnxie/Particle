@@ -19,7 +19,7 @@ DrawPoint::DrawPoint() {
                                                      Point3dColorSize{
                                                              realPos,
                                                              RED_COLOR,
-                                                             4}
+                                                             1}
                                              }
         );
         point->init();

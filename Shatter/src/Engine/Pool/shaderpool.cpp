@@ -113,6 +113,7 @@ void ShaderPool::init() {
     createShaderStage("simple_ms",tool::combineShader("TaskMesh/mesh.spv"),MeshShader);
 
     createShaderStage("particle_vs", tool::combineShader("point/vert.spv"),VertexShader);
+    createShaderStage("particle_fs", tool::combineShader("point/frag.spv"),FragmentShader);
 
     createShaderStage("planet_vs", tool::combineShader("planet/vert.spv"), VertexShader);
     createShaderStage("planet_fs", tool::combineShader("planet/frag.spv"), FragmentShader);

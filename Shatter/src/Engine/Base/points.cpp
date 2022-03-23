@@ -36,8 +36,9 @@ void DPoints::constructD() {
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
 
-    std::vector<std::string> s_vec(1);
+    std::vector<std::string> s_vec(2);
     s_vec[0]="Camera";
+    s_vec[1]="ViewPort";
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->prepare(glm::mat4(1.0f),
                          ms_index,
@@ -53,7 +54,7 @@ void DPoints::constructD() {
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("PointBasic",id),[&,ms_index,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
     SingleRender.getNObjects()->push_back(d);
 }
