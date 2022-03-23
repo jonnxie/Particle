@@ -234,7 +234,8 @@ int main() {
         line->setLine(glm::vec3(0, 0, 0),glm::vec3(0, 0, 1));
     }
 //    std::vector<glm::vec3> aabbBuffer{};
-    auto coordinate = GCoor::createGCoor(coor_line);
+    std::vector<glm::vec3> coor_lines{ glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(0, 0, 0),glm::vec3(0, 1, 0), glm::vec3(0, 0, 0),glm::vec3(0, 0, 1) };
+    auto coordinate = GCoor::createGCoor(coor_lines);
 //    AABBVisitor::visitor(aabbBuffer, *coordinate);
     {
 //        auto gline = new GLine({0,0,0},{5,5,5});

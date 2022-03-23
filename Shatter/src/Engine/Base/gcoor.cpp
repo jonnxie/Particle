@@ -7,57 +7,39 @@
 #include "Engine/Object/line3d.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/device.h"
-// #include "Engine/pool/mpool.h"
-// #include "Engine/pool/setpool.h"
-// #include "Engine/pool/modelsetpool.h"
 #include "Engine/Item/shatter_item.h"
-// #include "Engine/pool/bpool.h"
-#include "Engine/Buffer/shatterbufferinclude.h"
+#include "Engine/Pool/mpool.h"
 #include "Engine/Event/taskpool.h"
 #include "Engine/Renderer/shatter_render_include.h"
 #include <string>
 
-GCoor::GCoor(const std::vector<int>& _in):m_x_axis(_in[0]),m_y_axis(_in[1]),m_z_axis(_in[2]){
-}
 
-
-GCoor *GCoor::createGCoor(int _x, int _y, int _z) {
-    auto val = new GCoor(_x,_y,_z);
-    val->init();
-    return val;
-}
-
-GCoor *GCoor::createGCoor(const std::vector<int>& _in) {
-    auto val = new GCoor(_in);
-    val->init();
-    return val;
+GCoor* GCoor::createGCoor(const std::vector<glm::vec3>& _in)
+{
+	return new GCoor(_in);
 }
 
 void GCoor::constructG() {
     auto gpool = MPool<GObject>::getPool();
     int g = gpool->malloc();
 
-    auto line_pool = MPool<Line3d>::getPool();
     Point_PC vertex[6];
     (*gpool)[g]->m_vertex = vertex;
     (*gpool)[g]->m_vertex_size = sizeof(Point_PC) * 6;
     {
-        auto line = (*line_pool)[m_x_axis];
-        vertex[0].pos = line->m_begin;
+        vertex[0].pos = lines[0];
         vertex[0].color = RED_COLOR;
-        vertex[1].pos = line->m_end;
+        vertex[1].pos = lines[1];
         vertex[1].color = RED_COLOR;
 
-        line = (*line_pool)[m_y_axis];
-        vertex[2].pos = line->m_begin;
+        vertex[2].pos = lines[2];
         vertex[2].color = BLUE_COLOR;
-        vertex[3].pos = line->m_end;
+        vertex[3].pos = lines[3];
         vertex[3].color = BLUE_COLOR;
 
-        line = (*line_pool)[m_z_axis];
-        vertex[4].pos = line->m_begin;
+        vertex[4].pos = lines[4];
         vertex[4].color = GOLD_COLOR;
-        vertex[5].pos = line->m_end;
+        vertex[5].pos = lines[5];
         vertex[5].color = GOLD_COLOR;
     }
     (*gpool)[g]->genVBuffer("coordinate");

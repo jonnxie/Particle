@@ -12,21 +12,21 @@ class Line3d;
 
 class GCoor : public Object {
 public:
-    static GCoor* createGCoor(const std::vector<int>& _in);
-    static GCoor* createGCoor(int _x,int _y,int _z);
+    static GCoor* createGCoor(const std::vector<glm::vec3>& _in);
 
 public:
-    GCoor(int _x,int _y,int _z):m_x_axis(_x),m_y_axis(_y),m_z_axis(_z){};
-    explicit GCoor(const std::vector<int>& _in);
+    GCoor(const std::vector<glm::vec3>& _in):
+	lines(_in)
+    {
+    	init();
+    };
     void constructG() override;
     void constructD() override;
 private:
     /*
      * index of line3d
      */
-    int m_x_axis;
-    int m_y_axis;
-    int m_z_axis;
+	std::vector<glm::vec3> lines;
 };
 
 
