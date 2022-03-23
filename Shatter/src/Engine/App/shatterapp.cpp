@@ -1,7 +1,6 @@
 //
 // Created by maybe on 2020/11/13.
 //
-#include <Engine/Base/tris.h>
 #include "precompiledhead.h"
 #include "shatterapp.h"
 #include "Engine/Object/camera.h"
@@ -17,6 +16,7 @@
 #include "Engine/Particle/particle.h"
 #include "Engine/Event/threadpool.h"
 #include "Engine/Base/WorkPlane.h"
+#include "Engine/Base/tris.h"
 
 namespace Shatter::app{
     bool app_created = false;

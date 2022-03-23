@@ -7,42 +7,19 @@
 #include <mutex>
 #include "Engine/Event/delayevent.h"
 #include "Engine/Item/configs.h"
+#include RenderCatalog
+#include "Engine/Item/shatter_enum.h"
+#include "Engine/Item/shatter_macro.h"
+#include BufferCatalog
+#include DeviceCatalog
+#include ShaderCatalog
 
 GUI *GUI::gui = new GUI;
 
 static std::mutex lock;
 
 GUI *GUI::getGUI() {
-    pushUI("default",[&](){
-        ImGui::Begin("Setting");
 
-        static char buf[32] = "1";
-        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
-
-        if(ImGui::Button("captureScreenShot"))
-        {
-            PushDelayAction([=](){
-                tool::saveScreenshot(std::string(buf) + ".ppm");
-            },[](){
-                std::cout << "action!" << std::endl;
-            });
-        }
-        ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
-        ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);
-        ImGui::SliderFloat("R", &getMaterial().r, 0.0f, 1.0f);
-        ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
-        ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
-
-        ImGui::End();// End setting
-
-//        ImGui::Begin("ViewPort");
-//
-//        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
-//
-//        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
-//
-//        ImGui::End();//ViewPort
-    });
     return gui;
 }
 
@@ -133,7 +110,7 @@ void GUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::s
     // Copy buffer data to font image
 //        VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-    VkCommandBuffer commandBuffer = ShatterRender::getRender().beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = SingleRender.beginSingleTimeCommands();
 
     // Prepare for transfer
     tool::setImageLayout(
@@ -172,7 +149,7 @@ void GUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::s
             VK_PIPELINE_STAGE_TRANSFER_BIT,
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 
-    ShatterRender::getRender().endSingleTimeCommands(commandBuffer) ;
+    SingleRender.endSingleTimeCommands(commandBuffer) ;
 
     vkDestroyBuffer(device->logicalDevice,stagingBuffer,VK_NULL_HANDLE);
     vkFreeMemory(device->logicalDevice,
@@ -519,6 +496,37 @@ void GUI::init(float width, float height) {
     }
 
     ImGui::StyleColorsDark();
+
+    pushUI("default", [&]() {
+        ImGui::Begin("Setting");
+
+        static char buf[32] = "1";
+        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
+
+        if (ImGui::Button("captureScreenShot"))
+        {
+            PushDelayAction([=]() {
+                tool::saveScreenshot(std::string(buf) + ".ppm");
+            }, []() {
+                std::cout << "action!" << std::endl;
+            });
+        }
+        ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
+        ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);
+        ImGui::SliderFloat("R", &getMaterial().r, 0.0f, 1.0f);
+        ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
+        ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
+
+        ImGui::End();// End setting
+
+        //        ImGui::Begin("ViewPort");
+        //
+        //        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
+        //
+        //        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
+        //
+        //        ImGui::End();//ViewPort
+    });
 }
 
 GUI::~GUI() {

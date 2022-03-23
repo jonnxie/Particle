@@ -20,7 +20,6 @@ static const bool enableValidationLayers = true;
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
-//#include <gtx/hash.hpp>
 #include <vector>
 #include <fstream>
 #include <glm.hpp>

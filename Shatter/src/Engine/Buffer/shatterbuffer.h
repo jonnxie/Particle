@@ -9,8 +9,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <memory>
-#include "Engine/Item/shatter_item.h"
-#include "Engine/Item/shatter_enum.h"
+
+enum class Buffer_Type;
 
 namespace Shatter {
     namespace buffer {

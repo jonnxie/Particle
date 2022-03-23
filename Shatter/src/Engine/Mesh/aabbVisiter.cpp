@@ -2,6 +2,7 @@
 // Created by jonnxie on 2022/3/4.
 //
 
+#include "precompiledhead.h"
 #include "aabbVisiter.h"
 #include "Engine/Pool/mpool.h"
 

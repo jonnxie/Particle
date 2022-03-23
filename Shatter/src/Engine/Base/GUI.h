@@ -5,28 +5,25 @@
 #ifndef SHATTER_ENGINE_GUI_H
 #define SHATTER_ENGINE_GUI_H
 
-#include "Engine/Item/shatter_enum.h"
-#include "Engine/Item/shatter_macro.h"
-#include "Engine/Renderer/shatter_render_include.h"
+
+// #include "Engine/Renderer/shatter_render_include.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+#include <glm.hpp>
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <array>
 #include <queue>
 #include <unordered_map>
 
-#include BufferCatalog
-#include DeviceCatalog
-#include ShaderCatalog
+#include "Engine/Buffer/shatterbuffer.h"
+#include "Engine/Item/shatter_enum.h"
 
-using namespace Shatter::buffer;
-
-using namespace Shatter::render;
+class Device;
 
 static struct UISettings {
     bool displayModels = true;
@@ -47,8 +44,8 @@ static struct ShatterBase {
 class GUI{
 private:
     VkSampler sampler = VK_NULL_HANDLE;
-    ShatterBuffer vertexBuffer;
-    ShatterBuffer indexBuffer;
+    Shatter::buffer::ShatterBuffer vertexBuffer;
+    Shatter::buffer::ShatterBuffer indexBuffer;
     int32_t vertexCount = 0;
     int32_t indexCount = 0;
     VkDeviceMemory fontMemory = VK_NULL_HANDLE;
@@ -89,13 +86,13 @@ public:
 
     static void popUI(const Task_id& _id);
 
-    static void text(const char *formatstr, ...)
-    {
-        va_list args;
-        va_start(args, formatstr);
-        ImGui::TextV(formatstr, args);
-        va_end(args);
-    }
+//    static void text(const char *formatstr, ...)
+//    {
+//        va_list args;
+//        va_start(args, formatstr);
+//        ImGui::TextV(formatstr, args);
+//        va_end(args);
+//    }
 
     void updateBuffers();
 

@@ -8,6 +8,7 @@
 #include "abasic.h"
 #include <set>
 #include "Engine/Item/shatter_macro.h"
+#include "Engine/Item/shatter_enum.h"
 
 class AnimationHandle {
 public:

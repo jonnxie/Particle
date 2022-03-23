@@ -12,6 +12,8 @@
 #include <array>
 
 #include "Engine/Object/device.h"
+#include "Engine/Item/shatter_item.h"
+#include "Engine/Item/shatter_enum.h"
 
 namespace Shatter::buffer{
 
