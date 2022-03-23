@@ -16,8 +16,8 @@
 #include <unordered_map>
 #include <gtx/hash.hpp>
 #include <memory>
-#include <ktx.h>
-#include <ktxvulkan.h>
+#include "ktx.h"
+#include "ktxvulkan.h"
 #include "shatter_enum.h"
 #include <map>
 #include <chrono>

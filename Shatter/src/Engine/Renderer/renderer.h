@@ -18,7 +18,7 @@ static const bool enableValidationLayers = true;
   #define GLFW_INCLUDE_VULKAN
 #endif
 #include <iostream>
-#include <GLFW/glfw3.h>
+// #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
 #include <vector>
 #include <fstream>
@@ -48,6 +48,8 @@ struct SwapChainSupportDetails;
 struct QueueFamilyIndices;
 
 struct FrameBufferAttachment;
+
+struct GLFWwindow;
 
 namespace Shatter{
     namespace render {

@@ -4,6 +4,7 @@
 #include "precompiledhead.h"
 
 #include "renderer.h"
+#include <GLFW/glfw3.h>
 
 #include <stb_image.h>
 #include <stdexcept>
@@ -13,7 +14,7 @@
 
 #include <tiny_obj_loader.h>
 #include "Engine/Object/inputaction.h"
-#include "Engine/pool/mpool.h"
+#include "Engine/Pool/mpool.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/cobject.h"
 #include "Engine/Event/threadpool.h"
