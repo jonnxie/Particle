@@ -224,9 +224,9 @@ void DCube::constructD() {
      * There must have displacement matrix component.
      */
     glm::mat4 matrix{
-            glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate, 0.0f},
-            glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate, 0.0f},
-            glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
+            glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate, SingleAPP.getWorkTargetCenter().x},
+            glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate, SingleAPP.getWorkTargetCenter().y},
+            glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, SingleAPP.getWorkTargetCenter().z},
             glm::vec4{glm::vec3{0.0f}, 1.0f},
     };
     m_plane = SingleAPP.getWorkTargetPlane();
