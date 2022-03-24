@@ -74,14 +74,20 @@ ChooseWorkPlane::ChooseWorkPlane() {
         static bool draw_work_plane = false;
         static glm::vec2 pre_pos;
         static glm::vec2 realPos;
+        static TargetPlane tar_plane;
         if(draw_work_plane)
         {
             TaskPool::popUpdateTask("ChooseWorkPlaneUpdate");
             draw_work_plane = false;
         } else {
             plane = SingleAPP.generateWorkPlane(SingleAPP.getWorkTargetPlane(), input::getCursor());
+            SingleAPP.setWork(true);
             TaskPool::pushUpdateTask("ChooseWorkPlaneUpdate", [&](float _abs_time){
-                plane->regenerate(SingleCamera.m_targetPlane, plane->getCenter());
+                tar_plane.z_coordinate = glm::normalize(SingleCamera.center + SingleCamera.eye - plane->getCenter());
+                tar_plane.x_coordinate = glm::normalize(glm::cross(SingleCamera.up, tar_plane.z_coordinate));
+                tar_plane.y_coordinate = glm::normalize(glm::cross(tar_plane.z_coordinate, tar_plane.x_coordinate));
+
+                plane->regenerate(tar_plane, plane->getCenter());
             });
             SingleRender.normalChanged = true;
             draw_work_plane = true;

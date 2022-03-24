@@ -4,7 +4,7 @@
 #include "precompiledhead.h"
 #include "shatterapp.h"
 #include "Engine/Object/camera.h"
-#include "Engine/pool/mpool.h"
+#include "Engine/Pool/mpool.h"
 #include "Engine/Object/dobject.h"
 #include "Engine/Object/object.h"
 #include "Engine/Event/taskpool.h"
@@ -17,6 +17,7 @@
 #include "Engine/Event/threadpool.h"
 #include "Engine/Base/WorkPlane.h"
 #include "Engine/Base/tris.h"
+#include "Engine/Base/WorkPlane.h"
 
 namespace Shatter::app{
     bool app_created = false;
@@ -200,6 +201,19 @@ namespace Shatter::app{
                 }else{
                     deleteListener("drawCube");
                     drawCube = true;
+                }
+            }
+
+            if(key == GLFW_KEY_F9)
+            {
+                static bool chooseWorkPlane = true;
+                if(chooseWorkPlane)
+                {
+                    chooseWorkPlane = false;
+                    appendListener("chooseWorkPlane",new ChooseWorkPlane);
+                }else{
+                    deleteListener("chooseWorkPlane");
+                    chooseWorkPlane = true;
                 }
             }
 
