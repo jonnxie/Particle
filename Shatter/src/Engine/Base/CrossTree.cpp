@@ -6,7 +6,7 @@
 #include "Engine/Item/configs.h"
 #include "Engine/Object/inputaction.h"
 
-CrossTree::CrossTree(const glm::dvec3 &_begin, const glm::dvec3 &_end, char _localIndex):
+CrossTree::CrossTree(const glm::vec3 &_begin, const glm::vec3 &_end, char _localIndex):
 m_begin(_begin),
 m_end(_end),
 m_localIndex(_localIndex)
@@ -23,13 +23,13 @@ m_localIndex(_localIndex)
  */
 void CrossTree::split() {
     uint32_t index = 0;
-    glm::dvec3 dis = (m_end - m_begin) / 2.0;
-    glm::dvec3 begin = m_begin;
-    glm::dvec3 end = m_begin + dis;
-    glm::dvec3 move;
+    glm::vec3 dis = (m_end - m_begin) / 2.0f;
+    glm::vec3 begin = m_begin;
+    glm::vec3 end = m_begin + dis;
+    glm::vec3 move;
     for(size_t i = 0; i < TreeSize; i++)
     {
-        move = glm::dvec3(i & 1 ? dis.x : 0, i & (1 << 1) ? dis.y : 0, i & (1 << 2) ? dis.z : 0);
+        move = glm::vec3(i & 1 ? dis.x : 0, i & (1 << 1) ? dis.y : 0, i & (1 << 2) ? dis.z : 0);
         m_child[i] = std::make_unique<CrossTree>(begin + move, end + move, i);
     }
 }
@@ -38,7 +38,7 @@ bool CrossTree::check() {
     return false;
 }
 
-ParticleNode::ParticleNode(const glm::dvec3& _begin, const glm::dvec3& _end, char _localIndex, ParticleGroup* _group):
+ParticleNode::ParticleNode(const glm::vec3& _begin, const glm::vec3& _end, char _localIndex, ParticleGroup* _group):
 m_begin(_begin),
 m_end(_end),
 m_localIndex(_localIndex),
@@ -67,16 +67,16 @@ m_delegate(_group)
 
 void ParticleNode::split() {
     uint32_t index = 0;
-    glm::dvec3 dis = (m_end - m_begin) / 2.0;
-    glm::dvec3 begin = m_begin;
-    glm::dvec3 end = m_begin + dis;
-    glm::dvec3 move;
+    glm::vec3 dis = (m_end - m_begin) / 2.0f;
+    glm::vec3 begin = m_begin;
+    glm::vec3 end = m_begin + dis;
+    glm::vec3 move;
     for(size_t i = 0; i < TreeSize; i++)
     {
-        move = glm::dvec3(i & 1 ? dis.x : 0, i & (1 << 1) ? dis.y : 0, i & (1 << 2) ? dis.z : 0);
+        move = glm::vec3(i & 1 ? dis.x : 0, i & (1 << 1) ? dis.y : 0, i & (1 << 2) ? dis.z : 0);
         m_child[i] = std::make_unique<ParticleNode>(begin + move, end + move, i, m_delegate);
     }
-    std::vector<DParticle>& particles = m_delegate->getGroupRef();
+    std::vector<Point3dColorSize>& particles = m_delegate->getGroupRef();
 
     for(auto& p : m_groups)
     {
@@ -109,23 +109,14 @@ bool ParticleNode::check(){
     }
 }
 
-ParticleGroup::ParticleGroup(size_t _size, glm::dvec3 _begin, glm::dvec3 _end, bool _random, size_t _leafSize):
+ParticleGroup::ParticleGroup(size_t _size, glm::vec3 _begin, glm::vec3 _end, bool _random, size_t _leafSize):
 m_leafSize(_leafSize),
 m_begin(_begin),
 m_end(_end)
 {
-    m_groups = std::vector<DParticle>(_size);
+    m_groups = std::vector<Point3dColorSize>(_size);
     if(_random)
     {
-        std::vector<glm::vec3> colors =
-                {
-                        glm::vec3(1.0f, 1.0f, 1.0f),
-                        glm::vec3(1.0f, 0.0f, 0.0f),
-                        glm::vec3(0.0f, 1.0f, 0.0f),
-                        glm::vec3(0.0f, 0.0f, 1.0f),
-                        glm::vec3(1.0f, 1.0f, 0.0f),
-                };
-
         std::default_random_engine rndGen( (unsigned)time(nullptr));
         std::uniform_real_distribution<double> rndXDist(m_begin.x, m_end.x);
         std::uniform_real_distribution<double> rndYDist(m_begin.y, m_end.y);
@@ -141,8 +132,11 @@ m_end(_end)
             p.color.x = rndCDist(rndGen);
             p.color.y = rndCDist(rndGen);
             p.color.z = rndCDist(rndGen);
+            p.size = 0.5f;
         }
     }
+    m_points = std::make_unique<DPoints>(m_groups);
+    m_points->init();
     m_lines = std::make_unique<DLines>(std::vector<Line>{});
     m_tree = std::make_unique<ParticleNode>(m_begin, m_end, 0, this);
     m_tree->getGroupRef() = std::vector<size_t>(_size);
