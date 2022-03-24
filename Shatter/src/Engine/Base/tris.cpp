@@ -227,6 +227,7 @@ void DCube::constructD() {
             glm::vec4{glm::vec3{0.0f}, 1.0f},
     };
     m_plane = SingleAPP.getWorkTargetPlane();
+    m_center = SingleAPP.getWorkTargetCenter();
 //    matrix = glm::inverse(matrix);
     (*dpool)[d]->prepare(matrix,
                          ms_index,
@@ -274,7 +275,7 @@ DrawCube::DrawCube() {
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 auto localCube = cubes.back();
                 int id = localCube->id;
-                height =  glm::dot(localCube->getTargetPlane().z_coordinate, input::getCursor() - SingleCamera.center);
+                height =  glm::dot(localCube->getTargetPlane().z_coordinate, input::getCursor() - localCube->getWorkCenter());
                 genCube(pre_pos, realPos, height, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);
@@ -282,15 +283,15 @@ DrawCube::DrawCube() {
             draw_plane = false;
             draw_cube = true;
         } else {
-            pre_pos = glm::vec2(1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, input::getCursor() - SingleCamera.center)
-                    + glm::vec2(0.0f, 1.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, input::getCursor() - SingleCamera.center);
+            pre_pos = glm::vec2(1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, input::getCursor() - SingleAPP.getWorkTargetCenter())
+                    + glm::vec2(0.0f, 1.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, input::getCursor() - SingleAPP.getWorkTargetCenter());
             genCube(pre_pos, pre_pos, .0f, cube);
             cubes.emplace_back(new DCube(cube));
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 auto localCube = cubes.back();
                 int id = localCube->id;
-                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(localCube->getTargetPlane().x_coordinate, input::getCursor() - SingleCamera.center)
-                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(localCube->getTargetPlane().y_coordinate, input::getCursor() - SingleCamera.center);
+                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(localCube->getTargetPlane().x_coordinate, input::getCursor() - localCube->getWorkCenter())
+                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(localCube->getTargetPlane().y_coordinate, input::getCursor() - localCube->getWorkCenter());
                 genCube(pre_pos, realPos, .0f, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);

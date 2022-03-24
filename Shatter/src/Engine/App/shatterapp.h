@@ -56,14 +56,12 @@ namespace Shatter{
             TargetPlane& getWorkTargetPlane();
             glm::vec3&   getWorkTargetCenter();
             TargetPlane& getCameraTargetPlane();
+            WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
         private:
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);
-            WorkPlane* m_work_plane{};
+            WorkPlane* m_work_plane{nullptr};
         private:
-            /*
-             * dobject
-             */
             std::vector<int> m_dobjects;
             std::vector<int> m_offscreenobjects;
             std::vector<int> transparency_vec;

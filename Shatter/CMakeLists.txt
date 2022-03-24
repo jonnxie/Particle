@@ -33,7 +33,7 @@ add_library(ktx STATIC ${KTX_SOURCES})
 
 option(USE_OFFSCREEN "Build Offscreen Rendering" OFF)
 option(USE_SHADOW "Build Shadow Map DLL" OFF)
-option(USE_SIMD "USE Simd In Math Calculation" ON)
+option(USE_SIMD "USE Simd In Math Calculation" OFF)
 option(USE_GPU_CAPTURE "USE GPU Capture" ON)
 
 add_compile_definitions(SHATTER_PLATFORM_WINDOWS)

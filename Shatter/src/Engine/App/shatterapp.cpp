@@ -82,6 +82,7 @@ namespace Shatter::app{
         {
             delete listener;
         }
+        delete m_work_plane;
     }
 
     void ShatterApp::key_event_callback(int key, int action){
@@ -289,6 +290,16 @@ namespace Shatter::app{
 
     TargetPlane& ShatterApp::getCameraTargetPlane(){
         return SingleCamera.m_targetPlane;
+    }
+
+    WorkPlane* ShatterApp::generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center){
+        if(nullptr == m_work_plane)
+        {
+            m_work_plane = new WorkPlane(_coordinate, _center);
+        }else{
+            m_work_plane->regenerate(_coordinate, _center);
+        }
+        return m_work_plane;
     }
 
 }

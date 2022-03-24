@@ -18,7 +18,8 @@ namespace Shatter{
             m_map = std::unordered_map<Event,bool>();
             m_action = std::unordered_map<Event,std::function<void()>>();
         }
-        virtual ~Listener(){};
+        DefineUnCopy(Listener);
+        virtual ~Listener()= default;
         virtual void handle(Event _event){
             if(m_action.count(_event) != 0)
             {

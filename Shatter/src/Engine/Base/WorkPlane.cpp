@@ -3,6 +3,18 @@
 //
 #include "precompiledhead.h"
 #include "WorkPlane.h"
+#include "Engine/Object/inputaction.h"
+#include "Engine/App/shatterapp.h"
+#include "Engine/Object/camera.h"
+
+
+void WorkPlane::regenerate(TargetPlane& _coordinate, const glm::vec3& _center){
+    m_coordinate = _coordinate;
+    m_center = _center;
+    new ((Line*)&m_axis[0]) Line(makeLine(m_coordinate.x_coordinate, m_center));
+    new ((Line*)&m_axis[1]) Line(makeLine(m_coordinate.y_coordinate, m_center));
+    new ((Line*)&m_axis[2]) Line(makeLine(m_coordinate.z_coordinate, m_center));
+}
 
 void WorkPlane::constructG() {
     new ((Line*)&m_axis[0]) Line(makeLine(m_coordinate.x_coordinate, m_center));
@@ -55,4 +67,28 @@ WorkPlane::~WorkPlane()
     SingleBPool.freeBuffer("WorkPlane", Buffer_Type::Vertex_Host_Buffer);
     SingleRender.releaseObject(int(m_capture_id), DrawObjectType::AABB);
     SingleRender.normalChanged = true;
+}
+
+ChooseWorkPlane::ChooseWorkPlane() {
+    m_action[Event::MouseClick] = [&]() {
+        static bool draw_work_plane = false;
+        static glm::vec2 pre_pos;
+        static glm::vec2 realPos;
+        if(draw_work_plane)
+        {
+            TaskPool::popUpdateTask("ChooseWorkPlaneUpdate");
+            draw_work_plane = false;
+        } else {
+            plane = SingleAPP.generateWorkPlane(SingleAPP.getWorkTargetPlane(), input::getCursor());
+            TaskPool::pushUpdateTask("ChooseWorkPlaneUpdate", [&](float _abs_time){
+                plane->regenerate(SingleCamera.m_targetPlane, plane->getCenter());
+            });
+            SingleRender.normalChanged = true;
+            draw_work_plane = true;
+        };
+    };
+}
+
+ChooseWorkPlane::~ChooseWorkPlane() {
+    TaskPool::popUpdateTask("ChooseWorkPlaneUpdate");
 }

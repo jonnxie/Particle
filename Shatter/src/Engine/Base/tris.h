@@ -72,6 +72,7 @@ public:
     void constructD() override;
     void constructC() override{};
     ClassReferenceElement(m_plane, TargetPlane, TargetPlane);
+    ClassReferenceElement(m_center, glm::vec3, WorkCenter);
 public:
     Cube                cube;
     bool                changed = true;

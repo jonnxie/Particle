@@ -8,15 +8,17 @@
 #include "Engine/Object/object.h"
 #include <glm.hpp>
 #include "Engine/Item/shatter_item.h"
+#include ListenerCatalog
 
 class WorkPlane : public Object {
 public:
-    WorkPlane(TargetPlane& _coordinate, glm::vec3 _center):
+    WorkPlane(TargetPlane& _coordinate, const glm::vec3& _center):
     m_center(_center),
     m_coordinate(_coordinate)
     {
         init();
     };
+    void regenerate(TargetPlane& _coordinate, const glm::vec3& _center);
     void constructG() override;
     void constructD() override;
     ~WorkPlane() override;
@@ -30,6 +32,12 @@ private:
     std::array<Line,3> m_axis{};
 };
 
-
+class ChooseWorkPlane : public Shatter::Listener{
+public:
+    ChooseWorkPlane();
+    ~ChooseWorkPlane() override;
+private:
+    WorkPlane* plane;
+};
 
 #endif //MAIN_WORKPLANE_H
