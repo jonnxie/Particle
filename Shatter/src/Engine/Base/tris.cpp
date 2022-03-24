@@ -220,6 +220,9 @@ void DCube::constructD() {
     s_vec[1]="Planet";
     (*dpool)[d]->m_type = DType::Normal;
 
+    /*
+     * There must have displacement matrix component.
+     */
     glm::mat4 matrix{
             glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate, 0.0f},
             glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate, 0.0f},
