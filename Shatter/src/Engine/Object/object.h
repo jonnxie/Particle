@@ -182,7 +182,8 @@ public:
     virtual void constructD(){};
 
     virtual void constructC(){};
-
+    ClassProtectedReferenceElement(m_plane, TargetPlane, TargetPlane);
+    ClassProtectedReferenceElement(m_center, glm::vec3, WorkCenter);
     ClassElement(m_draw_type, DrawObjectType, DrawType);
 protected:
     glm::mat4   m_world{};

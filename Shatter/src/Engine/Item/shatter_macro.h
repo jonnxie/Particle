@@ -248,6 +248,14 @@ Class& operator = (Class&&) = delete
         return elementName;                                       \
     }
 
+#define ClassProtectedReferenceElement(elementName, elementType, funcName) \
+    protected:                                                    \
+    elementType elementName{};                                    \
+    public:                                                       \
+    elementType& get##funcName()                                  \
+    {                                                             \
+        return elementName;                                       \
+    }
 
 
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H
