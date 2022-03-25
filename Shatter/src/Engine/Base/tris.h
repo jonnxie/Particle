@@ -48,7 +48,8 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-
+    ClassReferenceElement(m_plane, TargetPlane, TargetPlane);
+    ClassReferenceElement(m_center, glm::vec3, WorkCenter);
 public:
     NPlane              plane;
     bool                changed = true;

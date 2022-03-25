@@ -105,11 +105,13 @@ void DPlane::constructD(){
     (*dpool)[d]->m_type = DType::Normal;
 
     glm::mat4 matrix{
-        glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate,0.0f},
-        glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate,0.0f},
-        glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate,0.0f},
-        glm::vec4{glm::vec3{0.0f},1.0f},
+            glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate, 0.0f},
+            glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate, 0.0f},
+            glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
+            glm::vec4{SingleAPP.getWorkTargetCenter(), 1.0f},
     };
+    m_plane = SingleAPP.getWorkTargetPlane();
+    m_center = SingleAPP.getWorkTargetCenter();
 //    matrix = glm::inverse(matrix);
     (*dpool)[d]->prepare(matrix,
                          ms_index,
@@ -139,7 +141,7 @@ DrawNPlane::~DrawNPlane() {
 
 
 DrawNPlane::DrawNPlane() {
-    m_action[Event::SingleClick] = [&]() {
+    m_action[Event::MouseClick] = [&]() {
         static bool draw = false;
         static glm::vec3 pre_pos;
         static glm::vec3 realPos;
@@ -149,8 +151,8 @@ DrawNPlane::DrawNPlane() {
             draw = false;
         } else {
             pre_pos = input::getCursor();
-            pre_pos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, pre_pos - SingleCamera.center)
-                    + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, pre_pos - SingleCamera.center);
+            pre_pos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, pre_pos - SingleAPP.getWorkTargetCenter())
+                    + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, pre_pos - SingleAPP.getWorkTargetCenter());
             genPlane(pre_pos, pre_pos, plane);
             auto p = std::make_unique<DPlane>(plane);
             planes.push_back(std::move(p));
@@ -159,8 +161,8 @@ DrawNPlane::DrawNPlane() {
                 planes.pop_back();
                 int id = localPlane->id;
                 realPos = input::getCursor();
-                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, realPos - SingleCamera.center)
-                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, realPos - SingleCamera.center);
+                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, realPos - SingleAPP.getWorkTargetCenter())
+                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, realPos - SingleAPP.getWorkTargetCenter());
                 genPlane(pre_pos, realPos, plane);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DPlane", id), Buffer_Type::Vertex_Host_Buffer);
                 auto* ptr = (Point*)buffer->mapped;
