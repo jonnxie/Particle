@@ -3,7 +3,6 @@
 //
 #include "precompiledhead.h"
 #include "CrossTree.h"
-#include "Engine/Item/configs.h"
 #include "Engine/Object/inputaction.h"
 
 CrossTree::CrossTree(const glm::vec3 &_begin, const glm::vec3 &_end, char _localIndex):
