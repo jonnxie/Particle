@@ -84,8 +84,9 @@ ChooseWorkPlane::ChooseWorkPlane() {
             SingleAPP.setWork(true);
             TaskPool::pushUpdateTask("ChooseWorkPlaneUpdate", [&](float _abs_time){
                 tar_plane.z_coordinate = glm::normalize(SingleCamera.center + SingleCamera.eye - plane->getCenter());
-                tar_plane.x_coordinate = glm::normalize(glm::cross(SingleCamera.up, tar_plane.z_coordinate));
+                tar_plane.x_coordinate = glm::normalize(input::getCursor() - plane->getCenter());
                 tar_plane.y_coordinate = glm::normalize(glm::cross(tar_plane.z_coordinate, tar_plane.x_coordinate));
+                tar_plane.x_coordinate = glm::normalize(glm::cross(tar_plane.y_coordinate, tar_plane.z_coordinate));
 
                 plane->regenerate(tar_plane, plane->getCenter());
             });
