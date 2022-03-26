@@ -746,7 +746,7 @@ namespace file{
 
     short myReadUnsignedShort(unsigned char* binaryData, int* binaryData_index);
 
-    int myReadByte(unsigned char* binaryData, int* binaryData_index);
+    char myReadByte(unsigned char* binaryData, int* binaryData_index);
 
     float myReadFloat(unsigned char* binaryData, int* binaryData_index);
 
@@ -950,6 +950,8 @@ namespace tool{
     std::string combineModel(const std::string& _shaderName);
 
     std::string combineAnimation(const std::string& _animationName);
+
+    std::string combineB3DM(const std::string& _b3dmName);
 
     template<class T>
     void printNum(T _num)

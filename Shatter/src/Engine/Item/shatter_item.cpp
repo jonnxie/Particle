@@ -250,12 +250,11 @@ namespace file{
         return readShort;
     }
 
-    int myReadByte(unsigned char* binaryData, int* binaryData_index)
+    char myReadByte(unsigned char* binaryData, int* binaryData_index)
     {
-        int readByte = 0;
-        unsigned char * readByte_char = (unsigned char*)&readByte;
+        char readByte = 0;
         for (int i = 0; i < 1; i++) {
-            readByte_char[i] = (unsigned char)binaryData[*binaryData_index];
+            readByte = binaryData[*binaryData_index];
             (*binaryData_index)++;
         }
         return readByte;
@@ -709,6 +708,10 @@ namespace tool {
 
     std::string combineAnimation(const std::string& _animationName){
         return AnimationPath + _animationName;
+    }
+
+    std::string combineB3DM(const std::string& _b3dmName){
+        return B3DMPath + _b3dmName;
     }
 
     VkPipelineShaderStageCreateInfo createShaderStage(const std::string& _filename,ShaderType _type)
