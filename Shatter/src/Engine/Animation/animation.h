@@ -125,7 +125,7 @@ namespace animation {
         float time;
         int transition; //vec3
     };
-    void kyFrameTransition(const KeyFrameTransition& _transition,Avec3 & _val,bool _inout,Animation *_animation);
+    void keyFrameTransition(const KeyFrameTransition& _transition, Avec3 & _val, bool _inout, Animation *_animation);
     void constructKeyFrameTransition(unsigned char *_data,int* binaryData_index, KeyFrameTransition& _mat, int& _vec3index,Animation *_animation);
 
     /*4 + 3*4*/

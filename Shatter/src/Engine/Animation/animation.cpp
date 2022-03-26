@@ -90,7 +90,7 @@ namespace animation {
         }
     }
 
-    void kyFrameTransition(const KeyFrameTransition& _transition,Avec3 & _val,bool _inout,Animation *_animation)
+    void keyFrameTransition(const KeyFrameTransition& _transition, Avec3 & _val, bool _inout, Animation *_animation)
     {
         auto pool = Avec3Pool;
         if(_inout == STATE_IN){
@@ -887,6 +887,7 @@ namespace animation {
             delete data;
         });
 
+        free(m_binary_data);
         delete m_localCoordinate;
         delete m_vec2Pool;
         delete m_vec3Pool;

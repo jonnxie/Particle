@@ -214,7 +214,7 @@ int main() {
     ah->setPipeline("AGBasic");
     ah->setSets(std::vector<std::string>{"Camera", "Planet"});
     ah->setDrawType(DrawObjectType::Default);
-    ah->loadAnimation(tool::combineModel("BoxAnimated.gltf"));
+//    ah->loadAnimation(tool::combineModel("BoxAnimated.gltf"));
 //    ABasic(tool::combineModel("BoxAnimated.gltf"),
 //           glm::vec3(-10.0f,-10.0f,0.0f),
 //           glm::vec3(1.0f,0.0f,0.0f),
@@ -332,12 +332,12 @@ int main() {
                                      tool::combineTexture("Skybox_front5.png"),
                                      tool::combineTexture("Skybox_back6.png")};
     auto skybox = new Skybox(sky_vec);
-//    auto a = new animation::Animation(tool::combineModel("ninja.ms3d"),
-//                                      glm::vec3(-10.0f,-10.0f,0.0f),
-//                                      glm::vec3(1.0f,0.0f,0.0f),
-//                                      half_pai,
-//                                      glm::vec3(0.25f),
-//                                      0);
+    auto a = new animation::Animation(tool::combineModel("ninja.ms3d"),
+                                      glm::vec3(-10.0f,-10.0f,0.0f),
+                                      glm::vec3(1.0f,0.0f,0.0f),
+                                      half_pai,
+                                      glm::vec3(0.25f),
+                                      0);
 //    auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
 //                             glm::vec3(-10.0f,-10.0f,0.0f),
 //                             glm::vec3(1.0f,0.0f,0.0f),
@@ -382,7 +382,7 @@ int main() {
 //        delete abasic;
         delete build;
         delete glass;
-//        delete a;
+        delete a;
         delete plane;
         delete line;
         delete planet;
