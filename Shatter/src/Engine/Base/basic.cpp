@@ -30,7 +30,7 @@ Basic::Basic(const std::string& _files,
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
-    m_model->loadFromFile(_files,&SingleDevice,VkQueue{},glTFLoadingFlags);
+    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags);
     m_scale = glm::scale(glm::mat4(1.0f),_scale);
     m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
     m_translation = glm::translate(glm::mat4(1.0f), _pos);
@@ -53,7 +53,7 @@ void Basic::constructD()
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->m_gGraphics = [&,modelIndex](VkCommandBuffer _cb){
+    (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
         UnionViewPort& tmp = getViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
@@ -81,8 +81,8 @@ void Basic::constructD()
     };
     insertDObject(d);
     SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
-    TaskPool::pushUpdateTask(tool::combine("Basic",m_id),[&,modelIndex,d](float _abs_time){
+    TaskPool::pushUpdateTask(tool::combine("Basic",m_id),[&, modelIndex, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
 }

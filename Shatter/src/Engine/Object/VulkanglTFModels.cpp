@@ -1482,8 +1482,255 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 	}
 }
 
+void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
+                                   const std::string& _filename,
+                                   Device *pDevice,
+                                   VkQueue transferQueue,
+                                   uint32_t fileLoadingFlags,
+                                   const glm::mat4& world_matrix,
+                                   float scale){
+    tinygltf::Model gltfModel;
+    tinygltf::TinyGLTF gltfContext;
+    if (fileLoadingFlags & FileLoadingFlags::DontLoadImages) {
+        gltfContext.SetImageLoader(loadImageDataFuncEmpty, nullptr);
+    } else {
+        gltfContext.SetImageLoader(loadImageDataFunc, nullptr);
+    }
+#if defined(__ANDROID__)
+    // On Android all assets are packed with the apk in a compressed form, so we need to open them using the asset manager
+	// We let tinygltf handle this, by passing the asset manager of our app
+	tinygltf::asset_manager = androidApp->activity->assetManager;
+#endif
+    size_t pos = _filename.find_last_of('/');
+    path = _filename.substr(0, pos);
+
+    std::string error, warning;
+
+    this->device = pDevice;
+
+#if defined(__ANDROID__)
+    // On Android all assets are packed with the apk in a compressed form, so we need to open them using the asset manager
+	// We let tinygltf handle this, by passing the asset manager of our app
+	tinygltf::asset_manager = androidApp->activity->assetManager;
+#endif
+    bool fileLoaded = gltfContext.LoadBinaryFromMemory(&gltfModel, &error, &warning,
+                                                      str.data(), str.size(), _filename);
+
+    std::vector<uint32_t> indexBuffer;
+    std::vector<Vertex> vertexBuffer;
+
+    if (fileLoaded) {
+        if (!(fileLoadingFlags & FileLoadingFlags::DontLoadImages)) {
+            loadImages(gltfModel, pDevice, transferQueue);
+        }
+        loadMaterials(gltfModel);
+        const tinygltf::Scene &scene = gltfModel.scenes[gltfModel.defaultScene > -1 ? gltfModel.defaultScene : 0];
+        for (int i : scene.nodes) {
+            const tinygltf::Node node = gltfModel.nodes[i];
+            loadNode(nullptr, node, i, gltfModel, indexBuffer, vertexBuffer, scale);
+        }
+        if (!gltfModel.animations.empty()) {
+            loadAnimations(gltfModel);
+        }
+        loadSkins(gltfModel);
+
+        for (auto node : linearNodes) {
+            // Assign skins
+            if (node->skinIndex > -1) {
+                node->skin = skins[node->skinIndex];
+            }
+            // Initial pose
+            if (node->mesh) {
+                node->update(world_matrix);
+            }
+        }
+    }
+    else {
+        // TODO: throw
+        throw std::runtime_error("Could not load glTF file \"" + _filename + "\": " + error);
+        return;
+    }
+
+    // Pre-Calculations for requested features
+    if ((fileLoadingFlags & FileLoadingFlags::PreTransformVertices) || (fileLoadingFlags & FileLoadingFlags::PreMultiplyVertexColors) || (fileLoadingFlags & FileLoadingFlags::FlipY)) {
+        const bool preTransform = fileLoadingFlags & FileLoadingFlags::PreTransformVertices;
+        const bool preMultiplyColor = fileLoadingFlags & FileLoadingFlags::PreMultiplyVertexColors;
+        const bool flipY = fileLoadingFlags & FileLoadingFlags::FlipY;
+        for (Node* node : linearNodes) {
+            if (node->mesh) {
+                const glm::mat4 localMatrix = node->getMatrix();
+                for (Primitive* primitive : node->mesh->primitives) {
+                    for (uint32_t i = 0; i < primitive->vertexCount; i++) {
+                        Vertex& vertex = vertexBuffer[primitive->firstVertex + i];
+                        // Pre-transform vertex positions by node-hierarchy
+                        if (preTransform) {
+                            vertex.pos = glm::vec3(localMatrix * glm::vec4(vertex.pos, 1.0f));
+                            vertex.normal = glm::normalize(glm::mat3(localMatrix) * vertex.normal);
+                        }
+                        // Flip Y-Axis of vertex positions
+                        if (flipY) {
+                            vertex.pos.y *= -1.0f;
+                            vertex.normal.y *= -1.0f;
+                        }
+                        // Pre-Multiply vertex colors with material base color
+                        if (preMultiplyColor) {
+                            vertex.color = primitive->material.baseColorFactor * vertex.color;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (const auto& extension : gltfModel.extensionsUsed) {
+        if (extension == "KHR_materials_pbrSpecularGlossiness") {
+            std::cout << "Required extension: " << extension;
+            metallicRoughnessWorkflow = false;
+        }
+    }
+
+    size_t vertexBufferSize = vertexBuffer.size() * sizeof(Vertex);
+    size_t indexBufferSize = indexBuffer.size() * sizeof(uint32_t);
+    indices.count = static_cast<uint32_t>(indexBuffer.size());
+    vertices.count = static_cast<uint32_t>(vertexBuffer.size());
+
+    assert((vertexBufferSize > 0) && (indexBufferSize > 0));
+
+    struct StagingBuffer {
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+    } vertexStaging, indexStaging;
+
+    // Create staging buffers
+    // Vertex data
+    VK_CHECK_RESULT(pDevice->createBuffer(
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            vertexBufferSize,
+            &vertexStaging.buffer,
+            &vertexStaging.memory,
+            vertexBuffer.data()));
+    // Index data
+    VK_CHECK_RESULT(pDevice->createBuffer(
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            indexBufferSize,
+            &indexStaging.buffer,
+            &indexStaging.memory,
+            indexBuffer.data()));
+
+    // Create pDevice local buffers
+    // Vertex buffer
+    VK_CHECK_RESULT(pDevice->createBuffer(
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | memoryPropertyFlags,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            vertexBufferSize,
+            &vertices.buffer,
+            &vertices.memory));
+    // Index buffer
+    VK_CHECK_RESULT(pDevice->createBuffer(
+            VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | memoryPropertyFlags,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            indexBufferSize,
+            &indices.buffer,
+            &indices.memory));
+
+    // Copy from staging buffers
+    VkCommandBuffer copyCmd  = Shatter::render::ShatterRender::getRender().beginSingleTimeCommands();
+
+    VkBufferCopy copyRegion = {};
+
+    copyRegion.size = vertexBufferSize;
+    vkCmdCopyBuffer(copyCmd, vertexStaging.buffer, vertices.buffer, 1, &copyRegion);
+
+    copyRegion.size = indexBufferSize;
+    vkCmdCopyBuffer(copyCmd, indexStaging.buffer, indices.buffer, 1, &copyRegion);
+
+    Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
+
+    vkDestroyBuffer(pDevice->logicalDevice, vertexStaging.buffer, nullptr);
+    vkFreeMemory(pDevice->logicalDevice, vertexStaging.memory, nullptr);
+    vkDestroyBuffer(pDevice->logicalDevice, indexStaging.buffer, nullptr);
+    vkFreeMemory(pDevice->logicalDevice, indexStaging.memory, nullptr);
+
+    getSceneDimensions();
+
+    // Setup descriptors
+    uint32_t uboCount{ 0 };
+    uint32_t imageCount{ 0 };
+    for (auto node : linearNodes) {
+        if (node->mesh) {
+            uboCount++;
+        }
+    }
+    for (auto material : materials) {
+        if (material.baseColorTexture != nullptr) {
+            imageCount++;
+        }
+    }
+    std::vector<VkDescriptorPoolSize> poolSizes = {
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboCount },
+    };
+    if (imageCount > 0) {
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
+            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+        }
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
+            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+        }
+    }
+    VkDescriptorPoolCreateInfo descriptorPoolCI{};
+    descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    descriptorPoolCI.pPoolSizes = poolSizes.data();
+    descriptorPoolCI.maxSets = uboCount + imageCount;
+    VK_CHECK_RESULT(vkCreateDescriptorPool(pDevice->logicalDevice, &descriptorPoolCI, nullptr, &descriptorPool));
+
+    // Descriptors for per-node uniform buffers
+    {
+        // Layout is global, so only create if it hasn't already been created before
+        if (descriptorSetLayoutUbo == VK_NULL_HANDLE) {
+            std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+                    tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+            };
+            VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+            descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+            descriptorLayoutCI.pBindings = setLayoutBindings.data();
+            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutUbo));
+        }
+        for (auto node : nodes) {
+            prepareNodeDescriptor(node, descriptorSetLayoutUbo);
+        }
+    }
+
+    // Descriptors for per-material images
+    {
+        // Layout is global, so only create if it hasn't already been created before
+        if (descriptorSetLayoutImage == VK_NULL_HANDLE) {
+            std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
+            if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
+                setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
+            }
+            if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
+                setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
+            }
+            VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+            descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+            descriptorLayoutCI.pBindings = setLayoutBindings.data();
+            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutImage));
+        }
+        for (auto& material : materials) {
+            if (material.baseColorTexture != nullptr) {
+                material.createDescriptorSet(descriptorPool, vkglTF::descriptorSetLayoutImage, descriptorBindingFlags);
+            }
+        }
+    }
+}
+
 void vkglTF::Model::loadFromFile(const std::string& filename,
-                                 Device *device,
+                                 Device *pDevice,
                                  VkQueue transferQueue,
                                  uint32_t fileLoadingFlags,
                                  const glm::mat4& world_matrix,
@@ -1506,7 +1753,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 
 	std::string error, warning;
 
-	this->device = device;
+	this->device = pDevice;
 
 #if defined(__ANDROID__)
 	// On Android all assets are packed with the apk in a compressed form, so we need to open them using the asset manager
@@ -1520,7 +1767,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 
 	if (fileLoaded) {
 		if (!(fileLoadingFlags & FileLoadingFlags::DontLoadImages)) {
-			loadImages(gltfModel, device, transferQueue);
+			loadImages(gltfModel, pDevice, transferQueue);
 		}
 		loadMaterials(gltfModel);
 		const tinygltf::Scene &scene = gltfModel.scenes[gltfModel.defaultScene > -1 ? gltfModel.defaultScene : 0];
@@ -1602,7 +1849,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 
 	// Create staging buffers
 	// Vertex data
-	VK_CHECK_RESULT(device->createBuffer(
+	VK_CHECK_RESULT(pDevice->createBuffer(
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		vertexBufferSize,
@@ -1610,7 +1857,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 		&vertexStaging.memory,
 		vertexBuffer.data()));
 	// Index data
-	VK_CHECK_RESULT(device->createBuffer(
+	VK_CHECK_RESULT(pDevice->createBuffer(
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		indexBufferSize,
@@ -1618,16 +1865,16 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 		&indexStaging.memory,
 		indexBuffer.data()));
 
-	// Create device local buffers
+	// Create pDevice local buffers
 	// Vertex buffer
-	VK_CHECK_RESULT(device->createBuffer(
+	VK_CHECK_RESULT(pDevice->createBuffer(
 	    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | memoryPropertyFlags,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		vertexBufferSize,
 		&vertices.buffer,
 		&vertices.memory));
 	// Index buffer
-	VK_CHECK_RESULT(device->createBuffer(
+	VK_CHECK_RESULT(pDevice->createBuffer(
 	    VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | memoryPropertyFlags,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		indexBufferSize,
@@ -1647,10 +1894,10 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 
     Shatter::render::ShatterRender::getRender().endSingleTimeCommands(copyCmd);
 
-	vkDestroyBuffer(device->logicalDevice, vertexStaging.buffer, nullptr);
-	vkFreeMemory(device->logicalDevice, vertexStaging.memory, nullptr);
-	vkDestroyBuffer(device->logicalDevice, indexStaging.buffer, nullptr);
-	vkFreeMemory(device->logicalDevice, indexStaging.memory, nullptr);
+	vkDestroyBuffer(pDevice->logicalDevice, vertexStaging.buffer, nullptr);
+	vkFreeMemory(pDevice->logicalDevice, vertexStaging.memory, nullptr);
+	vkDestroyBuffer(pDevice->logicalDevice, indexStaging.buffer, nullptr);
+	vkFreeMemory(pDevice->logicalDevice, indexStaging.memory, nullptr);
 
 	getSceneDimensions();
 
@@ -1683,7 +1930,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 	descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	descriptorPoolCI.pPoolSizes = poolSizes.data();
 	descriptorPoolCI.maxSets = uboCount + imageCount;
-	VK_CHECK_RESULT(vkCreateDescriptorPool(device->logicalDevice, &descriptorPoolCI, nullptr, &descriptorPool));
+	VK_CHECK_RESULT(vkCreateDescriptorPool(pDevice->logicalDevice, &descriptorPoolCI, nullptr, &descriptorPool));
 
 	// Descriptors for per-node uniform buffers
 	{
@@ -1696,7 +1943,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
 			descriptorLayoutCI.pBindings = setLayoutBindings.data();
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutUbo));
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutUbo));
 		}
 		for (auto node : nodes) {
 			prepareNodeDescriptor(node, descriptorSetLayoutUbo);
@@ -1718,7 +1965,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
 			descriptorLayoutCI.pBindings = setLayoutBindings.data();
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutImage));
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutImage));
 		}
 		for (auto& material : materials) {
 			if (material.baseColorTexture != nullptr) {
@@ -1727,8 +1974,6 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 		}
 	}
 }
-
-
 
 void vkglTF::Model::loadFromFileDefault(const std::string& filename,
                          Device* device,

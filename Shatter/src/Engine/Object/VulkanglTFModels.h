@@ -296,8 +296,16 @@ namespace vkglTF
 		void loadImages(tinygltf::Model& gltfModel, Device* device, VkQueue transferQueue);
 		void loadMaterials(tinygltf::Model& gltfModel);
 		void loadAnimations(tinygltf::Model& gltfModel);
+//        const char *str, const unsigned int length
+        void loadFromBinary(const std::vector<unsigned char>& str,
+                            const std::string& _filename,
+                            Device* pDevice,
+                            VkQueue transferQueue,
+                            uint32_t fileLoadingFlags = vkglTF::FileLoadingFlags::DontLoadImages,
+                            const glm::mat4& world_matrix = glm::mat4(1.0f),
+                            float scale = 1.0f);
 		void loadFromFile(const std::string& filename,
-                          Device* device,
+                          Device* pDevice,
                           VkQueue transferQueue,
                           uint32_t fileLoadingFlags = vkglTF::FileLoadingFlags::DontLoadImages,
                           const glm::mat4& world_matrix = glm::mat4(1.0f),

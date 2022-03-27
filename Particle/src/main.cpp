@@ -202,7 +202,7 @@ int main() {
     glm::vec3 color = GOLD_COLOR;
     input::LineColor(color, STATE_IN);
 
-    B3DMLoaderBase(tool::combineB3DM("lr.b3dm"));
+    auto b3dm = new B3DMLoader(tool::combineB3DM("lr.b3dm"));
 
     auto p = new ParticleGroup(5000,
                             {0, 0, 0},
@@ -379,6 +379,7 @@ int main() {
         delete coordinate;
         delete skybox;
         delete p;
+        delete b3dm;
         delete ah;
         SingleOffScreen.release();
         SingleCascade.release();
