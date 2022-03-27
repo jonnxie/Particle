@@ -108,7 +108,7 @@ public:
     glm::vec3 getRotationAxis() { return m_rotationAxis; }
     ClassElementInitial(m_angle, float, Angle, );
     ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
-    ClassElementInitial(m_pipeline, std::string, Pipeline, "ABasic");
+    ClassElementInitial(m_pipeline, std::string, Pipeline, "AGBasic");
 private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
 public:
@@ -128,7 +128,7 @@ public:
                        float _angle,
                        glm::vec3 _scale,
                        int _id,
-                       std::string   _pipeline = "ABasic",
+                       std::string   _pipeline = "AGBasic",
                        std::vector<std::string>   _sets = {"Camera", "Planet"});
     ~B3DMBasic() override;
     void constructG() override {};
