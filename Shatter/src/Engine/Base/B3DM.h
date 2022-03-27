@@ -138,7 +138,7 @@ struct BatchTable : FeatureTable{
     unsigned char* getData(const std::string& _key, ComponentType _component, FeatureType _feature){
         return FeatureTable::getData(_key, batchSize, _component, _feature);
     }
-    int batchSize;
+    int batchSize{};
 };
 
 

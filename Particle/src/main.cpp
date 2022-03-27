@@ -33,6 +33,7 @@
 #include "Engine/Base/gcoor.h"
 #include "Engine/Base/lines.h"
 #include "Engine/Base/tris.h"
+#include "Engine/Base/B3DM.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 
@@ -200,6 +201,8 @@ int main() {
 
     glm::vec3 color = GOLD_COLOR;
     input::LineColor(color, STATE_IN);
+
+    B3DMLoaderBase(tool::combineB3DM("lr.b3dm"));
 
     auto p = new ParticleGroup(5000,
                             {0, 0, 0},

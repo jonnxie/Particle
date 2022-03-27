@@ -10,7 +10,7 @@ B3DMLoaderBase::B3DMLoaderBase(const std::string &_file) {
 }
 
 void B3DMLoaderBase::init(){
-    char magic[4]{};
+    char magic{};
     int  byteLength{};
     int  featureTableJSONByteLength{};
     int  featureTableBinaryByteLength{};
@@ -18,11 +18,14 @@ void B3DMLoaderBase::init(){
     int  batchTableBinaryByteLength{};
 
     // 4 bytes
-    magic[0] = file::myReadByte(binaryData, &binaryData_index);
-    magic[1] = file::myReadByte(binaryData, &binaryData_index);
-    magic[2] = file::myReadByte(binaryData, &binaryData_index);
-    magic[3] = file::myReadByte(binaryData, &binaryData_index);
-    assert(std::string(magic) == "b3dm");
+    magic = file::myReadByte(binaryData, &binaryData_index);
+    assert(magic == 'b');
+    magic = file::myReadByte(binaryData, &binaryData_index);
+    assert(magic == '3');
+    magic = file::myReadByte(binaryData, &binaryData_index);
+    assert(magic == 'd');
+    magic = file::myReadByte(binaryData, &binaryData_index);
+    assert(magic == 'm');
 
     // 4 bytes
     version = file::myReadInt(binaryData, &binaryData_index);

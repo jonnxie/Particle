@@ -72,6 +72,7 @@ target_include_directories(Shatter PUBLIC
         vendor/glfw-3.3.4.bin.WIN64/include/
         vendor/glm/
         vendor/Entt/
+        vendor/json/
         ${Vulkan_INCLUDE_DIRS})
 
 target_link_libraries(Shatter
