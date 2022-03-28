@@ -15,7 +15,9 @@ struct FeatureTable{
         buffer = std::move(_buffer);
         binOffset = _start + _headLength;
         binLength = _binLength;
-        header = json::parse(buffer);
+        std::vector<unsigned char> head_buffer(_headLength - _start);
+        head_buffer.assign(buffer.begin() + _start, buffer.begin() + _headLength);
+        header = json::parse(head_buffer);
     }
     std::vector<std::string> getKeys() {
         std::vector<std::string> keys;
