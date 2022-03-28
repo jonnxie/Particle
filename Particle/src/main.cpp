@@ -34,6 +34,7 @@
 #include "Engine/Base/lines.h"
 #include "Engine/Base/tris.h"
 #include "Engine/Base/B3DM.h"
+#include "Engine/Base/I3DM.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
 
@@ -203,6 +204,8 @@ int main() {
     input::LineColor(color, STATE_IN);
 
     auto b3dm = new B3DMLoader(tool::combineB3DM("lr.b3dm"));
+
+    auto i = new I3DMLoaderBase(tool::combineI3DM("tree.i3dm"));
 
     auto p = new ParticleGroup(5000,
                             {0, 0, 0},
@@ -380,6 +383,7 @@ int main() {
         delete skybox;
         delete p;
         delete b3dm;
+        delete i;
         delete ah;
         SingleOffScreen.release();
         SingleCascade.release();

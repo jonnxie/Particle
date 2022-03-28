@@ -953,6 +953,8 @@ namespace tool{
 
     std::string combineB3DM(const std::string& _b3dmName);
 
+    std::string combineI3DM(const std::string& _i3dmName);
+
     template<class T>
     void printNum(T _num)
     {

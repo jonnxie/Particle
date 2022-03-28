@@ -2210,7 +2210,7 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
     if(tmp_times != times)
     {
         times = tmp_times;
-        resetAnimation();
+//        resetAnimation();
     }
     float local_time = time - float(times) * animation.end;
 	bool updated = false;

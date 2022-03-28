@@ -714,6 +714,10 @@ namespace tool {
         return B3DMPath + _b3dmName;
     }
 
+    std::string combineI3DM(const std::string& _i3dmName){
+        return I3DMPath + _i3dmName;
+    }
+
     VkPipelineShaderStageCreateInfo createShaderStage(const std::string& _filename,ShaderType _type)
     {
         if(!file::fileExists(_filename)){
