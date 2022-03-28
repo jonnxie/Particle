@@ -31,12 +31,12 @@ private:
 
 protected:
     std::vector<unsigned char> glbBytes{};
+    FeatureTable featureTable;
 private:
     int  version{};
     unsigned char *binaryData{};
     std::string workingPath{};
     int binaryData_index = 0;
-    FeatureTable featureTable;
     BatchTable batchTable;
     int glbStart{};
 };
@@ -59,15 +59,16 @@ private:
 public:
     void setRotationAxis(const glm::vec3 &_in) { m_rotationAxis = _in; }
     glm::vec3 getRotationAxis() { return m_rotationAxis; }
-    ClassElementInitial(m_angle, float, Angle, );
+    ClassElementInitial(m_angle, float, Angle, -half_pai);
     ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
     ClassElementInitial(m_pipeline, std::string, Pipeline, "AGBasic");
+    ClassElementInitial(m_filePath, std::string, FilePath, "");
 private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
 public:
     void setSets(const std::vector<std::string> &_in) { m_sets = _in; }
     std::vector<std::string> getSets() { return m_sets; }
-ClassElementInitial(m_drawType, DrawObjectType, DrawType, DrawObjectType::Default);
+    ClassElementInitial(m_drawType, DrawObjectType, DrawType, DrawObjectType::Default);
 private:
     vkglTF::Model*              m_model{nullptr};
     std::unique_ptr<I3DMBasic>  m_basic{nullptr};
