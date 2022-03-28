@@ -350,6 +350,7 @@ enum SubpassDependency{
 };
 
 enum class ComponentType{
+    None = -1,
     BYTE = 0,
     UNSIGNED_BYTE,
     SHORT,
@@ -361,7 +362,8 @@ enum class ComponentType{
 };
 
 enum class FeatureType{
-    SCALAR = 0,
+    None = 0,
+    SCALAR = 1,
     VEC2,
     VEC3,
     VEC4,

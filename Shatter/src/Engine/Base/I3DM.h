@@ -51,8 +51,8 @@ public:
     };
     DefineUnCopy(I3DMLoader);
 public:
-    void init(const std::string& _file);
-    void loadI3DMFile(const std::string& _file);
+    void init();
+    void loadI3DMFile();
     ClassElementInitial(m_pos, glm::vec3, Pos, );
 private:
     glm::vec3 m_rotationAxis{glm::vec3(1.0f,0.0f,0.0f)};
@@ -62,9 +62,11 @@ public:
     ClassElementInitial(m_angle, float, Angle, -half_pai);
     ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
     ClassElementInitial(m_pipeline, std::string, Pipeline, "AGBasic");
-    ClassElementInitial(m_filePath, std::string, FilePath, "");
+    ClassElementInitial(m_filePath, std::string, FilePath, );
 private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
+protected:
+    int m_instance_length;
 public:
     void setSets(const std::vector<std::string> &_in) { m_sets = _in; }
     std::vector<std::string> getSets() { return m_sets; }

@@ -113,28 +113,24 @@ static int mallocId()
 
 I3DMLoader::I3DMLoader(const std::string &_file) : I3DMLoaderBase(_file) {
     m_filePath = _file;
+    init();
 }
 
-void I3DMLoader::init(const std::string &_file) {
-    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
-    m_model = new vkglTF::Model;
-    m_model->loadFromBinary(glbBytes, _file, &SingleDevice, VkQueue{}, glTFLoadingFlags);
-    m_basic = std::make_unique<I3DMBasic>(m_model,
-                                          m_pos,
-                                          m_rotationAxis,
-                                          m_angle,
-                                          m_scale,
-                                          mallocId(),
-                                          m_pipeline,
-                                          m_sets);
-    SingleRender.normalChanged = true;
+void I3DMLoader::init() {
+    std::vector<std::string> keys = featureTable.getKeys();
+    m_instance_length = featureTable.getData("INSTANCES_LENGTH");
+    auto position = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
+//    int NORMAL_UP = featureTable.getData( "NORMAL_UP")["byteOffset"];
+//    int NORMAL_RIGHT = featureTable.getData( "NORMAL_RIGHT")["byteOffset"];
+//    int SCALE_NON_UNIFORM = featureTable.getData( "SCALE_NON_UNIFORM")["byteOffset"];
+//    float SCALE = featureTable.getData( "SCALE");
 }
 
-void I3DMLoader::loadI3DMFile(const std::string &_file) {
+void I3DMLoader::loadI3DMFile() {
     delete m_model;
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
-    m_model->loadFromBinary(glbBytes, _file, &SingleDevice, VkQueue{}, glTFLoadingFlags);
+    m_model->loadFromBinary(glbBytes, m_filePath, &SingleDevice, VkQueue{}, glTFLoadingFlags);
     m_basic = std::make_unique<I3DMBasic>(m_model,
                                           m_pos,
                                           m_rotationAxis,
