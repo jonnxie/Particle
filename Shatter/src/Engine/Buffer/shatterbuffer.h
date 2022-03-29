@@ -59,9 +59,9 @@ namespace Shatter {
             VkResult bind(VkDeviceSize offset = 0);
 
         public:
-            void Set_Device(VkDevice *device) { m_device = device; };
+            void setDevice(VkDevice *device) { m_device = device; };
 
-            VkBuffer Get_Buffer() { return m_buffer; };
+            VkBuffer getBuffer() { return m_buffer; };
 
             VkBuffer operator()(){return m_buffer;};
 

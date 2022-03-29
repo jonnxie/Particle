@@ -31,10 +31,12 @@ out gl_PerVertex{
 };
 
 void main() {
-    gl_Position = c.proj * c.view * m.model * vec4(inPosition, 1.0);
-
+    vec3 wPos = vec3(m.model * vec4(inPosition, 1.0));
     // Vertex position in world space
-    outWorldPos = vec3(m.model * vec4(inPosition, 1.0));
+    outWorldPos = wPos + instancePos;
+
+    gl_Position = c.proj * c.view * vec4(wPos + instancePos, 1.0);
+
     // GL to Vulkan coord space
     outWorldPos.y = -outWorldPos.y;
 

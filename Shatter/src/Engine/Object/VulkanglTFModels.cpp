@@ -2181,7 +2181,7 @@ void vkglTF::Model::drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, 
         }
     }
     for (auto& child : node->children) {
-        drawNode(child, commandBuffer, renderFlags,pipelineLayout,bindImageSet);
+        drawNodeInstance(child, commandBuffer, instanceCount, renderFlags, pipelineLayout, bindImageSet);
     }
 }
 
@@ -2204,7 +2204,7 @@ void vkglTF::Model::drawInstance(VkCommandBuffer commandBuffer, uint32_t instanc
         vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
     }
     for (auto& node : nodes) {
-        drawNode(node, commandBuffer, renderFlags, pipelineLayout, bindImageSet);
+        drawNodeInstance(node, commandBuffer, instanceCount, renderFlags, pipelineLayout, bindImageSet);
     }
 }
 

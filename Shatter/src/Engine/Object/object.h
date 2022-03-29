@@ -48,7 +48,7 @@ public:
         buffer->unmap();
         SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*aabbPool)[m_aabbIndex]->m_capture_set);
 
-        VkDescriptorBufferInfo descriptorBufferInfos{buffer->Get_Buffer(), 0, 4};
+        VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
         VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*aabbPool)[m_aabbIndex]->m_capture_set,
                                                                             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                                                             0,

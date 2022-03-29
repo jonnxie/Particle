@@ -119,14 +119,19 @@ I3DMLoader::I3DMLoader(const std::string &_file) : I3DMLoaderBase(_file) {
 void I3DMLoader::init() {
     std::vector<std::string> keys = featureTable.getKeys();
     m_instance_length = featureTable.getData("INSTANCES_LENGTH");
+    m_instance_length = 4;
     m_positions = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
     m_normal_ups = featureTable.getData<std::vector<glm::vec3>>("NORMAL_UP", m_instance_length);
     m_normal_rights = featureTable.getData<std::vector<glm::vec3>>("NORMAL_RIGHT", m_instance_length);
     m_scale_uniforms = featureTable.getData<std::vector<glm::vec3>>("SCALE_NON_UNIFORM", m_instance_length);
     m_scales = featureTable.getData<std::vector<float>>("SCALE", m_instance_length);
+    int index = 0;
     for(auto& position : m_positions)
     {
         std::cout << std::fixed << "debug position x:" << position.x << "y:" << position.y << "z:" << position.z << std::endl;
+//        position = m_pos + glm::vec3( -index, 3.0f * glm::sin(index * half_pai), 0.0f);
+        position = m_pos + glm::vec3(index * 5.0f, 0.0f, 0.0f);
+        index++;
     }
     for (int i = 0; i < m_instance_length; i++) {
         m_average_vector += m_positions[i] / float(m_instance_length);
@@ -148,6 +153,23 @@ void I3DMLoader::loadI3DMFile() {
                                           m_angle,
                                           m_scale,
                                           mallocId(),
+                                          m_pipeline,
+                                          m_sets);
+    SingleRender.normalChanged = true;
+}
+
+void I3DMLoader::loadI3DMFileInstance() {
+    delete m_model;
+    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
+    m_model = new vkglTF::Model;
+    m_model->loadFromBinary(glbBytes, m_filePath, &SingleDevice, VkQueue{}, glTFLoadingFlags);
+    m_instanceBasic = std::make_unique<I3DMBasicInstance>(m_model,
+                                          m_pos,
+                                          m_rotationAxis,
+                                          m_angle,
+                                          m_scale,
+                                          mallocId(),
+                                          this,
                                           m_pipeline,
                                           m_sets);
     SingleRender.normalChanged = true;
@@ -240,7 +262,9 @@ void I3DMBasicInstance::constructD() {
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
+    auto instanceBuffer = SingleBPool.getBuffer(tool::combine("I3DMInstanceBasic", m_id),
+                                                Buffer_Type::Vertex_Buffer)->getBuffer();
+    (*dpool)[d]->m_gGraphics = [&, modelIndex, instanceBuffer](VkCommandBuffer _cb){
         UnionViewPort& tmp = getViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
 
@@ -261,12 +285,11 @@ void I3DMBasicInstance::constructD() {
                                 sets.data(),
                                 0,
                                 VK_NULL_HANDLE);
-        VkBuffer instanceBuffer;
         VkDeviceSize offset = 0;
         vkCmdBindVertexBuffers(_cb, 1, 1, &instanceBuffer, &offset);
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
-        m_model->draw(_cb);
+        m_model->drawInstance(_cb, m_loader->getInstanceLength());
     };
     insertDObject(d);
     SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
@@ -277,5 +300,7 @@ void I3DMBasicInstance::constructD() {
 }
 
 void I3DMBasicInstance::constructG() {
-    BPool::getPool().createVertexBuffer(tool::combine("I3DMInstanceBasic",m_id),sizeof(Point3d_Normal) * m_point.size(),m_point.data());//Particle data
+    BPool::getPool().createVertexBuffer(tool::combine("I3DMInstanceBasic",m_id),
+                                        sizeof(glm::vec3) * m_loader->getPositions().size(),
+                                        m_loader->getPositions().data());//Particle data
 }

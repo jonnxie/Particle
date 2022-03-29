@@ -207,7 +207,9 @@ int main() {
 
     auto i = new I3DMLoader(tool::combineI3DM("tree.i3dm"));
     i->setPos(glm::vec3(-10.0f, -9.0f, 0.0f));
-    i->loadI3DMFile();
+    i->setPipeline("I3DMInstanceBasic");
+    i->loadI3DMFileInstance();
+//    i->loadI3DMFile();
 
     auto p = new ParticleGroup(5000,
                             {0, 0, 0},

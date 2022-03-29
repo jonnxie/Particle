@@ -24,7 +24,7 @@ namespace Shatter::buffer{
 
     ShatterTexture* ShatterTexture::createTexture(const std::string &texture_name){
         auto texture = new ShatterTexture;
-        texture->Set_Device(render::ShatterRender::getRender().getDevice());
+        texture->setDevice(render::ShatterRender::getRender().getDevice());
         if(texture->initTexture(texture_name)){
             return texture;
         }else{
@@ -619,7 +619,7 @@ namespace Shatter::buffer{
 
     ShatterTexture* ShatterTexture::createTexture3d(int width, int height, int depth){
         auto texture = new ShatterTexture;
-        texture->Set_Device(render::ShatterRender::getRender().getDevice());
+        texture->setDevice(render::ShatterRender::getRender().getDevice());
         if(texture->init3DTexture(width, height, depth)){
             return texture;
         }else{

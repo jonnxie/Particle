@@ -95,6 +95,12 @@ VkVertexInputBindingDescription getBindingDescription(Input_Type _type){
             bindingDescription = *(ptr->pVertexBindingDescriptions);
             break;
         }
+        case Input_Type::GLTFInstance:{
+            bindingDescription.binding = 1;
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+            bindingDescription.stride = one_vec3;
+            break;
+        }
         case Input_Type::NONE:{
             break;
         }
@@ -202,6 +208,23 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions(Input_Ty
                 attributeDescriptions[index] = ptr->pVertexAttributeDescriptions[index];
             }
             break;
+        }
+        case Input_Type::GLTFInstance:{
+            auto ptr = vkglTF::Vertex::getPipelineVertexInputState({
+                                                                           vkglTF::VertexComponent::Position,
+                                                                           vkglTF::VertexComponent::Normal,
+                                                                           vkglTF::VertexComponent::UV,
+                                                                           vkglTF::VertexComponent::Color,
+                                                                           vkglTF::VertexComponent::Joint0,
+                                                                           vkglTF::VertexComponent::Weight0,
+                                                                           vkglTF::VertexComponent::Tangent
+                                                                   });
+            attributeDescriptions.resize(ptr->vertexAttributeDescriptionCount);
+            for(size_t index = 0; index < ptr->vertexAttributeDescriptionCount; index++)
+            {
+                attributeDescriptions[index] = ptr->pVertexAttributeDescriptions[index];
+            }
+            attributeDescriptions.push_back(tool::vertexInputAttributeDescription(1, 7, VK_FORMAT_R32G32B32_SFLOAT, 0));
         }
         case Input_Type::NONE:{
             break;

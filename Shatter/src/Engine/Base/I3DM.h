@@ -43,6 +43,8 @@ private:
 
 class I3DMBasic;
 
+class I3DMBasicInstance;
+
 class I3DMLoader : public I3DMLoaderBase{
 public:
     explicit I3DMLoader(const std::string &_file);
@@ -53,6 +55,7 @@ public:
 public:
     void init();
     void loadI3DMFile();
+    void loadI3DMFileInstance();
     ClassElementInitial(m_pos, glm::vec3, Pos, );
 private:
     glm::vec3 m_rotationAxis{glm::vec3(1.0f,0.0f,0.0f)};
@@ -65,9 +68,10 @@ public:
     ClassElementInitial(m_filePath, std::string, FilePath, );
 private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
+public:
+    ClassReferenceElement(m_positions, std::vector<glm::vec3>, Positions);
+    ClassElement(m_instance_length, int, InstanceLength);
 protected:
-    int m_instance_length;
-    std::vector<glm::vec3> m_positions;
     std::vector<glm::vec3> m_normal_ups;
     std::vector<glm::vec3> m_normal_rights;
     std::vector<glm::vec3> m_scale_uniforms;
@@ -80,6 +84,7 @@ public:
 private:
     vkglTF::Model*              m_model{nullptr};
     std::unique_ptr<I3DMBasic>  m_basic{nullptr};
+    std::unique_ptr<I3DMBasicInstance>  m_instanceBasic{nullptr};
 };
 
 class I3DMBasic : public Object {

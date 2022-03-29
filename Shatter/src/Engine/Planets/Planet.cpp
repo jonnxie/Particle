@@ -74,7 +74,8 @@ void Planet::generateMesh() {
         memcpy(SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Uniform_Buffer)->mapped, &m_color, one_vec3);
 
         VkDescriptorBufferInfo buffer_info{};
-        buffer_info.buffer = SingleBPool.getBuffer(tool::combine("Planet",m_id),Buffer_Type::Uniform_Buffer)->Get_Buffer();
+        buffer_info.buffer = SingleBPool.getBuffer(tool::combine("Planet", m_id),
+                                                   Buffer_Type::Uniform_Buffer)->getBuffer();
         buffer_info.offset = 0;
         buffer_info.range = one_vec3;
 
