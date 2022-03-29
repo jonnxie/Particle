@@ -261,7 +261,9 @@ void I3DMBasicInstance::constructD() {
                                 sets.data(),
                                 0,
                                 VK_NULL_HANDLE);
-
+        VkBuffer instanceBuffer;
+        VkDeviceSize offset = 0;
+        vkCmdBindVertexBuffers(_cb, 1, 1, &instanceBuffer, &offset);
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
         m_model->draw(_cb);
