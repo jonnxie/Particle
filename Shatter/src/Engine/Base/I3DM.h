@@ -117,7 +117,7 @@ public:
                                std::string   _pipeline = "AGBasicInstance",
                                std::vector<std::string>   _sets = {"Camera", "Planet"});
     ~I3DMBasicInstance() override;
-    void constructG() override {};
+    void constructG() override ;
     void constructD() override;
     void constructC() override {};
 

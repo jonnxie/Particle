@@ -275,3 +275,7 @@ void I3DMBasicInstance::constructD() {
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
 }
+
+void I3DMBasicInstance::constructG() {
+    BPool::getPool().createVertexBuffer(tool::combine("I3DMInstanceBasic",m_id),sizeof(Point3d_Normal) * m_point.size(),m_point.data());//Particle data
+}
