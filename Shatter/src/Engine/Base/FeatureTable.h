@@ -44,10 +44,10 @@ struct FeatureTable{
         {
             return header[_key];
         }else if constexpr(std::is_same_v<ResultType, std::vector<glm::vec3>>){
-            std::vector<glm::vec3> result(length);
             if(!exit){
-                return result;
+                return std::vector<glm::vec3>();
             }
+            std::vector<glm::vec3> result(length);
             int byteOffset = feature["byteOffset"];
             constexpr int stride = static_cast<const int>(featureType);
             int arrayStart = binOffset + byteOffset;
@@ -59,10 +59,10 @@ struct FeatureTable{
             memcpy(result.data(), &buffer[arrayStart], arrayLength * 4);
             return result;
         }else if constexpr(std::is_same_v<ResultType, std::vector<float>>){
-            std::vector<float> result(length);
             if(!exit){
-                return result;
+                return std::vector<float>();
             }
+            std::vector<float> result(length);
             int byteOffset = feature["byteOffset"];
             constexpr int stride = static_cast<const int>(featureType);
             int arrayStart = binOffset + byteOffset;

@@ -119,16 +119,18 @@ I3DMLoader::I3DMLoader(const std::string &_file) : I3DMLoaderBase(_file) {
 void I3DMLoader::init() {
     std::vector<std::string> keys = featureTable.getKeys();
     m_instance_length = featureTable.getData("INSTANCES_LENGTH");
-    auto positions = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
-    auto normal_ups = featureTable.getData<std::vector<glm::vec3>>("NORMAL_UP", m_instance_length);
-    auto normal_rights = featureTable.getData<std::vector<glm::vec3>>("NORMAL_RIGHT", m_instance_length);
-    auto scale_uniforms = featureTable.getData<std::vector<glm::vec3>>("SCALE_NON_UNIFORM", m_instance_length);
-    auto scale = featureTable.getData<std::vector<float>>("SCALE", m_instance_length);
-    for(auto& position : positions)
+    m_positions = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
+    m_normal_ups = featureTable.getData<std::vector<glm::vec3>>("NORMAL_UP", m_instance_length);
+    m_normal_rights = featureTable.getData<std::vector<glm::vec3>>("NORMAL_RIGHT", m_instance_length);
+    m_scale_uniforms = featureTable.getData<std::vector<glm::vec3>>("SCALE_NON_UNIFORM", m_instance_length);
+    m_scales = featureTable.getData<std::vector<float>>("SCALE", m_instance_length);
+    for(auto& position : m_positions)
     {
         std::cout << std::fixed << "debug position x:" << position.x << "y:" << position.y << "z:" << position.z << std::endl;
     }
-
+    for (int i = 0; i < m_instance_length; i++) {
+        m_average_vector += m_positions[i] / float(m_instance_length);
+    }
 //    int NORMAL_UP = featureTable.getData( "NORMAL_UP")["byteOffset"];
 //    int NORMAL_RIGHT = featureTable.getData( "NORMAL_RIGHT")["byteOffset"];
 //    int SCALE_NON_UNIFORM = featureTable.getData( "SCALE_NON_UNIFORM")["byteOffset"];
@@ -209,4 +211,65 @@ I3DMBasic::I3DMBasic(vkglTF::Model *_model, glm::vec3 _pos, glm::vec3 _rotationA
 
 I3DMBasic::~I3DMBasic() {
     TaskPool::popUpdateTask(tool::combine("I3DMBasic", m_id));
+}
+
+I3DMBasicInstance::I3DMBasicInstance(vkglTF::Model *_model, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle,
+                                     glm::vec3 _scale, int _id, I3DMLoader* _loader, std::string _pipeline, std::vector<std::string> _sets) :
+        m_id(_id),
+        m_pipeline(std::move(_pipeline)),
+        m_sets(std::move(_sets)),
+        m_loader(_loader)
+{
+    m_model = _model;
+    m_scale = glm::scale(glm::mat4(1.0f), _scale);
+    m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
+    m_translation = glm::translate(glm::mat4(1.0f), _pos);
+    m_world = m_translation * m_scale * m_rotate;
+    init();
+}
+
+I3DMBasicInstance::~I3DMBasicInstance() {
+    TaskPool::popUpdateTask(tool::combine("I3DMInstanceBasic", m_id));
+}
+
+void I3DMBasicInstance::constructD() {
+    auto dpool = MPool<DObject>::getPool();
+    auto d = dpool->malloc();
+    int modelIndex = ModelSetPool::getPool().malloc();
+
+    (*dpool)[d]->m_model_index = modelIndex;
+    (*dpool)[d]->m_matrix = m_world;
+    (*dpool)[d]->m_type = DType::Normal;
+    (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
+
+        VkRect2D& scissor = getScissor();
+        vkCmdSetScissor(_cb,0,1,&scissor);
+
+        auto set_pool = MPool<VkDescriptorSet>::getPool();
+        std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
+        for(auto & s: m_sets)
+        {
+            sets.emplace_back(SingleSetPool[s]);
+        }
+        vkCmdBindDescriptorSets(_cb,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                PPool::getPool()[m_pipeline]->getPipelineLayout(),
+                                0,
+                                sets.size(),
+                                sets.data(),
+                                0,
+                                VK_NULL_HANDLE);
+
+        // Mesh containing the LODs
+        vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
+        m_model->draw(_cb);
+    };
+    insertDObject(d);
+    SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    TaskPool::pushUpdateTask(tool::combine("I3DMInstanceBasic", m_id),[&, modelIndex, d](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
+    });
 }

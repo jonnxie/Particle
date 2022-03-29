@@ -67,6 +67,12 @@ private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
 protected:
     int m_instance_length;
+    std::vector<glm::vec3> m_positions;
+    std::vector<glm::vec3> m_normal_ups;
+    std::vector<glm::vec3> m_normal_rights;
+    std::vector<glm::vec3> m_scale_uniforms;
+    std::vector<float>     m_scales;
+    glm::vec3              m_average_vector{};
 public:
     void setSets(const std::vector<std::string> &_in) { m_sets = _in; }
     std::vector<std::string> getSets() { return m_sets; }
@@ -98,5 +104,30 @@ private:
 
     int                         m_id;
 };
+
+
+class I3DMBasicInstance : public Object {
+public:
+    explicit I3DMBasicInstance(vkglTF::Model* _model, glm::vec3 _pos,
+                               glm::vec3 _rotationAxis,
+                               float _angle,
+                               glm::vec3 _scale,
+                               int _id,
+                               I3DMLoader* _loader,
+                               std::string   _pipeline = "AGBasicInstance",
+                               std::vector<std::string>   _sets = {"Camera", "Planet"});
+    ~I3DMBasicInstance() override;
+    void constructG() override {};
+    void constructD() override;
+    void constructC() override {};
+
+private:
+    vkglTF::Model*              m_model{};
+    std::string                 m_pipeline;
+    std::vector<std::string>    m_sets;
+    I3DMLoader*                 m_loader;
+    int                         m_id;
+};
+
 
 #endif //MAIN_I3DM_H
