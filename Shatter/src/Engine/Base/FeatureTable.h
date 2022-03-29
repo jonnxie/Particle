@@ -33,8 +33,10 @@ struct FeatureTable{
             FeatureType featureType = FeatureType::None>
     ResultType getData(const std::string& _key, int length = 1)
     {
+        bool exit = true;
         if(header.count(_key) == 0)
         {
+            exit = false;
             WARNING("No Such Json Key!");
         }
         auto feature = header[_key];
@@ -42,16 +44,34 @@ struct FeatureTable{
         {
             return header[_key];
         }else if constexpr(std::is_same_v<ResultType, std::vector<glm::vec3>>){
+            std::vector<glm::vec3> result(length);
+            if(!exit){
+                return result;
+            }
             int byteOffset = feature["byteOffset"];
             constexpr int stride = static_cast<const int>(featureType);
             int arrayStart = binOffset + byteOffset;
             int arrayLength = length * stride;
-            std::vector<glm::vec3> result(length);
             auto dataEnd = arrayStart + arrayLength * 4;
             if ( dataEnd > binOffset + binLength ) {
                 throw std::runtime_error("FeatureTable: Feature data read outside binary body length.");
             }
-            memcpy(result.data(), &buffer[arrayStart], arrayLength);
+            memcpy(result.data(), &buffer[arrayStart], arrayLength * 4);
+            return result;
+        }else if constexpr(std::is_same_v<ResultType, std::vector<float>>){
+            std::vector<float> result(length);
+            if(!exit){
+                return result;
+            }
+            int byteOffset = feature["byteOffset"];
+            constexpr int stride = static_cast<const int>(featureType);
+            int arrayStart = binOffset + byteOffset;
+            int arrayLength = length * stride;
+            auto dataEnd = arrayStart + arrayLength * 4;
+            if ( dataEnd > binOffset + binLength ) {
+                throw std::runtime_error("FeatureTable: Feature data read outside binary body length.");
+            }
+            memcpy(result.data(), &buffer[arrayStart], arrayLength * 4);
             return result;
         }
     };

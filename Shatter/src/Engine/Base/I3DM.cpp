@@ -119,7 +119,16 @@ I3DMLoader::I3DMLoader(const std::string &_file) : I3DMLoaderBase(_file) {
 void I3DMLoader::init() {
     std::vector<std::string> keys = featureTable.getKeys();
     m_instance_length = featureTable.getData("INSTANCES_LENGTH");
-    auto position = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
+    auto positions = featureTable.getData<std::vector<glm::vec3>>("POSITION", m_instance_length);
+    auto normal_ups = featureTable.getData<std::vector<glm::vec3>>("NORMAL_UP", m_instance_length);
+    auto normal_rights = featureTable.getData<std::vector<glm::vec3>>("NORMAL_RIGHT", m_instance_length);
+    auto scale_uniforms = featureTable.getData<std::vector<glm::vec3>>("SCALE_NON_UNIFORM", m_instance_length);
+    auto scale = featureTable.getData<std::vector<float>>("SCALE", m_instance_length);
+    for(auto& position : positions)
+    {
+        std::cout << std::fixed << "debug position x:" << position.x << "y:" << position.y << "z:" << position.z << std::endl;
+    }
+
 //    int NORMAL_UP = featureTable.getData( "NORMAL_UP")["byteOffset"];
 //    int NORMAL_RIGHT = featureTable.getData( "NORMAL_RIGHT")["byteOffset"];
 //    int SCALE_NON_UNIFORM = featureTable.getData( "SCALE_NON_UNIFORM")["byteOffset"];
