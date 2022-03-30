@@ -357,13 +357,13 @@ int main() {
 //                             "ABasic");
 //    abasic->setAnimationIndex(0);
 
-    auto* build = new Basic(std::string(ModelFilePath) + std::string("samplebuilding.gltf"),
+    auto* build = new Basic(tool::combineModel("samplebuilding.gltf"),
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,
                              glm::vec3(1.0f),
                              0);
-    auto* glass = new TBasic(std::string(ModelFilePath) + std::string("samplebuilding_glass.gltf"),
+    auto* glass = new TBasic(tool::combineModel("samplebuilding_glass.gltf"),
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
                              -half_pai,

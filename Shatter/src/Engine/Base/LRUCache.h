@@ -18,7 +18,6 @@ class LRUCache {
 public:
     DefineUnCopy(LRUCache);
 
-
 private:
     int maxSize = 800;
     int minSize = 600;

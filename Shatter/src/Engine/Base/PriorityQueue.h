@@ -8,11 +8,16 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <future>
+#include <mutex>
 #include "Engine/Item/shatter_macro.h"
+#include "Engine/Event/taskpool.h"
+#include "Engine/Event/delayevent.h"
 
 template<class Item>
 class PriorityQueue {
 public:
+    std::mutex jobLock;
     int maxJobs = 6;
     std::vector<Item> items{};
     std::unordered_map<Item, std::function<void(Item)>> callbacks;
@@ -23,7 +28,7 @@ public:
         WARNING(PriorityQueue: PriorityCallback function not defined.);
     };
     void schedulingCallback(const std::function<void()>& func){
-
+        TaskPool::pushTask(func);
     }
 
     void _runjobs(){
@@ -35,14 +40,14 @@ public:
         std::sort(items.begin(), items.end(), priorityCallback);
     }
 
-    void add(Item item, std::function<void(Item)> callback) {
-        {
+    std::future<void> add(Item item, std::function<void(Item)> callback) {
+        return std::future<void>([&](){
             items.push_back(item);
             callbacks[item] = callback;
             if(autoUpdate) {
                 scheduleJobRun();
             }
-        }
+        });
     }
 
     void remove(Item item) {
@@ -55,17 +60,26 @@ public:
 
     void tryRunJobs(){
         sort();
-        while (maxJobs > currJobs && items.size() > 0) {
-            currJobs ++;
-            auto item = items.front();
-            callbacks[item](item);
-            callbacks.erase(item);
-            currJobs --;
-            if(autoUpdate) {
-                scheduleJobRun();
+        while (maxJobs > currJobs && !items.empty()) {
+            {
+                std::lock_guard<std::mutex> lockGuard(jobLock);
+                currJobs ++;
             }
+            auto item = items.front();
+            auto callback = callbacks[item];
+            callbacks.erase(item);
+            DelayEvent::getDelayEvent().push([&, item](){
+                callback(item);
+            },[&](){
+                {
+                    std::lock_guard<std::mutex> lockGuard(jobLock);
+                    currJobs --;
+                }
+                if ( autoUpdate ) {
+                    scheduleJobRun();
+                }
+            });
         }
-
     }
 
     void scheduleJobRun() {
