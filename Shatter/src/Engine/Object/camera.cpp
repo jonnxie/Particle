@@ -96,7 +96,9 @@ void Camera::update(bool& cameraChanged) {
             m_alpha = static_cast<float>(m_pre_alpha) + (dis.y);
             m_gamma = static_cast<float>(m_pre_gamma) - (dis.x);
         }
-//        if(checkKey(GLFW_KEY_UP)){
+
+        {
+            //        if(checkKey(GLFW_KEY_UP)){
 //            alphaPlus(1.0f);
 //            cameraChanged = false;
 //        }else if(checkKey(GLFW_KEY_DOWN)){
@@ -109,6 +111,8 @@ void Camera::update(bool& cameraChanged) {
 //            gammaPlus(-1.0f);
 //            cameraChanged = false;
 //        }
+        }
+
         up = glm::vec3(0.0f,0.0f,1.0f);
         if(m_alpha > half_pai || m_alpha < -half_pai){
             up = glm::vec3(0.0f,0.0f,-1.0f);
@@ -142,10 +146,13 @@ void Camera::update(bool& cameraChanged) {
         m_camera.view = glm::lookAt(eye + center, center, up);
     }
 
-    if(checkMouse(GLFW_MOUSE_BUTTON_MIDDLE))
+    if(checkMouse(GLFW_MOUSE_BUTTON_RIGHT))
     {
 //        getCursor(cursor_pos);
-        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) + m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y);
+
+        glm::vec3 dis = input::getCursor() - input::getCursorPress();
+        center = pre_center - dis;
+//        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) + m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y);
     }else{
         pre_center = center;
     }

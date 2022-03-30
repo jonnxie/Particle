@@ -10,6 +10,8 @@
 #include <functional>
 #include "json.hpp"
 #include "Engine/Item/shatter_macro.h"
+#include "LRUCache.h"
+#include "PriorityQueue.h"
 
 using namespace nlohmann;
 
@@ -55,6 +57,10 @@ struct Tile : public TileBase{
     bool  inFrustum{};
     float depthFromRenderedParent{};
 };
+
+//int std::unordered_map<>::hash(const Tile&){
+//
+//}
 
 int priorityCallback(const Tile& a, const Tile& b);
 
@@ -118,6 +124,11 @@ public:
 protected:
     std::unordered_map<std::string, TileSet> tileSets{};
     ClassElement(rootUrl, std::string, RootURL);
+//    this.fetchOptions = {};
+//
+//    this.preprocessURL = null;
+//    LRUCache<Tile> lruCache;
+
 };
 
 

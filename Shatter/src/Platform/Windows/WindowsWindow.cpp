@@ -113,6 +113,8 @@ namespace Shatter {
                 tmp *= 2.0f;
                 tmp -= 1.0f;
                 updateCursorPressPos(tmp);
+                glm::vec3& press_cursor = input::getCursorPress();
+                press_cursor = input::getCursor();
             }else if(action == GLFW_RELEASE)
             {
                 releaseMouse(button);

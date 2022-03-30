@@ -228,13 +228,14 @@ namespace Shatter::app{
     void ShatterApp::mouse_event_callback(int button, int action, double xpos, double ypos){
         if(action == GLFW_PRESS)
         {
+            cameraChanged = true;
             if(button == GLFW_MOUSE_BUTTON_LEFT)
             {
                 m_events.push_back(Event::SingleClick);
-                cameraChanged = true;
+//                cameraChanged = true;
             }else if(button == GLFW_MOUSE_BUTTON_MIDDLE)
             {
-                cameraChanged = true;
+//                cameraChanged = true;
             }else if(button == GLFW_MOUSE_BUTTON_RIGHT)
             {
                 m_events.push_back(Event::MouseClick);

@@ -45,6 +45,7 @@ void releaseMouse(int);
 
 namespace input{
     delReferenceItem(Cursor, glm::vec3);
+    delReferenceItem(CursorPress, glm::vec3);
     delReferenceItem(CursorWindow, glm::vec2);
     delReferenceItem(MousePressCoordiante, glm::uvec2);
     delReferenceItem(TargetDepth, float);

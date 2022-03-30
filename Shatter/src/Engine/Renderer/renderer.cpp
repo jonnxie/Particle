@@ -1947,6 +1947,8 @@ namespace Shatter::render{
             tmp.y = coordinate.y / getViewPort().view.height;
             tmp *= 2.0f;
             tmp -= 1.0f;
+            glm::vec3& press_cursor = input::getCursorPress();
+            press_cursor = input::getCursor();
 //            updateCursorPressPos(tmp);
         }else if(action == GLFW_RELEASE)
         {

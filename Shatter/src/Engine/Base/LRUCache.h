@@ -13,7 +13,7 @@
 #include <set>
 #include <functional>
 
-template<class Key, class Item>
+template<class Item>
 class LRUCache {
 public:
     DefineUnCopy(LRUCache);

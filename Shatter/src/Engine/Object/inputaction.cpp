@@ -71,6 +71,7 @@ void releaseMouse(int _mouse){
 
 namespace input{
     genReferenceItem(Cursor, glm::vec3);
+    genReferenceItem(CursorPress, glm::vec3);
     genReferenceItem(CursorWindow, glm::vec2);
     genReferenceItem(MousePressCoordiante, glm::uvec2);
     genReferenceItem(TargetDepth, float);
