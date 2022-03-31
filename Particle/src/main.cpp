@@ -298,6 +298,8 @@ int main() {
     auto line = new DLines(lines);
     line->init();
 
+    SingleCamera.setLineId(line->id);
+
     auto planet = new Planet(10,
                              glm::vec3(0.0f),
                              glm::vec3(1.0f,0.0f,0.0f),
@@ -309,32 +311,32 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
-    TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
-        auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
-        auto target = SingleAPP.getCameraTargetPlane();
-        auto center = SingleCamera.center;
-        std::array<Line,3> lines{
-                Line{
-                        Point{center,
-                              PURPLE_COLOR},
-                        Point{center + target.x_coordinate,
-                              RED_COLOR}
-                },
-                Line{
-                        Point{center,
-                              PURPLE_COLOR},
-                        Point{center + target.y_coordinate,
-                              CYAN_COLOR}
-                },
-                Line {
-                        Point{center,
-                              PURPLE_COLOR},
-                        Point{center + target.z_coordinate,
-                              GREEN_COLOR}
-                },
-        };
-        memcpy(buffer->mapped,lines.data(),TargetPlaneDoubleCoordinateSize);
-    });
+//    TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
+//        auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
+//        auto target = SingleAPP.getCameraTargetPlane();
+//        auto center = SingleCamera.center;
+//        std::array<Line,3> lines{
+//                Line{
+//                        Point{center,
+//                              PURPLE_COLOR},
+//                        Point{center + target.x_coordinate,
+//                              RED_COLOR}
+//                },
+//                Line{
+//                        Point{center,
+//                              PURPLE_COLOR},
+//                        Point{center + target.y_coordinate,
+//                              CYAN_COLOR}
+//                },
+//                Line {
+//                        Point{center,
+//                              PURPLE_COLOR},
+//                        Point{center + target.z_coordinate,
+//                              GREEN_COLOR}
+//                },
+//        };
+//        memcpy(buffer->mapped,lines.data(),TargetPlaneDoubleCoordinateSize);
+//    });
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),
                                      tool::combineTexture("Skybox_left2.png"),
                                      tool::combineTexture("Skybox_top3.png"),

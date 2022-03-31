@@ -143,7 +143,6 @@ void Camera::update(bool& cameraChanged) {
             m_targetPlane.y_coordinate = glm::normalize(glm::cross(m_targetPlane.z_coordinate,m_targetPlane.x_coordinate));
         }
 //        std::cout << std::fixed << glm::dot(m_targetPlane.x_coordinate,m_targetPlane.y_coordinate) << std::endl;
-        m_camera.view = glm::lookAt(eye + center, center, up);
     }
 
     if(checkMouse(GLFW_MOUSE_BUTTON_RIGHT))
@@ -152,11 +151,15 @@ void Camera::update(bool& cameraChanged) {
 
         glm::vec3 dis = input::getCursor() - input::getCursorPress();
         center = pre_center - dis;
+        printPoint(dis);
+//        m_camera.view = glm::lookAt(eye + center, center, up);
 //        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) + m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y);
     }else{
         pre_center = center;
     }
+
     if(cameraChanged) {
+        m_camera.view = glm::lookAt(eye + center, center, up);
         flush();
     }
 }
@@ -199,6 +202,31 @@ void Camera::flush() {
     buffer = SingleBPool.getBuffer("CameraPos",Buffer_Type::Uniform_Buffer);
     memcpy(buffer->mapped, &cameraPos, one_vec3);
     buffer->flush();
+
+
+    buffer = SingleBPool.getBuffer(tool::combine("DLines",m_dlineId),Buffer_Type::Vertex_Host_Buffer);
+    std::array<Line,3> lines{
+            Line{
+                    Point{center,
+                          PURPLE_COLOR},
+                    Point{center + m_targetPlane.x_coordinate,
+                          RED_COLOR}
+            },
+            Line{
+                    Point{center,
+                          PURPLE_COLOR},
+                    Point{center + m_targetPlane.y_coordinate,
+                          CYAN_COLOR}
+            },
+            Line {
+                    Point{center,
+                          PURPLE_COLOR},
+                    Point{center + m_targetPlane.z_coordinate,
+                          GREEN_COLOR}
+            },
+    };
+    memcpy(buffer->mapped,lines.data(),TargetPlaneDoubleCoordinateSize);
+
 }
 
 

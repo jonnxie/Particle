@@ -50,6 +50,7 @@ namespace Shatter::app{
         auto dpool = MPool<DObject>::getPool();
         m_start_time = std::chrono::system_clock::now();
         while (!glfwWindowShouldClose(render::ShatterRender::getRender().getWindow())) {
+//            vkQueueWaitIdle(render::ShatterRender::getRender().graphics_queue);
             auto now = std::chrono::system_clock::now();
             auto abs_time = now - m_start_time;
             int64_t abs_time_f = std::chrono::duration_cast<std::chrono::milliseconds>(abs_time).count();

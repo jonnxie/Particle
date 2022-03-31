@@ -31,6 +31,8 @@ public:
     void alphaPlus(float _num = 1.0f);
     void gammaPlus(float _num = 1.0f);
 
+    ClassElement(m_dlineId, int, LineId);
+
     float m_camera_radius = 4.0f;
 
     float m_fovy = glm::radians(45.0f);
