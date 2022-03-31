@@ -36,7 +36,7 @@ public:
     float m_camera_radius = 4.0f;
 
     float m_fovy = glm::radians(45.0f);
-    float m_aspect = 600.0f / 800.0f;
+    float m_aspect;
     float m_zNear = 0.1f;
 //    float m_zFar = 100.0f;
     float m_zFar = 256.0f;

@@ -148,24 +148,37 @@ void Camera::update(bool& cameraChanged) {
     if(checkMouse(GLFW_MOUSE_BUTTON_RIGHT))
     {
 //        getCursor(cursor_pos);
-
         glm::vec3 dis = input::getCursor() - input::getCursorPress();
-        center = pre_center - dis;
-        printPoint(dis);
+//        center = pre_center - dis;
+//        static bool p = true;
+//        float time = timer::getTime();
+//        if(time - int(time) > 0.5f && p)
+//        {
+//            p = false;
+//            printPoint(dis);
+//        }else if(time - int(time) <= 0.5f && !p){
+//            p = true;
+//        }
 //        m_camera.view = glm::lookAt(eye + center, center, up);
-//        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) + m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y);
+        float x_times = m_camera_radius;
+        float y_times = (m_camera_radius / getViewPort().view.width) * getViewPort().view.height;
+        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) * x_times +
+                 m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y) * y_times;
     }else{
         pre_center = center;
     }
 
     if(cameraChanged) {
         m_camera.view = glm::lookAt(eye + center, center, up);
+        vkQueueWaitIdle(SingleRender.graphics_queue);
         flush();
     }
 }
 
 void Camera::reset(){
     m_camera_radius = 4.0f;
+
+    center = glm::vec3(0,0,0);
 
     m_alpha = 45.0f * pai / 180.0f;
     m_pre_alpha = 45.0f * pai / 180.0f;
