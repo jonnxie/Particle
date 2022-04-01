@@ -46,16 +46,22 @@ namespace Shatter::app{
 //        }
     }
 
+    void ShatterApp::updateTimer()
+    {
+        auto now = std::chrono::system_clock::now();
+        auto abs_time = now - m_start_time;
+        float deta_time = float(std::chrono::duration_cast<std::chrono::milliseconds>(now - m_pre_time).count()) / 1000.0f;
+        m_pre_time = now;
+        float abs_time_s = float(std::chrono::duration_cast<std::chrono::milliseconds>(abs_time).count()) / 1000.0f;
+        timer::setDetaTime(deta_time);
+        timer::setTime(abs_time_s);
+    }
+
     void ShatterApp::update(){
-//        auto dpool = MPool<DObject>::getPool();
         m_start_time = std::chrono::system_clock::now();
+        m_pre_time = m_start_time;
         while (!glfwWindowShouldClose(render::ShatterRender::getRender().getWindow())) {
-            auto now = std::chrono::system_clock::now();
-            auto abs_time = now - m_start_time;
-            int64_t abs_time_f = std::chrono::duration_cast<std::chrono::milliseconds>(abs_time).count();
-            float abs_time_s = abs_time_f / 1000.0f;
-            timer::setDetaTime(abs_time_s -timer::getTime());
-            timer::setTime( abs_time_s);
+            updateTimer();
             glfwPollEvents();
 
             for(auto& e : m_events)
@@ -72,7 +78,7 @@ namespace Shatter::app{
             m_events.clear();
 
             TaskPool::executeMultiple();
-            TaskPool::updateMultiple(abs_time_s);
+            TaskPool::updateMultiple(timer::getTime());
 
             Camera::getCamera().update(cameraChanged);
             render::ShatterRender::getRender().loop();
@@ -83,6 +89,7 @@ namespace Shatter::app{
         {
             delete listener;
         }
+
         delete m_work_plane;
     }
 

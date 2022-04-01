@@ -42,6 +42,7 @@ namespace Shatter{
             int getScreenWidth() const {return m_width;};
             int getScreenHeight() const {return m_height;};
         public:
+            void updateTimer();
             void update();
             std::vector<int>* getDObjects();
             std::vector<int>* getCObjects();
@@ -74,6 +75,7 @@ namespace Shatter{
             float lastTime;
             bool showFPS;
             time_point m_start_time;
+            time_point m_pre_time;
             Listener* m_listener;
             std::unordered_map<std::string,Listener*> m_otherListener;
             int m_width;

@@ -150,8 +150,8 @@ void Camera::update(bool& cameraChanged) {
 
     if(checkMouse(GLFW_MOUSE_BUTTON_RIGHT))
     {
-        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) * m_camera_radius +
-                 m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y) * m_camera_radius * m_reverse_aspect;
+        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) * m_camera_radius * 0.5f +
+                 m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y) * m_camera_radius * m_reverse_aspect * 0.5f;
     }else{
         pre_center = center;
     }
