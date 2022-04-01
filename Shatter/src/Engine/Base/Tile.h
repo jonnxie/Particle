@@ -10,7 +10,7 @@
 #include <functional>
 #include "json.hpp"
 #include "Engine/Item/shatter_macro.h"
-#include "LRUCache.h"
+#include "LRUCache.hpp"
 #include "PriorityQueue.h"
 
 using namespace nlohmann;
@@ -58,9 +58,33 @@ struct Tile : public TileBase{
     float depthFromRenderedParent{};
 };
 
-//int std::unordered_map<>::hash(const Tile&){
-//
-//}
+namespace std {
+    template <>
+    class hash<Tile>{
+    public:
+        size_t operator()(const Tile& tile) const
+        {
+            return std::hash<float>()(tile.depth) ^
+                   std::hash<float>()(tile.distanceFromCamera);
+        }
+    };
+
+    template<>
+    struct equal_to<Tile>{
+    public:
+        bool operator()(const Tile& t1, const Tile& t2) const
+        {
+            return t1.parent == t2.parent&&
+            t1.depth == t2.depth&&
+            t1.error == t2.error&&
+            t1.distanceFromCamera == t2.distanceFromCamera&&
+            t1.active == t2.active&&
+            t1.used == t2.used&&
+            t1.inFrustum == t2.inFrustum&&
+            t1.depthFromRenderedParent == t2.depthFromRenderedParent;
+        }
+    };
+}
 
 int priorityCallback(const Tile& a, const Tile& b);
 
@@ -127,7 +151,7 @@ protected:
 //    this.fetchOptions = {};
 //
 //    this.preprocessURL = null;
-//    LRUCache<Tile> lruCache;
+    LRUCache<Tile> lruCache;
 
 };
 

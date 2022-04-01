@@ -98,6 +98,9 @@ void Camera::update(bool& cameraChanged) {
             m_gamma = static_cast<float>(m_pre_gamma) - (dis.x);
         }
 
+        /*
+         *
+         */
         {
             //        if(checkKey(GLFW_KEY_UP)){
 //            alphaPlus(1.0f);

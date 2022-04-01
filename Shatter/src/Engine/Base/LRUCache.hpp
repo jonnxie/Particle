@@ -2,8 +2,8 @@
 // Created by AnWell on 2022/3/29.
 //
 
-#ifndef MAIN_LRUCACHE_H
-#define MAIN_LRUCACHE_H
+#ifndef MAIN_LRUCACHE_HPP
+#define MAIN_LRUCACHE_HPP
 
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/shatter_item.h"
@@ -16,6 +16,7 @@
 template<class Item>
 class LRUCache {
 public:
+    LRUCache() = default;
     DefineUnCopy(LRUCache);
 
 private:
@@ -28,7 +29,7 @@ private:
     std::unordered_map<Item, std::function<void(Item)>> callbacks;
     std::function<float(Item)> unloadPriorityCallback;
     bool scheduled = false;
-    std::function<float(Item)> defaultPriorityCallback = [&] (Item item) -> Item{
+    std::function<float(Item)> defaultPriorityCallback = [&] (Item item) -> float{
         return itemSet[item];
     };
 public:
@@ -127,4 +128,4 @@ public:
 };
 
 
-#endif //MAIN_LRUCACHE_H
+#endif //MAIN_LRUCACHE_HPP
