@@ -36,6 +36,7 @@ void Camera::generateLookAt(){
 
 void Camera::generateProj(){
     m_aspect = getViewPort().view.width / getViewPort().view.height;
+    m_reverse_aspect = 1.0f / m_aspect;
     m_camera.proj = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
     m_camera.proj[1][1] *= -1;
 }
@@ -142,28 +143,12 @@ void Camera::update(bool& cameraChanged) {
             m_targetPlane.x_coordinate = glm::normalize(glm::cross(up,m_targetPlane.z_coordinate));
             m_targetPlane.y_coordinate = glm::normalize(glm::cross(m_targetPlane.z_coordinate,m_targetPlane.x_coordinate));
         }
-//        std::cout << std::fixed << glm::dot(m_targetPlane.x_coordinate,m_targetPlane.y_coordinate) << std::endl;
     }
 
     if(checkMouse(GLFW_MOUSE_BUTTON_RIGHT))
     {
-//        getCursor(cursor_pos);
-        glm::vec3 dis = input::getCursor() - input::getCursorPress();
-//        center = pre_center - dis;
-//        static bool p = true;
-//        float time = timer::getTime();
-//        if(time - int(time) > 0.5f && p)
-//        {
-//            p = false;
-//            printPoint(dis);
-//        }else if(time - int(time) <= 0.5f && !p){
-//            p = true;
-//        }
-//        m_camera.view = glm::lookAt(eye + center, center, up);
-        float x_times = m_camera_radius;
-        float y_times = (m_camera_radius / getViewPort().view.width) * getViewPort().view.height;
-        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) * x_times +
-                 m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y) * y_times;
+        center = pre_center - m_targetPlane.x_coordinate * (cursor_pos.x - getCursorPressPos().x) * m_camera_radius +
+                 m_targetPlane.y_coordinate * (cursor_pos.y - getCursorPressPos().y) * m_camera_radius * m_reverse_aspect;
     }else{
         pre_center = center;
     }

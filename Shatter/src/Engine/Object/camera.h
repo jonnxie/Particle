@@ -37,6 +37,7 @@ public:
 
     float m_fovy = glm::radians(45.0f);
     float m_aspect;
+    float m_reverse_aspect;
     float m_zNear = 0.1f;
 //    float m_zFar = 100.0f;
     float m_zFar = 256.0f;
