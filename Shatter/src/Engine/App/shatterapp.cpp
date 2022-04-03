@@ -321,6 +321,7 @@ namespace Shatter::app{
         }else{
             m_work_plane->regenerate(_coordinate, _center);
         }
+        m_work = true;
         return m_work_plane;
     }
 

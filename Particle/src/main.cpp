@@ -311,32 +311,6 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
-//    TaskPool::pushUpdateTask("CameraTargetPlane",[&](float _abs_time) {
-//        auto buffer = SingleBPool.getBuffer(tool::combine("DLines",line->id),Buffer_Type::Vertex_Host_Buffer);
-//        auto target = SingleAPP.getCameraTargetPlane();
-//        auto center = SingleCamera.center;
-//        std::array<Line,3> lines{
-//                Line{
-//                        Point{center,
-//                              PURPLE_COLOR},
-//                        Point{center + target.x_coordinate,
-//                              RED_COLOR}
-//                },
-//                Line{
-//                        Point{center,
-//                              PURPLE_COLOR},
-//                        Point{center + target.y_coordinate,
-//                              CYAN_COLOR}
-//                },
-//                Line {
-//                        Point{center,
-//                              PURPLE_COLOR},
-//                        Point{center + target.z_coordinate,
-//                              GREEN_COLOR}
-//                },
-//        };
-//        memcpy(buffer->mapped,lines.data(),TargetPlaneDoubleCoordinateSize);
-//    });
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),
                                      tool::combineTexture("Skybox_left2.png"),
                                      tool::combineTexture("Skybox_top3.png"),
@@ -377,6 +351,9 @@ int main() {
     render.createCommandBuffer();
     thread_pool->wait();
     app.listener(new OutputPoint);
+
+    TargetPlane targetPlane;
+    SingleAPP.generateWorkPlane(targetPlane, glm::vec3(0.0f, 0.0f, 0.0f));
 
     try {
         app.update();

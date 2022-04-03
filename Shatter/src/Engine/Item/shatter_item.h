@@ -587,9 +587,9 @@ struct Cube{
 
 struct TargetPlane
 {
-    glm::vec3 x_coordinate;
-    glm::vec3 y_coordinate;
-    glm::vec3 z_coordinate;
+    glm::vec3 x_coordinate{1.0f, .0f, .0f};
+    glm::vec3 y_coordinate{.0f, 1.0f, .0f};
+    glm::vec3 z_coordinate{.0f, .0f, 1.0f};
 };
 #define TargetPlaneSize 36
 
