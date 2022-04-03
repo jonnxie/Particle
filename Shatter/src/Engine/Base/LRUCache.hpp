@@ -19,6 +19,7 @@ public:
     LRUCache() = default;
     DefineUnCopy(LRUCache);
 
+    std::function<float(Item)> unloadPriorityCallback;
 private:
     int maxSize = 800;
     int minSize = 600;
@@ -27,7 +28,6 @@ private:
     std::vector<Item> itemList;
     std::set<Item> usedSet;
     std::unordered_map<Item, std::function<void(Item)>> callbacks;
-    std::function<float(Item)> unloadPriorityCallback;
     bool scheduled = false;
     std::function<float(Item)> defaultPriorityCallback = [&] (Item item) -> float{
         return itemSet[item];

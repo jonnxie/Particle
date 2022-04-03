@@ -140,19 +140,47 @@ struct TileSet {
 
 class TilesRendererBase {
 public:
-    TilesRendererBase(const std::string& _url);
+    explicit TilesRendererBase(const std::string& _url);
     DefineUnCopy(TilesRendererBase);
 public:
     TileSet& rootTileSet();
     TileBase* root();
+    void traverse(std::function<void(Tile tile, Tile parent, float depth)> beforeCb,
+                  std::function<void(Tile tile, Tile parent, float depth)> afterCb);
+    void update();
+    virtual void parseTile(std::vector<unsigned char> buffer,
+                           const Tile& tile,
+                           const std::string& extension);
+    void disposeTile(const Tile& tile);
+    void preprocessNode(const Tile& tile, const Tile& parentTile, const std::string& tileSetDir);
+    void setTileActive(const Tile& tile,bool state);
+    void setTileVisible(const Tile& tile,bool state);
+    int calculateError(const Tile& tile);
+    bool tileInView(const Tile& tile);
 protected:
     std::unordered_map<std::string, TileSet> tileSets{};
     ClassElement(rootUrl, std::string, RootURL);
 //    this.fetchOptions = {};
 //
 //    this.preprocessURL = null;
-    LRUCache<Tile> lruCache;
-
+    LRUCache<Tile> lruCache{};
+    PriorityQueue<Tile> downloadQueue{};
+    PriorityQueue<Tile> parseQueue{};
+    struct State {
+        int parsing = 0;
+        int downloading = 0;
+        int failed = 0;
+        int inFrustum = 0;
+        int used = 0;
+        int active = 0;
+        int visible = 0;
+    }stats;
+    int frameCount = 0;
+    int errorTarget = 6.0;
+    bool loadSiblings = true;
+    bool displayActiveTiles = false;
+    float maxDepth;
+    bool stopAtEmptyTiles = true;
 };
 
 
