@@ -26,7 +26,10 @@ static int mallocId()
 
 class DLinePool : public Object{
 public:
-    explicit DLinePool(const std::vector<Line>& _lines, bool _updateFunc = true);
+    explicit DLinePool(const std::vector<Line>& _lines,
+                       bool _updateFunc = true,
+                       std::string _pipeline = "Polyline",
+                       std::vector<std::string> _sets = {"Camera"});
     ~DLinePool() override;
     void constructG() override;
     void constructD() override;
@@ -34,7 +37,8 @@ public:
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
     void reallocated();
-
+    ClassElement(m_pipeline, std::string, Pipeline);
+    ClassElement(m_sets, std::vector<std::string>, Sets);
 public:
     std::vector<Line>   lines;
     bool                updateFunc;
@@ -61,6 +65,26 @@ public:
     bool                updateFunc;
     bool                changed = true;
     int                 id;
+};
+
+class LineHandle {
+public:
+    LineHandle();
+    ~LineHandle();
+    DefineUnCopy(LineHandle);
+
+    Line& operator[](size_t _index);
+    void pushLine(const glm::vec3& _begin, const glm::vec3& _end);
+    void pushLine(const Line& _line);
+    void pushLines(const std::vector<Line>& _lines);
+    void pushUI();
+public:
+    ClassElement(m_pipeline, std::string, Pipeline);
+    ClassElement(m_sets, std::vector<std::string>, Sets);
+    ClassElement(m_color, glm::vec3 , Color);
+    ClassElement(m_localCoordiante, TargetPlane, Coordinate);
+private:
+    std::unique_ptr<DLinePool> m_lines{nullptr};
 };
 
 #endif //GAME_LINES_H
