@@ -434,7 +434,7 @@ void GUI::newFrame(bool updateFrameGraph) {
         task();
     }
 
-    ImGui::ShowDemoWindow();
+//    ImGui::ShowDemoWindow();
 
     if(enable_dock)
     {
@@ -495,10 +495,10 @@ void GUI::init(float width, float height) {
         io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
     }
 
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
 
     pushUI("default", [&]() {
-        ImGui::Begin("Setting");
+        ImGui::Begin("Setting", nullptr, ImGuiWindowFlags_NoMove);
 
         static char buf[32] = "1";
         ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
@@ -519,13 +519,15 @@ void GUI::init(float width, float height) {
 
         ImGui::End();// End setting
 
-        //        ImGui::Begin("ViewPort");
-        //
-        //        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
-        //
-        //        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
-        //
-        //        ImGui::End();//ViewPort
+        {
+            //        ImGui::Begin("ViewPort");
+            //
+            //        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
+            //
+            //        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
+            //
+            //        ImGui::End();//ViewPort
+        }
     });
 }
 
@@ -547,4 +549,16 @@ GUI::~GUI() {
     vkDestroyPipelineLayout(device->logicalDevice, pipelineLayout, nullptr);
     vkDestroyDescriptorPool(device->logicalDevice, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device->logicalDevice, descriptorSetLayout, nullptr);
+}
+
+void ShowHelpMarker(const char *desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
 }

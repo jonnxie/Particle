@@ -324,14 +324,6 @@ int main() {
 //                                      half_pai,
 //                                      glm::vec3(0.25f),
 //                                      0);
-//    auto abasic = new ABasic(tool::combineModel("BoxAnimated.gltf"),
-//                             glm::vec3(-10.0f,-10.0f,0.0f),
-//                             glm::vec3(1.0f,0.0f,0.0f),
-//                             -half_pai,
-//                             glm::vec3(1.0f),
-//                             0,
-//                             "ABasic");
-//    abasic->setAnimationIndex(0);
 
     auto* build = new Basic(tool::combineModel("samplebuilding.gltf"),
                              glm::vec3(0.0f),
@@ -354,6 +346,14 @@ int main() {
 
     TargetPlane targetPlane;
     SingleAPP.generateWorkPlane(targetPlane, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    TaskPool::pushUpdateTask("TestGuiState", [&](float abs_time){
+        static bool active = false;
+        if(ImGui::IsAnyItemActive() != active){
+            active = ImGui::IsAnyItemActive();
+            std::cout << "IsAnyItemActive:" << active <<std::endl;
+        };
+    });
 
     try {
         app.update();

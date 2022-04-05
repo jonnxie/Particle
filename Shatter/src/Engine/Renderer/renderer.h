@@ -35,8 +35,6 @@ static const bool enableValidationLayers = true;
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <memory>
 
-
-
 namespace Shatter::buffer{
     class ShatterTexture;
 }
@@ -160,7 +158,7 @@ namespace Shatter{
 
             void keyEventCallback(int key, int action);
 
-            void mouseEventCallback(int button, int action, double xpos, double ypos);
+            void mouseEventCallback(int button, int action, int xpos, int ypos);
 
             void cleanupSwapChain();
 

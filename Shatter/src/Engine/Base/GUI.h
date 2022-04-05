@@ -5,21 +5,15 @@
 #ifndef SHATTER_ENGINE_GUI_H
 #define SHATTER_ENGINE_GUI_H
 
-
-// #include "Engine/Renderer/shatter_render_include.h"
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
-// #include <stdio.h>
-// #include <stdlib.h>
 #include <glm.hpp>
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <array>
 #include <queue>
 #include <unordered_map>
-
 #include "Engine/Buffer/shatterbuffer.h"
 #include "Engine/Item/shatter_enum.h"
 
@@ -86,14 +80,6 @@ public:
 
     static void popUI(const Task_id& _id);
 
-//    static void text(const char *formatstr, ...)
-//    {
-//        va_list args;
-//        va_start(args, formatstr);
-//        ImGui::TextV(formatstr, args);
-//        va_end(args);
-//    }
-
     void updateBuffers();
 
     void drawFrame(VkCommandBuffer commandBuffer);
@@ -105,18 +91,7 @@ public:
     static GUI *gui;
 };
 
-void ShowHelpMarker(const char* desc)
-{
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
+void ShowHelpMarker(const char* desc);
 
 
 #endif //SHATTER_ENGINE_GUI_H

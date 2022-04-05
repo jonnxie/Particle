@@ -1934,7 +1934,7 @@ namespace Shatter::render{
         app::ShatterApp::getApp().key_event_callback(key, action);
     }
 
-    void ShatterRender::mouseEventCallback(int button, int action, double xpos, double ypos){
+    void ShatterRender::mouseEventCallback(int button, int action, int xpos, int ypos){
         if(action == GLFW_PRESS)
         {
             glm::uvec2& coordinate = input::getMousePressCoordiante();
@@ -1943,8 +1943,8 @@ namespace Shatter::render{
 //            input::MousePressCoordiante(coordinate, STATE_IN);
             pressMouse(button);
             glm::vec2& tmp = getCursorPressPos();
-            tmp.x = coordinate.x / getViewPort().view.width;
-            tmp.y = coordinate.y / getViewPort().view.height;
+            tmp.x = float(coordinate.x) / getViewPort().view.width;
+            tmp.y = float(coordinate.y) / getViewPort().view.height;
             tmp *= 2.0f;
             tmp -= 1.0f;
             glm::vec3& press_cursor = input::getCursorPress();
@@ -2446,7 +2446,7 @@ namespace Shatter::render{
     void ShatterRender::mouseCallback(GLFWwindow* window, int button, int action, int mods){
         auto *app = reinterpret_cast<ShatterRender *>(glfwGetWindowUserPointer(window));
         double xpos, ypos;
-        glfwGetCursorPos(window,&xpos,&ypos);
+        glfwGetCursorPos(window, &xpos, &ypos);
         app->mouseEventCallback(button, action, xpos, ypos);
     }
 

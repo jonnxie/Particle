@@ -9,6 +9,8 @@
 #include <mutex>
 #include <memory>
 #include <string>
+#include "Engine/Base/GUI.h"
+
 
 namespace Shatter::buffer{
     class ShatterBuffer;
@@ -53,6 +55,7 @@ public:
 private:
     Device(): logicalDevice(VK_NULL_HANDLE){};
 };
+
 
 #define SingleDevice Device::getDevice()
 

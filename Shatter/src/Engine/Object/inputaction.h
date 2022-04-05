@@ -49,7 +49,6 @@ namespace input{
     delReferenceItem(CursorWindow, glm::vec2);
     delReferenceItem(MousePressCoordiante, glm::uvec2);
     delReferenceItem(TargetDepth, float);
-
     delInOut(mouseRay, glm::vec3);
     delInOut(captureObject, uint32_t);
     delInOut(LineColor, glm::vec3);

@@ -100,8 +100,8 @@ void DLines::pushLines(const std::vector<Line>& _lines) {
 DLinePool::DLinePool(const std::vector<Line>& _lines, bool _updateFunc,std::string _pipeline,
                      std::vector<std::string> _sets):
                      updateFunc(_updateFunc),
-                     m_pipeline(_pipeline),
-                     m_sets(_sets){
+                     m_pipeline(std::move(_pipeline)),
+                     m_sets(std::move(_sets)){
     lines = _lines;
     id = mallocId();
     lineResolveCount = Config::getConfig("LinePoolInitialCount");

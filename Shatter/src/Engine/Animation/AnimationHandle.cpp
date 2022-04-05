@@ -25,7 +25,7 @@ AnimationHandle::AnimationHandle() {
 
 void AnimationHandle::pushUI() {
     GUI::pushUI("AnimationHandle",[&](){
-        ImGui::Begin("AnimationSetting");
+        ImGui::Begin("AnimationSetting", nullptr, ImGuiWindowFlags_NoMove);
         static char buf[32] = "default";
         ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
         if(ImGui::Button("LoadAnimation"))

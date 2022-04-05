@@ -102,7 +102,7 @@ void Camera::update(bool& cameraChanged) {
          *
          */
         {
-            //        if(checkKey(GLFW_KEY_UP)){
+//        if(checkKey(GLFW_KEY_UP)){
 //            alphaPlus(1.0f);
 //            cameraChanged = false;
 //        }else if(checkKey(GLFW_KEY_DOWN)){

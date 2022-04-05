@@ -128,7 +128,7 @@ void I3DMLoader::init() {
     int index = 0;
     for(auto& position : m_positions)
     {
-        std::cout << std::fixed << "debug position x:" << position.x << "y:" << position.y << "z:" << position.z << std::endl;
+//        std::cout << std::fixed << "debug position x:" << position.x << "y:" << position.y << "z:" << position.z << std::endl;
 //        position = m_pos + glm::vec3( -index, 3.0f * glm::sin(index * half_pai), 0.0f);
         position = m_pos + glm::vec3(index * 5.0f, 0.0f, 0.0f);
         index++;
