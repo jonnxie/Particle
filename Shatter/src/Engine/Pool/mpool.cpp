@@ -34,6 +34,8 @@ template<>MPool<ObjectBox>* MPool<ObjectBox>::m_object_pool = new MPool<ObjectBo
 
 template<>MPool<AABB>* MPool<AABB>::m_aabb_pool = new MPool<AABB>(100);
 
+template<>MPool<Target>* MPool<Target>::m_target_pool = new MPool<Target>(100);
+
 //template<class Object_Type>
 //MPool<Object_Type> &MPool<Object_Type>::getNPool() {
 //    if constexpr (std::is_convertible_v<Object_Type,Line3d>)

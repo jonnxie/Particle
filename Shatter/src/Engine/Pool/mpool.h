@@ -126,6 +126,10 @@ public:
         {
             delete m_model_matrix_pool;
         }
+        else if constexpr(std::is_same_v<Object_Type,Target>)
+        {
+            delete m_target_pool;
+        }
     }
 
     Object_Type* operator[](int _index) {
@@ -202,6 +206,10 @@ public:
         {
             return m_aabb_pool;
         }
+        else if constexpr(std::is_same_v<Object_Type,Target>)
+        {
+            return m_target_pool;
+        }
         return nullptr;
     }
 
@@ -221,6 +229,7 @@ private:
     static MPool<glm::mat4>* m_model_matrix_pool;
     static MPool<ObjectBox>* m_object_pool;
     static MPool<AABB>* m_aabb_pool;
+    static MPool<Target>* m_target_pool;
 //    ObjectBox
 };
 

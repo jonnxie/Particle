@@ -58,6 +58,7 @@ void releasePool()
     MPool<glm::mat4>::getPool()->release();
     MPool<ObjectBox>::getPool()->release();
     MPool<AABB>::getPool()->release();
+    MPool<Target>::getPool()->release();
 }
 
 void initSet()

@@ -76,13 +76,13 @@ public:
     Line& operator[](size_t _index);
     void pushLine(const glm::vec3& _begin, const glm::vec3& _end);
     void pushLine(const Line& _line);
-    void pushLines(const std::vector<Line>& _lines);
+    void pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines);
     void pushUI();
 public:
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
     ClassElement(m_color, glm::vec3 , Color);
-    ClassElement(m_localCoordiante, TargetPlane, Coordinate);
+    ClassElement(m_localCoordiante, Target, Coordinate);
 private:
     std::unique_ptr<DLinePool> m_lines{nullptr};
 };

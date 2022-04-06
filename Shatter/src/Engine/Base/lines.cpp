@@ -183,19 +183,22 @@ void DLinePool::reallocated(){
 }
 
 LineHandle::LineHandle() {
-    m_lines = std::make_unique<DLinePool>(std::vector<Line>());
+    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), true, m_pipeline, m_sets);
+    m_localCoordiante = {SingleAPP.getWorkTargetPlane(), SingleAPP.getWorkTargetCenter()};
+    pushUI();
 }
 
 LineHandle::~LineHandle() {
 
 }
 
-void LineHandle::pushLine(const Line& _line) {
-    return m_lines->pushLine(_line);
-}
-
-void LineHandle::pushLines(const std::vector<Line>& _lines) {
-    return m_lines->pushLines(_lines);
+void LineHandle::pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines) {
+    std::vector<Line> lines(_lines.size());
+    for (int i = 0; i < lines.size(); ++i) {
+        new ((Line*)&lines[i]) Line{Point{_lines[i].first, m_color},
+                                    Point{_lines[i].second, m_color}};
+    }
+    return m_lines->pushLines(lines);
 }
 
 Line &LineHandle::operator[](size_t _index) {
@@ -207,6 +210,10 @@ void LineHandle::pushLine(const glm::vec3& _begin, const glm::vec3& _end) {
         Point{_begin, m_color},
         Point{_end, m_color}
     });
+}
+
+void LineHandle::pushLine(const Line& _line) {
+    return m_lines->pushLine(_line);
 }
 
 void LineHandle::pushUI() {
