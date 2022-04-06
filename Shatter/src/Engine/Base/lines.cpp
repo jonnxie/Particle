@@ -18,6 +18,7 @@
 #include ConfigCatalog
 #include GuiCatalog
 #include InputActionCatalog
+#include CameraCatalog
 
 DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
     lines = _lines;
@@ -198,18 +199,19 @@ void DLinePool::reallocated(){
 }
 
 LineHandle::LineHandle() {
-//    m_localCoordiante = {SingleAPP.getWorkTargetPlane(), SingleAPP.getWorkTargetCenter()};
     {
         m_localCoordiante = MPool<Target>::getPool()->malloc();
         new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
                                                                              SingleAPP.getWorkTargetCenter()};
     }
     m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
+    m_listener = new DrawLineHandle(this);
     pushUI();
 }
 
 LineHandle::~LineHandle() {
-
+    GUI::popUI(tool::combine("LineHandle", m_lines->getID()));
+    MPool<Target>::getPool()->free(m_localCoordiante);
 }
 
 void LineHandle::pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines) {
@@ -237,7 +239,8 @@ void LineHandle::pushLine(const Line& _line) {
 }
 
 void LineHandle::pushUI() {
-    GUI::pushUI(tool::combine("AnimationHandle", m_lines->getID()),[&](){
+    GUI::pushUI(tool::combine("LineHandle", m_lines->getID()),[&](){
+        ImGui::Begin("LineHandleSetting");
         if (ImGui::TreeNode("Select Pipeline"))
         {
             static int selected = -1;
@@ -297,32 +300,50 @@ void LineHandle::pushUI() {
     });
 }
 
+int LineHandle::getLineCount() {
+    return m_lines->getLineCount();
+}
 
-DrawLineHandle::DrawLineHandle() {
-//    pool = std::make_unique<DLinePool>(std::vector<Line>{}, true);
-//    SingleRender.normalChanged = true;
-//    m_action[Event::MouseClick] = [&]() {
-//        static bool draw = false;
-//        if (draw) {
-//            TaskPool::popUpdateTask("DrawLineHandleUpdate");
-//            draw = false;
-//        } else {
-//            glm::vec3& pre_pos = input::getCursor();
-//            auto line = makeLine(pre_pos);
-//            pool->pushLine(line);
-//            TaskPool::pushUpdateTask("DrawLineHandleUpdate", [&](float _abs_time){
-//                glm::vec3& realPos = input::getCursor();
-//
-//                Point point{};
-//                point.pos = realPos;
-//                input::LineColor(point.color, STATE_OUT);
-//                pool->getLines()[pool->getLineCount()-1].end = point;
-//            });
-//            draw = true;
-//        };
-//    };
+glm::vec3& LineHandle::getWorkCenter() const {
+    return (*MPool<Target>::getPool())[m_localCoordiante]->center;
+}
+
+TargetPlane& LineHandle::getTargetPlane() const {
+    return (*MPool<Target>::getPool())[m_localCoordiante]->plane;
+}
+
+DrawLineHandle::DrawLineHandle(LineHandle* _handle):
+handle(_handle)
+{
+    m_action[Event::MouseClick] = [&]() {
+        static bool draw = false;
+        static glm::vec3 dis;
+        static glm::vec3 local;
+
+        if (draw) {
+            TaskPool::popUpdateTask("DrawLineHandleUpdate");
+            draw = false;
+        } else {
+            glm::vec3& pre_pos = input::getCursor();
+            dis = input::getCursor() - handle->getWorkCenter();
+            local = {glm::dot(dis, handle->getTargetPlane().x_coordinate),
+                               glm::dot(dis, handle->getTargetPlane().y_coordinate),
+                               glm::dot(dis, handle->getTargetPlane().z_coordinate)};
+            handle->pushLine(local, local);
+            TaskPool::pushUpdateTask("DrawLineHandleUpdate", [&](float _abs_time){
+                glm::vec3& realPos = input::getCursor();
+                dis = input::getCursor() - handle->getWorkCenter();
+                local = {glm::dot(dis, handle->getTargetPlane().x_coordinate),
+                                   glm::dot(dis, handle->getTargetPlane().y_coordinate),
+                                   glm::dot(dis, handle->getTargetPlane().z_coordinate)};
+                (*handle)[handle->getLineCount()-1].end.pos = local;
+            });
+            draw = true;
+        };
+    };
 }
 
 DrawLineHandle::~DrawLineHandle() {
-//    TaskPool::popUpdateTask("DrawLineHandleUpdate");
+    TaskPool::popUpdateTask("DrawLineHandleUpdate");
+    delete handle;
 }

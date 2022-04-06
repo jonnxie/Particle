@@ -69,32 +69,38 @@ public:
     int                 id;
 };
 
+class DrawLineHandle;
+
 class LineHandle {
 public:
     LineHandle();
     ~LineHandle();
     DefineUnCopy(LineHandle);
-
+public:
     Line& operator[](size_t _index);
     void pushLine(const glm::vec3& _begin, const glm::vec3& _end);
     void pushLine(const Line& _line);
     void pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines);
     void pushUI();
+    int getLineCount();
+    glm::vec3& getWorkCenter() const;
+    TargetPlane& getTargetPlane() const;
 public:
-    ClassElement(m_pipeline, std::string, Pipeline);
-    ClassElement(m_sets, std::vector<std::string>, Sets);
+    ClassElementInitial(m_pipeline, std::string, Pipeline, "Polyline");
+    ClassElementInitial(m_sets, std::vector<std::string>, Sets, "Camera");
     ClassElement(m_color, glm::vec3 , Color);
     ClassElement(m_localCoordiante, int, Coordinate);
+    ClassPointerElement(m_listener, DrawLineHandle*, Listener);
 private:
     std::unique_ptr<DLinePool> m_lines{nullptr};
 };
 
 class DrawLineHandle : public Shatter::Listener{
 public:
-    DrawLineHandle();
+    explicit DrawLineHandle(LineHandle* _handle);
     ~DrawLineHandle() override;
 private:
-    std::unique_ptr<LineHandle> handle;
+    LineHandle* handle;
 };
 
 

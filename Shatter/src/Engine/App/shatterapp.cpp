@@ -18,6 +18,7 @@
 #include "Engine/Base/WorkPlane.h"
 #include "Engine/Base/tris.h"
 #include "Engine/Base/WorkPlane.h"
+#include "Engine/Base/lines.h"
 
 namespace Shatter::app{
     bool app_created = false;
@@ -181,8 +182,15 @@ namespace Shatter::app{
                 if(drawLinePool)
                 {
                     drawLinePool = false;
-                    appendListener("drawLinePool",new DrawLinePool);
-                }else{
+                    if (Config::getConfig("enableScreenGui"))
+                    {
+                        auto lineHandle = new LineHandle();
+                        SingleRender.normalChanged = true;
+                        appendListener("drawLinePool", lineHandle->getListener());
+                    } else {
+                        appendListener("drawLinePool", new DrawLinePool);
+                    }
+                } else {
                     deleteListener("drawLinePool");
                     drawLinePool = true;
                 }
