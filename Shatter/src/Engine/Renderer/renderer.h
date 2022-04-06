@@ -164,8 +164,6 @@ namespace Shatter{
 
             void draw();
 
-            void updateUI();
-
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
             VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);

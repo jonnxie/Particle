@@ -5,6 +5,7 @@
 
 #include "GUI.h"
 #include <mutex>
+#include "Engine/Object/inputaction.h"
 #include "Engine/Event/delayevent.h"
 #include "Engine/Item/configs.h"
 #include RenderCatalog
@@ -449,6 +450,28 @@ void GUI::newFrame(bool updateFrameGraph) {
     }
 }
 
+void GUI::updateUI() {
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.DisplaySize = ImVec2((float)getViewPort().view.width,(float)getViewPort().view.height);
+    io.DeltaTime = 1.0f;
+
+    glm::vec2& pos = input::getCursorWindow();
+//        input::cursorWindow(pos,STATE_OUT);
+    io.MousePos = ImVec2(pos.x, pos.y);
+
+    io.MouseWheelH += getScrollPos().x;
+    io.MouseWheel += getScrollPos().y;
+
+    io.MouseDown[0] = checkMouse(GLFW_MOUSE_BUTTON_LEFT);
+    io.MouseDown[1] = checkMouse(GLFW_MOUSE_BUTTON_RIGHT);
+    io.MouseDown[2] = checkMouse(GLFW_MOUSE_BUTTON_MIDDLE);
+    if(ImGui::IsAnyItemActive() != anyItemActive){
+        std::cout << "IsAnyItemActive:" << anyItemActive <<std::endl;
+    };
+    anyItemActive = ImGui::IsAnyItemActive();
+}
+
 void GUI::init(float width, float height) {
     // Color scheme
     device = &Device::getDevice();
@@ -498,7 +521,8 @@ void GUI::init(float width, float height) {
     ImGui::StyleColorsLight();
 
     pushUI("default", [&]() {
-        ImGui::Begin("Setting", nullptr, ImGuiWindowFlags_NoMove);
+//        ImGui::Begin("Setting", nullptr, ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Setting");
 
         static char buf[32] = "1";
         ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));

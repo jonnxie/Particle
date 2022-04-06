@@ -119,7 +119,7 @@ namespace Shatter::render{
 //        glfwPollEvents();
         if(Config::getConfig("enableScreenGui"))
         {
-            updateUI();
+            GUI::getGUI()->updateUI();
         }
         draw();
     }
@@ -2652,24 +2652,6 @@ namespace Shatter::render{
                 std::cout << "SwapChainImageSet: " << m_swapChainSets[index] << std::endl;
             }
         }
-    }
-
-    void ShatterRender::updateUI() {
-        ImGuiIO& io = ImGui::GetIO();
-        
-        io.DisplaySize = ImVec2((float)getViewPort().view.width,(float)getViewPort().view.height);
-        io.DeltaTime = 1.0f;
-
-        glm::vec2& pos = input::getCursorWindow();
-//        input::cursorWindow(pos,STATE_OUT);
-        io.MousePos = ImVec2(pos.x, pos.y);
-
-        io.MouseWheelH += getScrollPos().x;
-        io.MouseWheel += getScrollPos().y;
-
-        io.MouseDown[0] = checkMouse(GLFW_MOUSE_BUTTON_LEFT);
-        io.MouseDown[1] = checkMouse(GLFW_MOUSE_BUTTON_RIGHT);
-        io.MouseDown[2] = checkMouse(GLFW_MOUSE_BUTTON_MIDDLE);
     }
 }
 

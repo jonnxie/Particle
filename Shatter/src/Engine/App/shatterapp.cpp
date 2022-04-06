@@ -80,7 +80,10 @@ namespace Shatter::app{
             TaskPool::executeMultiple();
             TaskPool::updateMultiple(timer::getTime());
 
-            Camera::getCamera().update(cameraChanged);
+            if(!GUI::getGUI()->getItemState())
+            {
+                Camera::getCamera().update(cameraChanged);
+            }
             render::ShatterRender::getRender().loop();
         }
         vkDeviceWaitIdle(*render::ShatterRender::getRender().getDevice());

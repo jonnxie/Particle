@@ -52,6 +52,11 @@ private:
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
     Device* device = nullptr;
+    bool anyItemActive = false;
+public:
+    bool getItemState() const {
+        return anyItemActive;
+    }
 public:
 
     std::unordered_map<Task_id,std::function<void()>> m_tasks;
@@ -76,6 +81,8 @@ public:
 
     void newFrame(bool updateFrameGraph);
 
+    void updateUI();
+
     static void pushUI(Task_id _id,std::function<void()> _func);
 
     static void popUI(const Task_id& _id);
@@ -87,7 +94,7 @@ public:
     void initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::string& shadersPath);
 
     static GUI *getGUI();
-public:
+private:
     static GUI *gui;
 };
 
