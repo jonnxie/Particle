@@ -535,11 +535,11 @@ void GUI::init(float width, float height) {
                 std::cout << "action!" << std::endl;
             });
         }
-        ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
-        ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);
-        ImGui::SliderFloat("R", &getMaterial().r, 0.0f, 1.0f);
-        ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
-        ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
+//        ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
+//        ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);
+//        ImGui::SliderFloat("R", &getMaterial().r, 0.0f, 1.0f);
+//        ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
+//        ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
 
         ImGui::End();// End setting
 

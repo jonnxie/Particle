@@ -27,6 +27,7 @@ static int mallocId()
 class DLinePool : public Object{
 public:
     explicit DLinePool(const std::vector<Line>& _lines,
+                       int _coordinate = -1,
                        bool _updateFunc = true,
                        std::string _pipeline = "Polyline",
                        std::vector<std::string> _sets = {"Camera"});
@@ -39,14 +40,15 @@ public:
     void reallocated();
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
-public:
-    std::vector<Line>   lines;
+    ClassReferenceElement(m_lines, std::vector<Line>, Lines);
+    ClassPointerElement(id, int, ID);
+    ClassPointerElement(lineCount, int, LineCount);
+    ClassElement(m_localCoordiante, int, Coordinate);
+private:
     bool                updateFunc;
     bool                changed = true;
-    int                 lineCount;
     size_t              poolSize;
     int                 lineResolveCount;
-    int                 id;
 };
 
 class DLines : public Object{
@@ -82,9 +84,18 @@ public:
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
     ClassElement(m_color, glm::vec3 , Color);
-    ClassElement(m_localCoordiante, Target, Coordinate);
+    ClassElement(m_localCoordiante, int, Coordinate);
 private:
     std::unique_ptr<DLinePool> m_lines{nullptr};
 };
+
+class DrawLineHandle : public Shatter::Listener{
+public:
+    DrawLineHandle();
+    ~DrawLineHandle() override;
+private:
+    std::unique_ptr<LineHandle> handle;
+};
+
 
 #endif //GAME_LINES_H

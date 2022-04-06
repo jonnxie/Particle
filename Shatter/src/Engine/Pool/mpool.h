@@ -88,8 +88,6 @@ public:
     }
 
     void release() {
-//        delete m_ptr;
-//        m_ptr = nullptr;
         if constexpr (std::is_same_v<Object_Type,Line3d>)
         {
             delete m_line3d_pool;

@@ -97,12 +97,15 @@ void DLines::pushLines(const std::vector<Line>& _lines) {
     }
 }
 
-DLinePool::DLinePool(const std::vector<Line>& _lines, bool _updateFunc,std::string _pipeline,
+DLinePool::DLinePool(const std::vector<Line>& _lines,
+                     int _coordinate,
+                     bool _updateFunc,std::string _pipeline,
                      std::vector<std::string> _sets):
                      updateFunc(_updateFunc),
                      m_pipeline(std::move(_pipeline)),
                      m_sets(std::move(_sets)){
-    lines = _lines;
+    m_localCoordiante = _coordinate;
+    m_lines = _lines;
     id = mallocId();
     lineResolveCount = Config::getConfig("LinePoolInitialCount");
     lineCount = _lines.size();
@@ -111,8 +114,8 @@ DLinePool::DLinePool(const std::vector<Line>& _lines, bool _updateFunc,std::stri
 }
 
 void DLinePool::constructG(){
-    SingleBPool.createVertexHostBuffer(tool::combine("DLinePool",id),LineSize * lineResolveCount,lines.data());
-    SingleBPool.getBuffer(tool::combine("DLinePool",id),Buffer_Type::Vertex_Host_Buffer)->map();
+    SingleBPool.createVertexHostBuffer(tool::combine("DLinePool",id), LineSize * lineResolveCount, m_lines.data());
+    SingleBPool.getBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
 void DLinePool::constructD(){
@@ -121,8 +124,20 @@ void DLinePool::constructD(){
     int ms_index = ModelSetPool::getPool().malloc();
     auto buffer = SingleBPool.getBuffer(tool::combine("DLinePool",id),Buffer_Type::Vertex_Host_Buffer);
 
+    glm::mat4 mat(1.0f);
+    if(m_localCoordiante != -1)
+    {
+        Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
+
+        mat = glm::mat4{
+            glm::vec4{target->plane.x_coordinate, 0.0f},
+            glm::vec4{target->plane.y_coordinate, 0.0f},
+            glm::vec4{target->plane.z_coordinate, 0.0f},
+            glm::vec4{target->center, 1.0f},
+        };
+    }
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->prepare(glm::mat4(1.0f),
+    (*dpool)[d]->prepare(mat,
                          ms_index,
                          DrawType::Vertex,
                          0,
@@ -137,7 +152,7 @@ void DLinePool::constructD(){
     if(updateFunc)
     {
         TaskPool::pushUpdateTask(tool::combine("LinePoolBasic", id),[&, ms_index, d, buffer](float _abs_time){
-            memcpy(buffer->mapped, lines.data(), poolSize);
+            memcpy(buffer->mapped, m_lines.data(), poolSize);
             glm::mat4* ptr = SingleBPool.getModels();
             memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
         });
@@ -150,7 +165,7 @@ DLinePool::~DLinePool(){
 }
 
 void DLinePool::pushLine(const Line &_line) {
-    lines.push_back(_line);
+    m_lines.push_back(_line);
     poolSize += LineSize;
     if(++lineCount >= lineResolveCount)
     {
@@ -159,7 +174,7 @@ void DLinePool::pushLine(const Line &_line) {
 }
 
 void DLinePool::pushLines(const std::vector<Line>& _lines) {
-    lines.insert(lines.end(),_lines.begin(),_lines.end());
+    m_lines.insert(m_lines.end(),_lines.begin(),_lines.end());
     lineCount += _lines.size();
     poolSize += _lines.size() * LineSize;
     if(lineCount >= lineResolveCount)
@@ -183,8 +198,13 @@ void DLinePool::reallocated(){
 }
 
 LineHandle::LineHandle() {
-    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), true, m_pipeline, m_sets);
-    m_localCoordiante = {SingleAPP.getWorkTargetPlane(), SingleAPP.getWorkTargetCenter()};
+//    m_localCoordiante = {SingleAPP.getWorkTargetPlane(), SingleAPP.getWorkTargetCenter()};
+    {
+        m_localCoordiante = MPool<Target>::getPool()->malloc();
+        new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
+                                                                             SingleAPP.getWorkTargetCenter()};
+    }
+    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
     pushUI();
 }
 
@@ -202,7 +222,7 @@ void LineHandle::pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _
 }
 
 Line &LineHandle::operator[](size_t _index) {
-    return m_lines->lines[_index];
+    return m_lines->getLines()[_index];
 }
 
 void LineHandle::pushLine(const glm::vec3& _begin, const glm::vec3& _end) {
@@ -217,7 +237,7 @@ void LineHandle::pushLine(const Line& _line) {
 }
 
 void LineHandle::pushUI() {
-    GUI::pushUI(tool::combine("AnimationHandle", m_lines->id),[&](){
+    GUI::pushUI(tool::combine("AnimationHandle", m_lines->getID()),[&](){
         if (ImGui::TreeNode("Select Pipeline"))
         {
             static int selected = -1;
@@ -278,4 +298,31 @@ void LineHandle::pushUI() {
 }
 
 
+DrawLineHandle::DrawLineHandle() {
+//    pool = std::make_unique<DLinePool>(std::vector<Line>{}, true);
+//    SingleRender.normalChanged = true;
+//    m_action[Event::MouseClick] = [&]() {
+//        static bool draw = false;
+//        if (draw) {
+//            TaskPool::popUpdateTask("DrawLineHandleUpdate");
+//            draw = false;
+//        } else {
+//            glm::vec3& pre_pos = input::getCursor();
+//            auto line = makeLine(pre_pos);
+//            pool->pushLine(line);
+//            TaskPool::pushUpdateTask("DrawLineHandleUpdate", [&](float _abs_time){
+//                glm::vec3& realPos = input::getCursor();
+//
+//                Point point{};
+//                point.pos = realPos;
+//                input::LineColor(point.color, STATE_OUT);
+//                pool->getLines()[pool->getLineCount()-1].end = point;
+//            });
+//            draw = true;
+//        };
+//    };
+}
 
+DrawLineHandle::~DrawLineHandle() {
+//    TaskPool::popUpdateTask("DrawLineHandleUpdate");
+}
