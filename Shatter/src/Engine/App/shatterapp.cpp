@@ -19,6 +19,7 @@
 #include "Engine/Base/tris.h"
 #include "Engine/Base/WorkPlane.h"
 #include "Engine/Base/lines.h"
+#include "Engine/Base/points.h"
 
 namespace Shatter::app{
     bool app_created = false;
@@ -100,7 +101,7 @@ namespace Shatter::app{
     void ShatterApp::key_event_callback(int key, int action){
         if(action == GLFW_PRESS)
         {
-            if(key == GLFW_KEY_LEFT ||
+            if( key == GLFW_KEY_LEFT ||
                     key == GLFW_KEY_RIGHT ||
                     key == GLFW_KEY_DOWN ||
                     key == GLFW_KEY_UP)
@@ -108,23 +109,23 @@ namespace Shatter::app{
                 cameraChanged = true;
             }
             m_events.push_back(Event::SinglePress);
-            if(key == GLFW_KEY_SPACE)
+            if( key == GLFW_KEY_SPACE)
             {
                 SingleCamera.reset();
                 cameraChanged = true;
             }
 
-            if(key == GLFW_KEY_F1)
+            if (key == GLFW_KEY_F1)
             {
                 Config::setConfig("enableScreenGui", 1 - Config::getConfig("enableScreenGui"));
             }
 
-            if(key == GLFW_KEY_DELETE)
+            if (key == GLFW_KEY_DELETE)
             {
                 m_events.push_back(Event::DeletePress);
             }
 
-            if(key == GLFW_KEY_F2)
+            if (key == GLFW_KEY_F2)
             {
                 static bool drawLine = true;
                 if(drawLine)
@@ -137,7 +138,7 @@ namespace Shatter::app{
                 }
             }
 
-            if(key == GLFW_KEY_F3)
+            if (key == GLFW_KEY_F3)
             {
                 static bool drawPlane = true;
                 if(drawPlane)
@@ -150,27 +151,33 @@ namespace Shatter::app{
                 }
             }
 
-            if(key == GLFW_KEY_F4)
+            if (key == GLFW_KEY_F4)
             {
                 static bool drawPoint = true;
                 if(drawPoint)
                 {
                     drawPoint = false;
-                    appendListener("DrawPoint",new DrawPoint);
-                }else{
+                    if (Config::getConfig("enableScreenGui"))
+                    {
+                        auto pointHandle = new PointsHandle();
+                        SingleRender.normalChanged = true;
+                    } else {
+                        appendListener("DrawPoint",new DrawPoint);
+                    }
+                } else {
                     deleteListener("DrawPoint");
                     drawPoint = true;
                 }
             }
 
-            if(key == GLFW_KEY_F5)
+            if (key == GLFW_KEY_F5)
             {
                 static bool captureObject = true;
                 if(captureObject)
                 {
                     captureObject = false;
                     appendListener("CaptureObject",new CaptureObject);
-                }else{
+                } else {
                     deleteListener("CaptureObject");
                     captureObject = true;
                 }

@@ -326,17 +326,19 @@ void PointsHandle::loadFile(const std::string &_filename) {
 
 void PointsHandle::drawPoint() {
     if (appendState) {
-        SingleAPP.appendListener("drawPointPool", m_listener);
+        SingleAPP.appendListener("DrawPoint", m_listener);
         appendState = false;
     } else {
-        SingleAPP.removeListener("drawPointPool");
+        SingleAPP.removeListener("DrawPoint");
         appendState = true;
     }
 }
 
 void PointsHandle::destroy() const {
     if (!appendState){
-        SingleAPP.deleteListener("drawPointPool");
+        TaskPool::pushTask([=](){
+            SingleAPP.deleteListener("DrawPoint");
+        });
     } else {
         TaskPool::pushTask([=](){
             delete m_listener;

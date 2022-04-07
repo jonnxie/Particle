@@ -356,7 +356,9 @@ void LineHandle::drawLine() {
 
 void LineHandle::destroy() const {
     if (!appendState){
-        SingleAPP.deleteListener("drawLinePool");
+        TaskPool::pushTask([=](){
+            SingleAPP.deleteListener("drawLinePool");
+        });
     } else {
         TaskPool::pushTask([=](){
             delete m_listener;
