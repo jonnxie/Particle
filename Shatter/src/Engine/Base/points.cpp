@@ -66,3 +66,89 @@ void DPoints::pushPoint(const Point3dColorSize &_point) {
 void DPoints::pushPoint(const std::vector<Point3dColorSize> &_points) {
     points.insert(points.end(),_points.begin(),_points.end());
 }
+
+DPointPool::DPointPool(const std::vector<Line> &_lines, int _coordinate, bool _updateFunc, std::string _pipeline,
+                       std::vector<std::string> _sets) {
+
+}
+
+DPointPool::~DPointPool() {
+
+}
+
+void DPointPool::constructG() {
+    Object::constructG();
+}
+
+void DPointPool::constructD() {
+    Object::constructD();
+}
+
+void DPointPool::pushLine(const Line &_line) {
+
+}
+
+void DPointPool::pushLines(const std::vector<Line> &_lines) {
+
+}
+
+void DPointPool::reallocated() {
+
+}
+
+PointsHandle::PointsHandle() {
+
+}
+
+PointsHandle::~PointsHandle() {
+
+}
+
+Line &PointsHandle::operator[](size_t _index) {
+}
+
+void PointsHandle::pushLine(const glm::vec3 &_begin, const glm::vec3 &_end) {
+
+}
+
+void PointsHandle::pushLine(const Line &_line) {
+
+}
+
+void PointsHandle::pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>> &_lines) {
+
+}
+
+void PointsHandle::pushUI() {
+
+}
+
+int PointsHandle::getLineCount() {
+    return 0;
+}
+
+void PointsHandle::loadFile(const std::string &_filename) {
+
+}
+
+void PointsHandle::drawLine() {
+
+}
+
+void PointsHandle::destroy() const {
+
+}
+
+glm::vec3 &PointsHandle::getWorkCenter() const {
+}
+
+TargetPlane &PointsHandle::getTargetPlane() const {
+}
+
+DrawPointHandle::DrawPointHandle(PointsHandle *_handle) {
+
+}
+
+DrawPointHandle::~DrawPointHandle() {
+    int i = 0;
+}
