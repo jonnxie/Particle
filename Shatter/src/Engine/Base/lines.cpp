@@ -241,6 +241,19 @@ void LineHandle::pushLine(const Line& _line) {
 void LineHandle::pushUI() {
     GUI::pushUI(tool::combine("LineHandle", m_lines->getID()),[&](){
         ImGui::Begin("LineHandleSetting");
+
+        static char buf[32] = "default";
+        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
+        if(ImGui::Button("LoadFile"))
+        {
+            loadFile(std::string(buf) + ".gltf");
+        }
+
+        if(ImGui::Button("drawLine"))
+        {
+            drawLine();
+        }
+
         if (ImGui::TreeNode("Select Pipeline"))
         {
             static int selected = -1;
@@ -296,12 +309,41 @@ void LineHandle::pushUI() {
                             std::numeric_limits<float>::min() / 2.0f,
                             std::numeric_limits<float>::max() / 2.0f);
 
+        if(ImGui::Button("end")) {
+            destroy();
+        }
+
         ImGui::End();// End setting
     });
 }
 
 int LineHandle::getLineCount() {
     return m_lines->getLineCount();
+}
+
+void LineHandle::loadFile(const std::string& _filename) {
+
+}
+
+void LineHandle::drawLine() {
+    if (appendState)
+    {
+        SingleAPP.appendListener("drawLinePool", m_listener);
+        appendState = false;
+    } else {
+        SingleAPP.removeListener("drawLinePool");
+        appendState = true;
+    }
+}
+
+void LineHandle::destroy() const {
+    if (!appendState){
+        SingleAPP.deleteListener("drawLinePool");
+    } else {
+        TaskPool::pushTask([=](){
+            delete m_listener;
+        });
+    }
 }
 
 glm::vec3& LineHandle::getWorkCenter() const {

@@ -83,8 +83,11 @@ public:
     void pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines);
     void pushUI();
     int getLineCount();
-    glm::vec3& getWorkCenter() const;
-    TargetPlane& getTargetPlane() const;
+    void loadFile(const std::string& _filename);
+    void drawLine();
+    void destroy() const;
+    [[nodiscard]] glm::vec3& getWorkCenter() const;
+    [[nodiscard]] TargetPlane& getTargetPlane() const;
 public:
     ClassElementInitial(m_pipeline, std::string, Pipeline, "Polyline");
     ClassElementInitial(m_sets, std::vector<std::string>, Sets, "Camera");
@@ -92,6 +95,7 @@ public:
     ClassElement(m_localCoordiante, int, Coordinate);
     ClassPointerElement(m_listener, DrawLineHandle*, Listener);
 private:
+    bool appendState = true;
     std::unique_ptr<DLinePool> m_lines{nullptr};
 };
 

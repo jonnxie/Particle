@@ -186,7 +186,6 @@ namespace Shatter::app{
                     {
                         auto lineHandle = new LineHandle();
                         SingleRender.normalChanged = true;
-                        appendListener("drawLinePool", lineHandle->getListener());
                     } else {
                         appendListener("drawLinePool", new DrawLinePool);
                     }
@@ -300,6 +299,10 @@ namespace Shatter::app{
 
     void ShatterApp::deleteListener(const std::string &_name) {
         delete m_otherListener[_name];
+        m_otherListener.erase(_name);
+    }
+
+    void ShatterApp::removeListener(const std::string& _name) {
         m_otherListener.erase(_name);
     }
 

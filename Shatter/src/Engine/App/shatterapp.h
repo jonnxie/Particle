@@ -54,6 +54,7 @@ namespace Shatter{
             void listener(Listener* _listener);
             void appendListener(const std::string& _name,Listener* _listener);
             void deleteListener(const std::string& _name);
+            void removeListener(const std::string& _name);
             TargetPlane& getWorkTargetPlane();
             glm::vec3&   getWorkTargetCenter();
             TargetPlane& getCameraTargetPlane();
