@@ -19,6 +19,7 @@
 #include GuiCatalog
 #include InputActionCatalog
 #include CameraCatalog
+#include GLTFCatalog
 
 DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
     lines = _lines;
@@ -322,7 +323,24 @@ int LineHandle::getLineCount() {
 }
 
 void LineHandle::loadFile(const std::string& _filename) {
+    size_t count = 2 * m_lines->getLineCount();
+    std::vector<glm::vec3> pos_vec(count);
+    std::vector<glm::vec3> color_vec(count);
 
+    for(size_t index = 0; index < m_lines->getLineCount(); index++)
+    {
+        pos_vec[index * 2] = m_lines->getLines()[index].begin.pos;
+        color_vec[index * 2] = m_lines->getLines()[index].begin.color;
+        pos_vec[index * 2 + 1] = m_lines->getLines()[index].end.pos;
+        color_vec[index * 2 + 1] = m_lines->getLines()[index].end.color;
+    }
+    std::vector<void*> data_vec{pos_vec.data(), color_vec.data()};
+    vkglTF::Model::writeLineListToFile(_filename,
+                                       count,
+                                       data_vec,
+                                       std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                                            vkglTF::VertexComponent::Color}
+    );
 }
 
 void LineHandle::drawLine() {

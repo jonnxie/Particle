@@ -27,7 +27,7 @@ Skybox::Skybox(const std::vector<std::string>& _files){
         uv_vec[index] = m_point[index].uv;
     }
     std::vector<void*> data_vec{pos_vec.data(), normal_vec.data(), uv_vec.data()};
-//    m_model->writeFile("writeTest.gltf",
+//    m_model->writeMeshToFile("writeTest.gltf",
 //                       m_point.size(),
 //                       data_vec,
 //                       m_index,

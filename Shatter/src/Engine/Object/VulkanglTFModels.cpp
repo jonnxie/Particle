@@ -2413,11 +2413,11 @@ std::pair<glm::vec4,glm::vec4> getExtremeVec4(void * _data,size_t _count)
 }
 
 
-void vkglTF::Model::writeFile(const std::string& _filename,
-                              size_t _count,
-                              std::vector<void*> _points,
-                              std::vector<uint32_t> _indices,
-                              std::vector<VertexComponent> _components) {
+void vkglTF::Model::writeMeshToFile(const std::string& _filename,
+                                    size_t _count,
+                                    std::vector<void*> _points,
+                                    std::vector<uint32_t> _indices,
+                                    std::vector<VertexComponent> _components) {
     tinygltf::Model m;
     tinygltf::Scene scene;
     tinygltf::Mesh mesh;
@@ -2461,16 +2461,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
         switch (_components[index]) {
             case VertexComponent::Position:
             {
-                primitive.attributes["POSITION"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["POSITION"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
                 auto pair = getExtremeVec3(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec3;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2481,16 +2481,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
             }
             case VertexComponent::Normal:
             {
-                primitive.attributes["NORMAL"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["NORMAL"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
                 auto pair = getExtremeVec3(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec3;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2502,16 +2502,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
 
             case VertexComponent::UV:
             {
-                primitive.attributes["TEXCOORD_0"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["TEXCOORD_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec2);
                 auto pair = getExtremeVec2(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec2);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec2;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2523,16 +2523,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
 
             case VertexComponent::Color:
             {
-                primitive.attributes["COLOR_0"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["COLOR_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2544,16 +2544,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
 
             case VertexComponent::Tangent:
             {
-                primitive.attributes["TANGENT"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["TANGENT"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2565,16 +2565,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
 
             case VertexComponent::Joint0:
             {
-                primitive.attributes["JOINTS_0"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["JOINTS_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2586,16 +2586,16 @@ void vkglTF::Model::writeFile(const std::string& _filename,
 
             case VertexComponent::Weight0:
             {
-                primitive.attributes["WEIGHTS_0"] = index + 1;  // The index of the accessor for positions
+                primitive.attributes["WEIGHTS_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index + 1;
+                view.buffer = index;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index + 1;
+                access.bufferView = index;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2641,10 +2641,218 @@ void vkglTF::Model::writeFile(const std::string& _filename,
     // Save it to a file
     tinygltf::TinyGLTF gltf;
     gltf.WriteGltfSceneToFile(&m, _filename,
-                              true, // embedImages
+                              false, // embedImages
                               true, // embedBuffers
                               true, // pretty print
                               false); // write binary
 
 
+}
+
+void vkglTF::Model::writeLineListToFile(const std::string& _filename,
+                         size_t _count,
+                         std::vector<void*> _points,
+                         std::vector<VertexComponent> _components) {
+    tinygltf::Model m;
+    tinygltf::Scene scene;
+    tinygltf::Mesh mesh;
+    tinygltf::Primitive primitive;
+    tinygltf::Node node;
+    tinygltf::Asset asset;
+
+    primitive.material = 0;
+    primitive.mode = TINYGLTF_MODE_LINE;
+
+    for(size_t index = 0; index < _components.size(); index++)
+    {
+        tinygltf::Buffer buffer;
+        tinygltf::BufferView view;
+        tinygltf::Accessor access;
+        switch (_components[index]) {
+            case VertexComponent::Position:
+            {
+                primitive.attributes["POSITION"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec3);
+                auto pair = getExtremeVec3(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec3);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec3;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC3;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z};
+                break;
+            }
+            case VertexComponent::Normal:
+            {
+                primitive.attributes["NORMAL"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec3);
+                auto pair = getExtremeVec3(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec3);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec3;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC3;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z};
+                break;
+            }
+
+            case VertexComponent::UV:
+            {
+                primitive.attributes["TEXCOORD_0"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec2);
+                auto pair = getExtremeVec2(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec2);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec2;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC2;
+                access.maxValues = {pair.second.x, pair.second.y};
+                access.minValues = {pair.first.x, pair.first.y};
+                break;
+            }
+
+            case VertexComponent::Color:
+            {
+                primitive.attributes["COLOR_0"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Tangent:
+            {
+                primitive.attributes["TANGENT"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Joint0:
+            {
+                primitive.attributes["JOINTS_0"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+
+            case VertexComponent::Weight0:
+            {
+                primitive.attributes["WEIGHTS_0"] = index;  // The index of the accessor for positions
+                buffer.data.resize(_count * one_vec4);
+                auto pair = getExtremeVec4(_points[index], _count);
+                memcpy(buffer.data.data(), _points[index], _count * one_vec4);
+                view.buffer = index;
+                view.byteOffset = 0;
+                view.byteLength = _count * one_vec4;
+                view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+                access.bufferView = index;
+                access.byteOffset = 0;
+                access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                access.count = _count;
+                access.type = TINYGLTF_TYPE_VEC4;
+                access.maxValues = {pair.second.x, pair.second.y, pair.second.z, pair.second.w};
+                access.minValues = {pair.first.x, pair.first.y, pair.first.z, pair.first.w};
+                break;
+            }
+            default:{
+                break;
+            }
+
+        }
+        m.buffers.push_back(buffer);
+        m.bufferViews.push_back(view);
+        m.accessors.push_back(access);
+    }
+
+    mesh.primitives.push_back(primitive);
+
+    // Other tie ups
+    node.mesh = 0;
+    scene.nodes.push_back(0); // Default scene
+
+    // Define the asset. The version is required
+    asset.version = "2.0";
+    asset.generator = "tinygltf";
+
+    // Now all that remains is to tie back all the loose objects into the
+    // our single model.
+    m.scenes.push_back(scene);
+    m.meshes.push_back(mesh);
+    m.nodes.push_back(node);
+
+    m.asset = asset;
+
+    // Create a simple material
+    tinygltf::Material mat;
+    mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 0.9f, 0.9f, 1.0f};
+    mat.doubleSided = true;
+    m.materials.push_back(mat);
+
+    // Save it to a file
+    tinygltf::TinyGLTF gltf;
+    gltf.WriteGltfSceneToFile(&m, _filename,
+                              false, // embedImages
+                              true, // embedBuffers
+                              true, // pretty print
+                              false); // write binary
 }

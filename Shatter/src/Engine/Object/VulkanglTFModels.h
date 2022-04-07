@@ -341,10 +341,14 @@ namespace vkglTF
 		Node* findNode(Node* parent, uint32_t index);
 		Node* nodeFromIndex(uint32_t index);
 		void prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLayout descriptorSetLayout);
-        void writeFile(const std::string& _filename,
-                       size_t _count,
-                       std::vector<void*> _points,
-                       std::vector<uint32_t> _indices,
-                       std::vector<VertexComponent> _components);
+        void writeMeshToFile(const std::string& _filename,
+                             size_t _count,
+                             std::vector<void*> _points,
+                             std::vector<uint32_t> _indices,
+                             std::vector<VertexComponent> _components);
+        static void writeLineListToFile(const std::string& _filename,
+                                 size_t _count,
+                                 std::vector<void*> _points,
+                                 std::vector<VertexComponent> _components);
 	};
 }
