@@ -346,9 +346,10 @@ namespace vkglTF
                              std::vector<void*> _points,
                              std::vector<uint32_t> _indices,
                              std::vector<VertexComponent> _components);
-        static void writeLineListToFile(const std::string& _filename,
-                                 size_t _count,
-                                 std::vector<void*> _points,
-                                 std::vector<VertexComponent> _components);
+        static void writeGeometryListToFile(const std::string& _filename,
+                                            size_t _count,
+                                            std::vector<void*> _points,
+                                            std::vector<VertexComponent> _components,
+                                            MeshDrawType _type = MeshDrawType::Point);
 	};
 }

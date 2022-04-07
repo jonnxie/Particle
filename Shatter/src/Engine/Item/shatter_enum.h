@@ -282,7 +282,8 @@ enum class Color{
     Emissive,
 };
 
-enum class MeshDrawType{
+enum class MeshDrawType {
+    Point,
     Line,
     Face,
 };
@@ -461,19 +462,20 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define GuiCatalog      "Engine/Base/GUI.h"
 #define DPointCatalog   "Engine/Base/points.h"
 #define DLineCatalog    "Engine/Base/lines.h"
+#define HandleCatalog   "Engine/Base/handle.h"
 //#define RayCatalog    "Engine/Base/Raytracing.h"
 
-//#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"
-//#define ModelFilePath       "C:/Users/AnWell/Desktop/ASSET/models/"
-//#define TextureFilePath     "C:/Users/AnWell/Desktop/ASSET/textures/"
-//#define B3DMPath            "C:/Users/AnWell/Desktop/ASSET/b3dm/"
-//#define I3DMPath            "C:/Users/AnWell/Desktop/ASSET/i3dm/"
+#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"
+#define ModelFilePath       "C:/Users/AnWell/Desktop/ASSET/models/"
+#define TextureFilePath     "C:/Users/AnWell/Desktop/ASSET/textures/"
+#define B3DMPath            "C:/Users/AnWell/Desktop/ASSET/b3dm/"
+#define I3DMPath            "C:/Users/AnWell/Desktop/ASSET/i3dm/"
 #define AnimationPath       "C:/Users/AnWell/Desktop/ASSET/animation/"
-#define ShaderFilePath      "C:/Users/jonnxie/ClionProjects/Particle/ShatterInut/assets/shaders/"
-#define ModelFilePath       "C:/Users/jonnxie/ClionProjects/data/models/"
-#define TextureFilePath     "C:/Users/jonnxie/ClionProjects/data/textures/"
-#define B3DMPath            "C:/Users/jonnxie/ClionProjects/data/b3dm/"
-#define I3DMPath            "C:/Users/jonnxie/ClionProjects/data/i3dm/"
+//#define ShaderFilePath      "C:/Users/jonnxie/ClionProjects/Particle/ShatterInut/assets/shaders/"
+//#define ModelFilePath       "C:/Users/jonnxie/ClionProjects/data/models/"
+//#define TextureFilePath     "C:/Users/jonnxie/ClionProjects/data/textures/"
+//#define B3DMPath            "C:/Users/jonnxie/ClionProjects/data/b3dm/"
+//#define I3DMPath            "C:/Users/jonnxie/ClionProjects/data/i3dm/"
 
 
 #endif //SHATTER_ENGINE_SHATTER_ENUM_H

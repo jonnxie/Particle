@@ -14,6 +14,7 @@
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
 #include ListenerCatalog
+#include HandleCatalog
 
 static int initIdVal = 0;
 static std::mutex idLock;
@@ -71,28 +72,22 @@ public:
 
 class DrawLineHandle;
 
-class LineHandle {
+class LineHandle : public Handle{
 public:
     LineHandle();
-    ~LineHandle();
+    ~LineHandle() override;
     DefineUnCopy(LineHandle);
 public:
     Line& operator[](size_t _index);
     void pushLine(const glm::vec3& _begin, const glm::vec3& _end);
     void pushLine(const Line& _line);
     void pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines);
-    void pushUI();
+    void pushUI() override;
     int getLineCount();
-    void loadFile(const std::string& _filename);
+    void loadFile(const std::string& _filename) override;
     void drawLine();
-    void destroy() const;
-    [[nodiscard]] glm::vec3& getWorkCenter() const;
-    [[nodiscard]] TargetPlane& getTargetPlane() const;
+    void destroy() const override;
 public:
-    ClassElementInitial(m_pipeline, std::string, Pipeline, "Polyline");
-    ClassElementInitial(m_sets, std::vector<std::string>, Sets, "Camera");
-    ClassElement(m_color, glm::vec3 , Color);
-    ClassElement(m_localCoordiante, int, Coordinate);
     ClassPointerElement(m_listener, DrawLineHandle*, Listener);
 private:
     bool appendState = true;

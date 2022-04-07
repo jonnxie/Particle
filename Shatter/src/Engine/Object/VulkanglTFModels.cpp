@@ -2649,10 +2649,11 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
 }
 
-void vkglTF::Model::writeLineListToFile(const std::string& _filename,
-                         size_t _count,
-                         std::vector<void*> _points,
-                         std::vector<VertexComponent> _components) {
+void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
+                                            size_t _count,
+                                            std::vector<void*> _points,
+                                            std::vector<VertexComponent> _components,
+                                            MeshDrawType _type) {
     tinygltf::Model m;
     tinygltf::Scene scene;
     tinygltf::Mesh mesh;
@@ -2661,7 +2662,11 @@ void vkglTF::Model::writeLineListToFile(const std::string& _filename,
     tinygltf::Asset asset;
 
     primitive.material = 0;
-    primitive.mode = TINYGLTF_MODE_LINE;
+    if (MeshDrawType::Line == _type) {
+        primitive.mode = TINYGLTF_MODE_LINE;
+    } else if (MeshDrawType::Point == _type) {
+        primitive.mode = TINYGLTF_MODE_POINTS;
+    }
 
     for(size_t index = 0; index < _components.size(); index++)
     {

@@ -205,14 +205,15 @@ LineHandle::LineHandle() {
         new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
                                                                              SingleAPP.getWorkTargetCenter()};
     }
-    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
+    m_pipeline = "Polyline";
+    m_sets = {"Camera"};
     m_listener = new DrawLineHandle(this);
+    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
     pushUI();
 }
 
 LineHandle::~LineHandle() {
-    GUI::popUI(tool::combine("LineHandle", m_lines->getID()));
-    MPool<Target>::getPool()->free(m_localCoordiante);
+    GUI::popUI("LineHandle");
 }
 
 void LineHandle::pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines) {
@@ -240,7 +241,7 @@ void LineHandle::pushLine(const Line& _line) {
 }
 
 void LineHandle::pushUI() {
-    GUI::pushUI(tool::combine("LineHandle", m_lines->getID()),[&](){
+    GUI::pushUI("LineHandle", [&](){
         ImGui::Begin("LineHandleSetting");
 
         static char buf[32] = "default";
@@ -335,17 +336,16 @@ void LineHandle::loadFile(const std::string& _filename) {
         color_vec[index * 2 + 1] = m_lines->getLines()[index].end.color;
     }
     std::vector<void*> data_vec{pos_vec.data(), color_vec.data()};
-    vkglTF::Model::writeLineListToFile(_filename,
-                                       count,
-                                       data_vec,
-                                       std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
-                                                                            vkglTF::VertexComponent::Color}
+    vkglTF::Model::writeGeometryListToFile(_filename,
+                                           count,
+                                           data_vec,
+                                           std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                                                vkglTF::VertexComponent::Color}
     );
 }
 
 void LineHandle::drawLine() {
-    if (appendState)
-    {
+    if (appendState) {
         SingleAPP.appendListener("drawLinePool", m_listener);
         appendState = false;
     } else {
@@ -362,14 +362,6 @@ void LineHandle::destroy() const {
             delete m_listener;
         });
     }
-}
-
-glm::vec3& LineHandle::getWorkCenter() const {
-    return (*MPool<Target>::getPool())[m_localCoordiante]->center;
-}
-
-TargetPlane& LineHandle::getTargetPlane() const {
-    return (*MPool<Target>::getPool())[m_localCoordiante]->plane;
 }
 
 DrawLineHandle::DrawLineHandle(LineHandle* _handle):

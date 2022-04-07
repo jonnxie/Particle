@@ -31,6 +31,7 @@ void Config::init()
     config_map["EnableMSAA"]                    = 0;
     config_map["DefaultModelCount"]             = 10;
     config_map["LinePoolInitialCount"]          = 5;
+    config_map["PointPoolInitialCount"]         = 10;
 }
 
 int Config::getConfig(const std::string& _id)

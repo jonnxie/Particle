@@ -12,3 +12,7 @@ glm::vec3& Handle::getWorkCenter() const {
 TargetPlane& Handle::getTargetPlane() const {
     return (*MPool<Target>::getPool())[m_localCoordiante]->plane;
 }
+
+Handle::~Handle() {
+    MPool<Target>::getPool()->free(m_localCoordiante);
+}

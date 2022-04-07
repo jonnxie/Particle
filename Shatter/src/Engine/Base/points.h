@@ -15,6 +15,7 @@
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
 #include <vector>
+#include HandleCatalog
 
 static int initPointIdVal = 0;
 static std::mutex pointIdLock;
@@ -41,62 +42,56 @@ public:
     int                             id;
 };
 
-
 class DPointPool : public Object{
 public:
-    explicit DPointPool(const std::vector<Line>& _lines,
+    explicit DPointPool(const std::vector<Point3dColorSize>& _points,
                        int _coordinate = -1,
                        bool _updateFunc = true,
-                       std::string _pipeline = "Polyline",
-                       std::vector<std::string> _sets = {"Camera"});
+                       std::string _pipeline = "Point",
+                       std::vector<std::string> _sets = {"Camera", "ViewPort"});
     ~DPointPool() override;
     void constructG() override;
     void constructD() override;
     void constructC() override{};
-    void pushLine(const Line& _line);
-    void pushLines(const std::vector<Line>& _lines);
+    void pushPoint(const Point3dColorSize& _point);
+    void pushPoints(const std::vector<Point3dColorSize>& _points);
     void reallocated();
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
-    ClassReferenceElement(m_lines, std::vector<Line>, Lines);
+    ClassReferenceElement(m_points, std::vector<Point3dColorSize>, Points);
     ClassPointerElement(id, int, ID);
-    ClassPointerElement(lineCount, int, LineCount);
+    ClassPointerElement(pointCount, int, PointCount);
     ClassElement(m_localCoordiante, int, Coordinate);
 private:
     bool                updateFunc;
     bool                changed = true;
     size_t              poolSize;
-    int                 lineResolveCount;
+    int                 pointResolveCount;
 };
 
 class DrawPointHandle;
 
-class PointsHandle {
+class PointsHandle :public Handle {
 public:
     PointsHandle();
-    ~PointsHandle();
+    ~PointsHandle() override;
     DefineUnCopy(PointsHandle);
 public:
-    Line& operator[](size_t _index);
-    void pushLine(const glm::vec3& _begin, const glm::vec3& _end);
-    void pushLine(const Line& _line);
-    void pushLines(const std::vector<std::pair<glm::vec3, glm::vec3>>& _lines);
-    void pushUI();
-    int getLineCount();
-    void loadFile(const std::string& _filename);
-    void drawLine();
-    void destroy() const;
-    [[nodiscard]] glm::vec3& getWorkCenter() const;
-    [[nodiscard]] TargetPlane& getTargetPlane() const;
+    Point3dColorSize& operator[](size_t _index);
+    void pushPoint(const glm::vec3& _point);
+    void pushPoint(const Point3dColorSize& _point);
+    void pushPoints(const std::vector<glm::vec3>& _points);
+    void pushUI() override;
+    int  getPointCount();
+    void loadFile(const std::string& _filename) override;
+    void drawPoint();
+    void destroy() const override;
 public:
-    ClassElementInitial(m_pipeline, std::string, Pipeline, "Polyline");
-    ClassElementInitial(m_sets, std::vector<std::string>, Sets, "Camera");
-    ClassElement(m_color, glm::vec3 , Color);
-    ClassElement(m_localCoordiante, int, Coordinate);
     ClassPointerElement(m_listener, DrawPointHandle*, Listener);
+    ClassProtectedElement(m_size, float , Size);
 private:
     bool appendState = true;
-    std::unique_ptr<DPointPool> m_lines{nullptr};
+    std::unique_ptr<DPointPool> m_points{nullptr};
 };
 
 class DrawPointHandle : public Shatter::Listener{

@@ -210,6 +210,20 @@ Class& operator = (Class&&) = delete
         return elementName;                              \
     }
 
+#define ClassProtectedElement(elementName, elementType, funcName)   \
+    protected:                                                      \
+    elementType elementName{};                                      \
+    public:                                                         \
+    void set##funcName(const elementType& _in)                      \
+    {                                                               \
+        elementName = _in;                                          \
+    }                                                               \
+    elementType get##funcName()                                     \
+    {                                                               \
+        return elementName;                                         \
+    }
+
+
 #define ClassElementInitial(elementName, elementType, funcName, val)    \
     private:                                                            \
     elementType elementName{val};                                       \

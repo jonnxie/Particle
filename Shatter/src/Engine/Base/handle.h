@@ -13,19 +13,17 @@ class Handle {
 public:
     Handle() = default;
     virtual ~Handle();
-    virtual void pushUI();
-    virtual void loadFile(const std::string& _filename);
-    virtual void destroy() const;
+    virtual void pushUI() = 0;
+    virtual void loadFile(const std::string& _filename) = 0;
+    virtual void destroy() const = 0;
 public:
     [[nodiscard]] glm::vec3& getWorkCenter() const;
     [[nodiscard]] TargetPlane& getTargetPlane() const;
-public:
-    ClassElementInitial(m_pipeline, std::string, Pipeline, "Polyline");
-    ClassElementInitial(m_sets, std::vector<std::string>, Sets, "Camera");
-    ClassElement(m_color, glm::vec3 , Color);
-    ClassElement(m_localCoordiante, int, Coordinate);
 private:
-
+    ClassProtectedElement(m_pipeline, std::string, Pipeline);
+    ClassProtectedElement(m_sets, std::vector<std::string>, Sets);
+    ClassProtectedElement(m_color, glm::vec3 , Color);
+    ClassProtectedElement(m_localCoordiante, int, Coordinate);
 };
 
 
