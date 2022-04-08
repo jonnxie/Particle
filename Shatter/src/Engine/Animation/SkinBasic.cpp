@@ -14,24 +14,32 @@
 #include OffScreenCatalog
 #include RenderCatalog
 
+static int mallocId()
+{
+    static int initIdVal = 0;
+    static std::mutex idLock;
+
+    std::lock_guard<std::mutex> lockGuard(idLock);
+    return initIdVal++;
+}
+
 SkinBasic::SkinBasic(const std::string &_files, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle, glm::vec3 _scale,
-                     int _id, std::string _pipeline, std::vector<std::string> _sets):
+                     std::string _pipeline, std::vector<std::string> _sets, DrawObjectType _type):
         m_pipeline(std::move(_pipeline)),
         m_sets{std::move(_sets)}
 {
-    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
+    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors;
     m_model = new vkglTF::Model;
     m_scale = glm::scale(glm::mat4(1.0f), _scale);
     m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
     m_translation = glm::translate(glm::mat4(1.0f), _pos);
     m_world = m_translation * m_scale * m_rotate;
     m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_world);
-    m_id = _id;
+    m_id = mallocId();
     init();
 }
 
 void SkinBasic::constructG() {
-//    Object::constructG();
 }
 
 void SkinBasic::constructD() {
@@ -65,7 +73,10 @@ void SkinBasic::constructD() {
 
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
-        ((vkglTF::Model*)(*SingleDPool)[d]->getData())->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
+        ((vkglTF::Model*)(*SingleDPool)[d]->getData())->draw(_cb,
+                                                             0,
+                                                             PPool::getPool()[m_pipeline]->getPipelineLayout(),
+                                                             3);
 //        m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
     };
     if(getDrawType() == DrawObjectType::Default)

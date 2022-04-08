@@ -129,14 +129,14 @@ namespace vkglTF
 			VkDescriptorBufferInfo descriptor;
 			VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 			void* mapped;
-		} uniformBuffer;
+		} uniformBuffer, jointBuffer;
 
-		struct UniformBlock {
+        struct UniformBlock {
 			glm::mat4 matrix;
-			glm::mat4 jointMatrix[64]{};
-			float jointcount{ 0 };
 		} uniformBlock;
 
+        std::vector<glm::mat4> jointMatrices{};
+//        float jointcount{ 0 };
 		Mesh(Device* device, glm::mat4 matrix);
 		~Mesh();
 	};
@@ -161,7 +161,7 @@ namespace vkglTF
 		glm::mat4 matrix;
 		std::string name;
 		Mesh* mesh;
-		Skin* skin;
+		Skin* skin {nullptr};
 		int32_t skinIndex = -1;
 		glm::vec3 translation{};
 		glm::vec3 scale{ 1.0f };
@@ -169,6 +169,7 @@ namespace vkglTF
         void resetMatrix();
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
+        void loadMesh(int jointNum);
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
 		~Node();
 	};

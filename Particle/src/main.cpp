@@ -29,6 +29,7 @@
 #include "Engine/Base/basic.h"
 #include "Engine/Base/tbasic.h"
 #include "Engine/Animation/abasic.h"
+#include "Engine/Animation/SkinBasic.h"
 #include "Engine/Animation/AnimationHandle.h"
 #include "Engine/Base/gcoor.h"
 #include "Engine/Base/lines.h"
@@ -234,6 +235,12 @@ int main() {
 //           0,
 //           "ABasic")
 
+//    auto skin = new SkinBasic(tool::combineModel("CesiumMan.gltf"),
+//                              glm::vec3(-8.0f,-8.0f,0.0f),
+//                              glm::vec3(1.0f,0.0f,0.0f),
+//                              0.0f,
+//                              glm::vec3(1.0f));
+
     std::vector<int> coor_line;
     {
         line_pool->malloc(3,coor_line);
@@ -368,6 +375,7 @@ int main() {
         delete b3dm;
         delete i;
         delete ah;
+//        delete skin;
         SingleOffScreen.release();
         SingleCascade.release();
 //        delete abasic;

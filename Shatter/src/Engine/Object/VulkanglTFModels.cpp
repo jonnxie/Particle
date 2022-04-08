@@ -518,12 +518,18 @@ vkglTF::Mesh::~Mesh() {
     {
         vkDestroyBuffer(device->logicalDevice, uniformBuffer.buffer, nullptr);
     }
-
+    if(jointBuffer.buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device->logicalDevice, jointBuffer.buffer, nullptr);
+    }
     if(uniformBuffer.memory != VK_NULL_HANDLE)
     {
         vkFreeMemory(device->logicalDevice, uniformBuffer.memory, nullptr);
     }
-
+    if(jointBuffer.memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device->logicalDevice, jointBuffer.memory, nullptr);
+    }
     for(auto& p : primitives)
     {
         delete p;
@@ -553,24 +559,36 @@ glm::mat4 vkglTF::Node::getMatrix() {
 	return m;
 }
 
+void vkglTF::Node::loadMesh(int jointNum) {
+    mesh->jointMatrices.resize(jointNum);
+    VK_CHECK_RESULT(mesh->device->createBuffer(
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            one_matrix * jointNum,
+            &mesh->jointBuffer.buffer,
+            &mesh->jointBuffer.memory,
+            &mesh->uniformBlock));
+    VK_CHECK_RESULT(vkMapMemory(mesh->device->logicalDevice, mesh->jointBuffer.memory, 0, one_matrix * jointNum, 0, &mesh->jointBuffer.mapped));
+    mesh->jointBuffer.descriptor = { mesh->jointBuffer.buffer, 0, VkDeviceSize(one_matrix * jointNum) };
+}
+
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
 		glm::mat4 m = getMatrix();
         m = world_matrix * m;
-		if (skin) {
-			mesh->uniformBlock.matrix = m;
+        memcpy(mesh->uniformBuffer.mapped, &m, sizeof(glm::mat4));
+        if (skin) {
+			mesh->uniformBlock.matrix = getMatrix();
 			// Update join matrices
-			glm::mat4 inverseTransform = glm::inverse(m);
-			for (size_t i = 0; i < skin->joints.size(); i++) {
+            int numJoints = (float)skin->joints.size();
+
+            glm::mat4 inverseTransform = glm::inverse(mesh->uniformBlock.matrix);
+			for (size_t i = 0; i < numJoints; i++) {
 				vkglTF::Node *jointNode = skin->joints[i];
 				glm::mat4 jointMat = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-				jointMat = inverseTransform * jointMat;
-				mesh->uniformBlock.jointMatrix[i] = jointMat;
+                mesh->jointMatrices[i] = inverseTransform * jointMat;
 			}
-			mesh->uniformBlock.jointcount = (float)skin->joints.size();
-			memcpy(mesh->uniformBuffer.mapped, &mesh->uniformBlock, sizeof(mesh->uniformBlock));
-		} else {
-			memcpy(mesh->uniformBuffer.mapped, &m, sizeof(glm::mat4));
+			memcpy(mesh->jointBuffer.mapped, mesh->jointMatrices.data(), numJoints * one_matrix);
 		}
 	}
 
@@ -1286,14 +1304,6 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 			newSkin->skeletonRoot = nodeFromIndex(source.skeleton);
 		}
 
-		// Find Joint nodes
-		for (int jointIndex : source.joints) {
-			Node* node = nodeFromIndex(jointIndex);
-			if (node) {
-				newSkin->joints.push_back(nodeFromIndex(jointIndex));
-			}
-		}
-
 		// Get inverse bind matrices from buffer
 		if (source.inverseBindMatrices > -1) {
 			const tinygltf::Accessor &accessor = gltfModel.accessors[source.inverseBindMatrices];
@@ -1303,7 +1313,16 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 			memcpy(newSkin->inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 		}
 
-		skins.push_back(newSkin);
+        // Find Joint nodes
+        for (int jointIndex : source.joints) {
+            Node* node = nodeFromIndex(jointIndex);
+            if (node) {
+                node->loadMesh(newSkin->inverseBindMatrices.size());
+                newSkin->joints.push_back(nodeFromIndex(jointIndex));
+            }
+        }
+
+        skins.push_back(newSkin);
 	}
 }
 
@@ -2127,7 +2146,17 @@ void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t
 				if (renderFlags & RenderFlags::BindImages) {
 					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
 				}
-                if(VK_NULL_HANDLE != pipelineLayout)
+                if (node->skin) {
+                    vkCmdBindDescriptorSets(commandBuffer,
+                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                            pipelineLayout,
+                                            2,
+                                            1,
+                                            &node->mesh->jointBuffer.descriptorSet,
+                                            0,
+                                            nullptr);
+                }
+                if (VK_NULL_HANDLE != pipelineLayout)
                 {
                     vkCmdBindDescriptorSets(commandBuffer,
                                             VK_PIPELINE_BIND_POINT_GRAPHICS,

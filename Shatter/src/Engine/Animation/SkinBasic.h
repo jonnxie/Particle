@@ -21,9 +21,9 @@ public:
                    glm::vec3 _rotationAxis,
                    float _angle,
                    glm::vec3 _scale,
-                   int _id,
                    std::string  _pipeline = "GSkin",
-                   std::vector<std::string>  _sets = {"Camera", "Skin"});
+                   std::vector<std::string>  _sets = {"Camera", "Skin"},
+                   DrawObjectType _type = DrawObjectType::Normal);
     DefineUnCopy(SkinBasic);
     ~SkinBasic() {
         delete m_model;
