@@ -1,9 +1,9 @@
 //
-// Created by jonnxie on 2021/10/25.
+// Created by jonnxie on 2022/4/8.
 //
 
-#ifndef SHATTER_ENGINE_BASIC_H
-#define SHATTER_ENGINE_BASIC_H
+#ifndef MAIN_SKINBASIC_H
+#define MAIN_SKINBASIC_H
 
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
@@ -14,18 +14,18 @@
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
 
-class Basic : public Object{
+class SkinBasic : public Object{
 public:
-    explicit Basic(const std::string& _files,
+    explicit SkinBasic(const std::string& _files,
                    glm::vec3 _pos,
                    glm::vec3 _rotationAxis,
                    float _angle,
                    glm::vec3 _scale,
                    int _id,
-                   std::string  _pipeline = "Build",
+                   std::string  _pipeline = "Skin",
                    std::vector<std::string>  _sets = {"Camera"});
-    DefineUnCopy(Basic);
-    ~Basic() override {
+    DefineUnCopy(SkinBasic);
+    ~SkinBasic() {
         delete m_model;
     }
     void constructG() override;
@@ -41,4 +41,4 @@ private:
 };
 
 
-#endif //SHATTER_ENGINE_BASIC_H
+#endif //MAIN_SKINBASIC_H
