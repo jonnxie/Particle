@@ -166,6 +166,20 @@ void PPool::init() {
                  RenderPassType::Default,
                  SubpassG);
 
+        createGP("GSkin",
+                 std::vector<Input_Type>{Input_Type::GLTF},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gskin_vs"),
+                                                              ShaderPool::getPool().Get("gskin_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 std::vector<Sl_id> {"Default","Camera", "Skin"},
+                 RenderPassType::Default,
+                 SubpassG
+        );
+
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("composition_vs"),

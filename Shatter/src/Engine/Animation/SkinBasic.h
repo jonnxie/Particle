@@ -22,8 +22,8 @@ public:
                    float _angle,
                    glm::vec3 _scale,
                    int _id,
-                   std::string  _pipeline = "Skin",
-                   std::vector<std::string>  _sets = {"Camera"});
+                   std::string  _pipeline = "GSkin",
+                   std::vector<std::string>  _sets = {"Camera", "Skin"});
     DefineUnCopy(SkinBasic);
     ~SkinBasic() {
         delete m_model;
@@ -32,6 +32,9 @@ public:
     void constructD() override;
     void constructC() override {};
 
+    ClassElement(m_animation_index, int, AnimationIndex);
+    ClassElementInitial(m_update, bool, Update, true);
+    ClassElement(m_localTime, float, LocalTime);
 private:
     vkglTF::Model*              m_model;
     std::string                 m_pipeline;

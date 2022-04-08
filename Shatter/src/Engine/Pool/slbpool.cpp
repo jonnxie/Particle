@@ -125,6 +125,17 @@ void SlbPool::init(){
                         VK_SHADER_STAGE_FRAGMENT_BIT,
                         0)
         };
+
+        m_map["Skin"] = std::vector<VkDescriptorSetLayoutBinding>{
+            tool::descriptorSetLayoutBinding(
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    VK_SHADER_STAGE_VERTEX_BIT,
+                    0),
+            tool::descriptorSetLayoutBinding(
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    VK_SHADER_STAGE_FRAGMENT_BIT,
+                    1),
+        };
     }
 
     /*
