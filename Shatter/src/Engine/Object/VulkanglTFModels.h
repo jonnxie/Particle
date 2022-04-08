@@ -350,6 +350,6 @@ namespace vkglTF
                                             size_t _count,
                                             std::vector<void*> _points,
                                             std::vector<VertexComponent> _components,
-                                            MeshDrawType _type = MeshDrawType::Point);
+                                            MeshDrawType _type = MeshDrawType::Line);
 	};
 }

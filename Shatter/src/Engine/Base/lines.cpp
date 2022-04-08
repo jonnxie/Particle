@@ -304,8 +304,8 @@ void LineHandle::pushUI() {
 
         ImGui::SliderFloat3("Color",
                             reinterpret_cast<float *>(&m_color),
-                            std::numeric_limits<float>::min() / 2.0f,
-                            std::numeric_limits<float>::max() / 2.0f);
+                            0.0f,
+                            1.0f);
         ImGui::SliderFloat3("Coordinate",
                             reinterpret_cast<float *>(&m_localCoordiante),
                             std::numeric_limits<float>::min() / 2.0f,
