@@ -336,7 +336,7 @@ void PointsHandle::drawPoint() {
 
 void PointsHandle::destroy() const {
     if (!appendState){
-        TaskPool::pushTask([=](){
+        TaskPool::pushTask([](){
             SingleAPP.deleteListener("DrawPoint");
         });
     } else {

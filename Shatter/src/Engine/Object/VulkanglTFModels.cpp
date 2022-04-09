@@ -518,21 +518,24 @@ vkglTF::Mesh::~Mesh() {
     {
         vkDestroyBuffer(device->logicalDevice, uniformBuffer.buffer, nullptr);
     }
-    if(jointBuffer.buffer != VK_NULL_HANDLE)
-    {
-        vkDestroyBuffer(device->logicalDevice, jointBuffer.buffer, nullptr);
-    }
     if(uniformBuffer.memory != VK_NULL_HANDLE)
     {
         vkFreeMemory(device->logicalDevice, uniformBuffer.memory, nullptr);
     }
-    if(jointBuffer.memory != VK_NULL_HANDLE)
-    {
-        vkFreeMemory(device->logicalDevice, jointBuffer.memory, nullptr);
-    }
     for(auto& p : primitives)
     {
         delete p;
+    }
+}
+
+vkglTF::Skin::~Skin() {
+    if(skinBuffer.buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device->logicalDevice, skinBuffer.buffer, nullptr);
+    }
+    if(skinBuffer.memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device->logicalDevice, skinBuffer.memory, nullptr);
     }
 }
 
@@ -559,19 +562,6 @@ glm::mat4 vkglTF::Node::getMatrix() {
 	return m;
 }
 
-void vkglTF::Node::loadMesh(int jointNum) {
-    mesh->jointMatrices.resize(jointNum);
-    VK_CHECK_RESULT(mesh->device->createBuffer(
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            one_matrix * jointNum,
-            &mesh->jointBuffer.buffer,
-            &mesh->jointBuffer.memory,
-            &mesh->uniformBlock));
-    VK_CHECK_RESULT(vkMapMemory(mesh->device->logicalDevice, mesh->jointBuffer.memory, 0, one_matrix * jointNum, 0, &mesh->jointBuffer.mapped));
-    mesh->jointBuffer.descriptor = { mesh->jointBuffer.buffer, 0, VkDeviceSize(one_matrix * jointNum) };
-}
-
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
 		glm::mat4 m = getMatrix();
@@ -580,15 +570,15 @@ void vkglTF::Node::update(const glm::mat4& world_matrix) {
         if (skin) {
 			mesh->uniformBlock.matrix = getMatrix();
 			// Update join matrices
-            int numJoints = (float)skin->joints.size();
-
             glm::mat4 inverseTransform = glm::inverse(mesh->uniformBlock.matrix);
+            int numJoints = (float)skin->joints.size();
+            std::vector<glm::mat4> jointMatrices(numJoints);
 			for (size_t i = 0; i < numJoints; i++) {
 				vkglTF::Node *jointNode = skin->joints[i];
 				glm::mat4 jointMat = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-                mesh->jointMatrices[i] = inverseTransform * jointMat;
+                jointMatrices[i] = inverseTransform * jointMat;
 			}
-			memcpy(mesh->jointBuffer.mapped, mesh->jointMatrices.data(), numJoints * one_matrix);
+			memcpy(skin->skinBuffer.mapped, jointMatrices.data(), numJoints * one_matrix);
 		}
 	}
 
@@ -1297,6 +1287,8 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 {
 	for (tinygltf::Skin &source : gltfModel.skins) {
 		Skin *newSkin = new Skin{};
+        newSkin->device = device;
+
 		newSkin->name = source.name;
 				
 		// Find skeleton root node
@@ -1306,18 +1298,27 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 
 		// Get inverse bind matrices from buffer
 		if (source.inverseBindMatrices > -1) {
-			const tinygltf::Accessor &accessor = gltfModel.accessors[source.inverseBindMatrices];
-			const tinygltf::BufferView &bufferView = gltfModel.bufferViews[accessor.bufferView];
-			const tinygltf::Buffer &buffer = gltfModel.buffers[bufferView.buffer];
+			const tinygltf::Accessor &accessor      = gltfModel.accessors[source.inverseBindMatrices];
+			const tinygltf::BufferView &bufferView  = gltfModel.bufferViews[accessor.bufferView];
+			const tinygltf::Buffer &buffer          = gltfModel.buffers[bufferView.buffer];
 			newSkin->inverseBindMatrices.resize(accessor.count);
 			memcpy(newSkin->inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
-		}
+
+            VK_CHECK_RESULT(device->createBuffer(
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    one_matrix * newSkin->inverseBindMatrices.size(),
+                    &newSkin->skinBuffer.buffer,
+                    &newSkin->skinBuffer.memory,
+                    newSkin->inverseBindMatrices.data()));
+            VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, newSkin->skinBuffer.memory, 0, one_matrix * newSkin->inverseBindMatrices.size(), 0, &newSkin->skinBuffer.mapped));
+            newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, sizeof(one_matrix * newSkin->inverseBindMatrices.size()) };
+        }
 
         // Find Joint nodes
         for (int jointIndex : source.joints) {
             Node* node = nodeFromIndex(jointIndex);
             if (node) {
-                node->loadMesh(newSkin->inverseBindMatrices.size());
                 newSkin->joints.push_back(nodeFromIndex(jointIndex));
             }
         }
@@ -1677,6 +1678,7 @@ void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
     // Setup descriptors
     uint32_t uboCount{ 0 };
     uint32_t imageCount{ 0 };
+    uint32_t skinCount{ 0 };
     for (auto node : linearNodes) {
         if (node->mesh) {
             uboCount++;
@@ -1687,64 +1689,84 @@ void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
             imageCount++;
         }
     }
+    for (auto skin : skins) {
+        if (skin->inverseBindMatrices.size() != 0) {
+            skinCount++;
+        }
+    }
     std::vector<VkDescriptorPoolSize> poolSizes = {
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboCount },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 },
     };
     if (imageCount > 0) {
         if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
-            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 });
         }
         if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
-            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+            poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 });
         }
     }
     VkDescriptorPoolCreateInfo descriptorPoolCI{};
     descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     descriptorPoolCI.pPoolSizes = poolSizes.data();
-    descriptorPoolCI.maxSets = uboCount + imageCount;
+    descriptorPoolCI.maxSets = uboCount + imageCount + skinCount;
     VK_CHECK_RESULT(vkCreateDescriptorPool(pDevice->logicalDevice, &descriptorPoolCI, nullptr, &descriptorPool));
 
     // Descriptors for per-node uniform buffers
     {
-        // Layout is global, so only create if it hasn't already been created before
-        if (descriptorSetLayoutUbo == VK_NULL_HANDLE) {
-            std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-                    tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
-            };
-            VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
-            descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-            descriptorLayoutCI.pBindings = setLayoutBindings.data();
-            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutUbo));
-        }
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+        };
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout uboSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &uboSetLayout));
         for (auto node : nodes) {
-            prepareNodeDescriptor(node, descriptorSetLayoutUbo);
+            prepareNodeDescriptor(node, uboSetLayout);
         }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, uboSetLayout, nullptr);
+    }
+
+    // Descriptors for per-skin images
+    {
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+        };
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout skinSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &skinSetLayout));
+        for (auto skin : skins) {
+            prepareSkinDescriptor(skin, skinSetLayout);
+        }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, skinSetLayout, nullptr);
     }
 
     // Descriptors for per-material images
     {
-        // Layout is global, so only create if it hasn't already been created before
-        if (descriptorSetLayoutImage == VK_NULL_HANDLE) {
-            std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
-            if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
-                setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
-            }
-            if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
-                setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
-            }
-            VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
-            descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-            descriptorLayoutCI.pBindings = setLayoutBindings.data();
-            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutImage));
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
+            setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
         }
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
+            setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
+        }
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout imageSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &imageSetLayout));
         for (auto& material : materials) {
             if (material.baseColorTexture != nullptr) {
-                material.createDescriptorSet(descriptorPool, vkglTF::descriptorSetLayoutImage, descriptorBindingFlags);
+                material.createDescriptorSet(descriptorPool, imageSetLayout, descriptorBindingFlags);
             }
         }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, imageSetLayout, nullptr);
     }
 }
 
@@ -1923,7 +1945,8 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 	// Setup descriptors
 	uint32_t uboCount{ 0 };
 	uint32_t imageCount{ 0 };
-	for (auto node : linearNodes) {
+    uint32_t skinCount{ 0 };
+    for (auto node : linearNodes) {
 		if (node->mesh) {
 			uboCount++;
 		}
@@ -1933,65 +1956,84 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			imageCount++;
 		}
 	}
-	std::vector<VkDescriptorPoolSize> poolSizes = {
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboCount },
-	};
+    for (auto skin : skins) {
+        if (skin->inverseBindMatrices.size() != 0) {
+            skinCount++;
+        }
+    }
+    std::vector<VkDescriptorPoolSize> poolSizes = {
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 },
+    };
 	if (imageCount > 0) {
 		if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
-			poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+			poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 });
 		}
 		if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
-			poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount });
+			poolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 });
 		}
 	}
 	VkDescriptorPoolCreateInfo descriptorPoolCI{};
 	descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	descriptorPoolCI.pPoolSizes = poolSizes.data();
-	descriptorPoolCI.maxSets = uboCount + imageCount;
+	descriptorPoolCI.maxSets = uboCount + imageCount + skinCount;
 	VK_CHECK_RESULT(vkCreateDescriptorPool(pDevice->logicalDevice, &descriptorPoolCI, nullptr, &descriptorPool));
 
-	// Descriptors for per-node uniform buffers
-	{
-		// Layout is global, so only create if it hasn't already been created before
-		if (descriptorSetLayoutUbo == VK_NULL_HANDLE) {
-			std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-				tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
-			};
-			VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
-			descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-			descriptorLayoutCI.pBindings = setLayoutBindings.data();
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutUbo));
-		}
-		for (auto node : nodes) {
-			prepareNodeDescriptor(node, descriptorSetLayoutUbo);
-		}
-	}
+    {
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+        };
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout uboSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &uboSetLayout));
+        for (auto node : nodes) {
+            prepareNodeDescriptor(node, uboSetLayout);
+        }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, uboSetLayout, nullptr);
+    }
 
-	// Descriptors for per-material images
-	{
-		// Layout is global, so only create if it hasn't already been created before
-		if (descriptorSetLayoutImage == VK_NULL_HANDLE) {
-			std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
-			if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
-				setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
-			}
-			if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
-				setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
-			}
-			VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
-			descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-			descriptorLayoutCI.pBindings = setLayoutBindings.data();
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &descriptorSetLayoutImage));
-		}
-		for (auto& material : materials) {
-			if (material.baseColorTexture != nullptr) {
-				material.createDescriptorSet(descriptorPool, vkglTF::descriptorSetLayoutImage, descriptorBindingFlags);
-			}
-		}
-	}
+    // Descriptors for per-skin images
+    {
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+        };
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout skinSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &skinSetLayout));
+        for (auto skin : skins) {
+            prepareSkinDescriptor(skin, skinSetLayout);
+        }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, skinSetLayout, nullptr);
+    }
+
+    // Descriptors for per-material images
+    {
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
+            setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
+        }
+        if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap) {
+            setLayoutBindings.push_back(tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
+        }
+        VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+        descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorLayoutCI.pBindings = setLayoutBindings.data();
+        VkDescriptorSetLayout imageSetLayout;
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(pDevice->logicalDevice, &descriptorLayoutCI, nullptr, &imageSetLayout));
+        for (auto& material : materials) {
+            if (material.baseColorTexture != nullptr) {
+                material.createDescriptorSet(descriptorPool, imageSetLayout, descriptorBindingFlags);
+            }
+        }
+        vkDestroyDescriptorSetLayout(pDevice->logicalDevice, imageSetLayout, nullptr);
+    }
 }
 
 void vkglTF::Model::loadFromFileDefault(const std::string& filename,
@@ -2152,7 +2194,7 @@ void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t
                                             pipelineLayout,
                                             2,
                                             1,
-                                            &node->mesh->jointBuffer.descriptorSet,
+                                            &node->skin->skinBuffer.descriptorSet,
                                             0,
                                             nullptr);
                 }
@@ -2389,6 +2431,28 @@ void vkglTF::Model::prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLay
 		prepareNodeDescriptor(child, descriptorSetLayout);
 	}
 }
+
+void vkglTF::Model::prepareSkinDescriptor(vkglTF::Skin* skin, VkDescriptorSetLayout descriptorSetLayout) {
+    if (!skin->inverseBindMatrices.empty()) {
+        VkDescriptorSetAllocateInfo descriptorSetAllocInfo{};
+        descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        descriptorSetAllocInfo.descriptorPool = descriptorPool;
+        descriptorSetAllocInfo.pSetLayouts = &descriptorSetLayout;
+        descriptorSetAllocInfo.descriptorSetCount = 1;
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(device->logicalDevice, &descriptorSetAllocInfo, &skin->skinBuffer.descriptorSet));
+
+        VkWriteDescriptorSet writeDescriptorSet{};
+        writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeDescriptorSet.descriptorCount = 1;
+        writeDescriptorSet.dstSet = skin->skinBuffer.descriptorSet;
+        writeDescriptorSet.dstBinding = 0;
+        writeDescriptorSet.pBufferInfo = &skin->skinBuffer.descriptor;
+
+        vkUpdateDescriptorSets(device->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+    }
+}
+
 
 std::pair<glm::vec3,glm::vec3> getExtremeVec3(void * _data,size_t _count)
 {

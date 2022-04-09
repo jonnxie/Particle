@@ -129,13 +129,13 @@ namespace vkglTF
 			VkDescriptorBufferInfo descriptor;
 			VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 			void* mapped;
-		} uniformBuffer, jointBuffer;
+		} uniformBuffer;
 
         struct UniformBlock {
 			glm::mat4 matrix;
 		} uniformBlock;
 
-        std::vector<glm::mat4> jointMatrices{};
+//        std::vector<glm::mat4> jointMatrices{};
 //        float jointcount{ 0 };
 		Mesh(Device* device, glm::mat4 matrix);
 		~Mesh();
@@ -145,10 +145,19 @@ namespace vkglTF
 		glTF skin
 	*/
 	struct Skin {
-		std::string name;
+        Device* device;
+        std::string name;
 		Node* skeletonRoot = nullptr;
 		std::vector<glm::mat4> inverseBindMatrices;
 		std::vector<Node*> joints;
+        struct UniformBuffer {
+            VkBuffer buffer = VK_NULL_HANDLE;
+            VkDeviceMemory memory = VK_NULL_HANDLE;
+            VkDescriptorBufferInfo descriptor;
+            VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+            void* mapped;
+        } skinBuffer;
+        ~Skin();
 	};
 
 	/*
@@ -160,7 +169,7 @@ namespace vkglTF
 		std::vector<Node*> children;
 		glm::mat4 matrix;
 		std::string name;
-		Mesh* mesh;
+		Mesh* mesh {nullptr};
 		Skin* skin {nullptr};
 		int32_t skinIndex = -1;
 		glm::vec3 translation{};
@@ -169,7 +178,6 @@ namespace vkglTF
         void resetMatrix();
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
-        void loadMesh(int jointNum);
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
 		~Node();
 	};
@@ -342,6 +350,7 @@ namespace vkglTF
 		Node* findNode(Node* parent, uint32_t index);
 		Node* nodeFromIndex(uint32_t index);
 		void prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLayout descriptorSetLayout);
+		void prepareSkinDescriptor(vkglTF::Skin* skin, VkDescriptorSetLayout descriptorSetLayout);
         void writeMeshToFile(const std::string& _filename,
                              size_t _count,
                              std::vector<void*> _points,
