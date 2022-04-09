@@ -179,6 +179,7 @@ namespace vkglTF
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
+        void updateSkin(const glm::mat4& world_matrix = glm::mat4(1.0f));
 		~Node();
 	};
 
@@ -346,7 +347,7 @@ namespace vkglTF
 		void getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& max);
 		void getSceneDimensions();
         void resetAnimation();
-        void updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix);
+        void updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix, bool ifSkin = false);
 		Node* findNode(Node* parent, uint32_t index);
 		Node* nodeFromIndex(uint32_t index);
 		void prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLayout descriptorSetLayout);

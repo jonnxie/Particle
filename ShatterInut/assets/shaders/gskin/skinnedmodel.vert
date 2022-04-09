@@ -40,12 +40,12 @@ void main()
 	gl_Position = c.proj * c.view * m.model * skinMat * vec4(inPos.xyz, 1.0);
 
 	// Vertex position in world space
-	outWorldPos = vec3(m.model * vec4(inPos, 1.0));
+	outWorldPos = vec3(m.model * skinMat * vec4(inPos, 1.0));
 	// GL to Vulkan coord space
 	outWorldPos.y = -outWorldPos.y;
 
 	// Normal in world space
-	mat3 mNormal = transpose(inverse(mat3(m.model)));
+	mat3 mNormal = transpose(inverse(mat3(m.model * skinMat)));
 	outNormal = mNormal * normalize(inNormal);
 
 	// Currently just vertex color

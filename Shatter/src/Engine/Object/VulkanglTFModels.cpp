@@ -564,19 +564,29 @@ glm::mat4 vkglTF::Node::getMatrix() {
 
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
-		glm::mat4 m = getMatrix();
-        m = world_matrix * m;
-        memcpy(mesh->uniformBuffer.mapped, &m, sizeof(glm::mat4));
-        if (skin) {
-			mesh->uniformBlock.matrix = getMatrix();
+        if (-1 == skinIndex) {
+            glm::mat4 m = getMatrix();
+            m = world_matrix * m;
+            memcpy(mesh->uniformBuffer.mapped, &world_matrix, sizeof(glm::mat4));
+        } else {
+            glm::mat4              nodeMatrix    = matrix;
+            Node *currentParent = parent;
+            while (currentParent)
+            {
+                nodeMatrix    = currentParent->matrix * nodeMatrix;
+                currentParent = currentParent->parent;
+            }
+            nodeMatrix = world_matrix * nodeMatrix;
+            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
+//			mesh->uniformBlock.matrix = getMatrix();
 			// Update join matrices
-            glm::mat4 inverseTransform = glm::inverse(mesh->uniformBlock.matrix);
-            int numJoints = (float)skin->joints.size();
+            glm::mat4 inverseTransform = glm::inverse(getMatrix());
+            int numJoints = int(skin->joints.size());
             std::vector<glm::mat4> jointMatrices(numJoints);
 			for (size_t i = 0; i < numJoints; i++) {
 				vkglTF::Node *jointNode = skin->joints[i];
-				glm::mat4 jointMat = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-                jointMatrices[i] = inverseTransform * jointMat;
+                jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
+                jointMatrices[i] = inverseTransform * jointMatrices[i];
 			}
 			memcpy(skin->skinBuffer.mapped, jointMatrices.data(), numJoints * one_matrix);
 		}
@@ -585,6 +595,37 @@ void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	for (auto& child : children) {
 		child->update(world_matrix);
 	}
+}
+
+void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
+    if (mesh) {
+        if (-1 != skinIndex) {
+            glm::mat4              nodeMatrix    = matrix;
+            Node *currentParent = parent;
+            while (currentParent)
+            {
+                nodeMatrix    = currentParent->matrix * nodeMatrix;
+                currentParent = currentParent->parent;
+            }
+            nodeMatrix = world_matrix * nodeMatrix;
+            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
+//			mesh->uniformBlock.matrix = getMatrix();
+            // Update join matrices
+            glm::mat4 inverseTransform = glm::inverse(getMatrix());
+            int numJoints = int(skin->joints.size());
+            std::vector<glm::mat4> jointMatrices(numJoints);
+            for (size_t i = 0; i < numJoints; i++) {
+                vkglTF::Node *jointNode = skin->joints[i];
+                jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
+                jointMatrices[i] = inverseTransform * jointMatrices[i];
+            }
+            memcpy(skin->skinBuffer.mapped, jointMatrices.data(), numJoints * one_matrix);
+        }
+    }
+
+    for (auto& child : children) {
+        child->updateSkin(world_matrix);
+    }
 }
 
 vkglTF::Node::~Node() {
@@ -1296,7 +1337,15 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 			newSkin->skeletonRoot = nodeFromIndex(source.skeleton);
 		}
 
-		// Get inverse bind matrices from buffer
+        // Find Joint nodes
+        for (int jointIndex : source.joints) {
+            Node* node = nodeFromIndex(jointIndex);
+            if (node) {
+                newSkin->joints.push_back(nodeFromIndex(jointIndex));
+            }
+        }
+
+        // Get inverse bind matrices from buffer
 		if (source.inverseBindMatrices > -1) {
 			const tinygltf::Accessor &accessor      = gltfModel.accessors[source.inverseBindMatrices];
 			const tinygltf::BufferView &bufferView  = gltfModel.bufferViews[accessor.bufferView];
@@ -1313,14 +1362,6 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
                     newSkin->inverseBindMatrices.data()));
             VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, newSkin->skinBuffer.memory, 0, one_matrix * newSkin->inverseBindMatrices.size(), 0, &newSkin->skinBuffer.mapped));
             newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, one_matrix * newSkin->inverseBindMatrices.size() };
-        }
-
-        // Find Joint nodes
-        for (int jointIndex : source.joints) {
-            Node* node = nodeFromIndex(jointIndex);
-            if (node) {
-                newSkin->joints.push_back(nodeFromIndex(jointIndex));
-            }
         }
 
         skins.push_back(newSkin);
@@ -2317,7 +2358,7 @@ void vkglTF::Model::resetAnimation()
     }
 }
 
-void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix)
+void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4& world_matrix, bool ifSkin)
 {
 	if (index > static_cast<uint32_t>(animations.size()) - 1) {
 		std::cout << "No animation with index " << index << std::endl;
@@ -2375,7 +2416,12 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 	}
 	if (updated) {
 		for (auto &node : nodes) {
-			node->update(world_matrix);
+            if (ifSkin)
+            {
+                node->updateSkin(world_matrix);
+            } else {
+                node->update(world_matrix);
+            }
 		}
 	}
 }
