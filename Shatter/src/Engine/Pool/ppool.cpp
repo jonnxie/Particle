@@ -174,7 +174,7 @@ void PPool::init() {
                  RasterState::TriangleFace,
                  MultisampleState::Default,
                  DepthStencilState::Default,
-                 BlendState::Default,
+                 BlendState::GPass,
                  std::vector<Sl_id> {"Default","Camera", "Skin", "BaseTexture"},
                  RenderPassType::Default,
                  SubpassG

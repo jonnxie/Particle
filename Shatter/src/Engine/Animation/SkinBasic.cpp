@@ -86,7 +86,7 @@ void SkinBasic::constructD() {
         (*dpool)[d]->m_newDraw = func;
     }
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("BasicAnimation", m_id),[&, d](float _abs_time){
+    TaskPool::pushUpdateTask(tool::combine("SkinAnimation", m_id),[&, d](float _abs_time){
         if(m_update)
         {
             ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);

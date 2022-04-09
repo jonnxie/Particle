@@ -1305,14 +1305,14 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 			memcpy(newSkin->inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 
             VK_CHECK_RESULT(device->createBuffer(
-                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     one_matrix * newSkin->inverseBindMatrices.size(),
                     &newSkin->skinBuffer.buffer,
                     &newSkin->skinBuffer.memory,
                     newSkin->inverseBindMatrices.data()));
             VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, newSkin->skinBuffer.memory, 0, one_matrix * newSkin->inverseBindMatrices.size(), 0, &newSkin->skinBuffer.mapped));
-            newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, sizeof(one_matrix * newSkin->inverseBindMatrices.size()) };
+            newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, one_matrix * newSkin->inverseBindMatrices.size() };
         }
 
         // Find Joint nodes
@@ -1732,7 +1732,7 @@ void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
     // Descriptors for per-skin images
     {
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
         };
         VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
         descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1998,7 +1998,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
     // Descriptors for per-skin images
     {
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
+                tool::getSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0),
         };
         VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
         descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -2443,7 +2443,7 @@ void vkglTF::Model::prepareSkinDescriptor(vkglTF::Skin* skin, VkDescriptorSetLay
 
         VkWriteDescriptorSet writeDescriptorSet{};
         writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         writeDescriptorSet.descriptorCount = 1;
         writeDescriptorSet.dstSet = skin->skinBuffer.descriptorSet;
         writeDescriptorSet.dstBinding = 0;
@@ -2452,7 +2452,6 @@ void vkglTF::Model::prepareSkinDescriptor(vkglTF::Skin* skin, VkDescriptorSetLay
         vkUpdateDescriptorSets(device->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
     }
 }
-
 
 std::pair<glm::vec3,glm::vec3> getExtremeVec3(void * _data,size_t _count)
 {

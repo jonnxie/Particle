@@ -237,8 +237,8 @@ int main() {
 
     auto skin = new SkinBasic(tool::combineModel("CesiumMan.gltf"),
                               glm::vec3(-8.0f,-8.0f,0.0f),
-                              glm::vec3(1.0f,0.0f,0.0f),
-                              0.0f,
+                              glm::vec3(0.0f,1.0f,0.0f),
+                              -half_pai,
                               glm::vec3(1.0f));
 
     std::vector<int> coor_line;

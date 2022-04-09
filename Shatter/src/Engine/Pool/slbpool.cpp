@@ -135,7 +135,7 @@ void SlbPool::init(){
 
         m_map["Skin"] = std::vector<VkDescriptorSetLayoutBinding>{
             tool::descriptorSetLayoutBinding(
-                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                     VK_SHADER_STAGE_VERTEX_BIT,
                     0)
         };
