@@ -74,7 +74,7 @@ void SkinBasic::constructD() {
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_pipeline]->getPipeline());
         ((vkglTF::Model*)(*SingleDPool)[d]->getData())->draw(_cb,
-                                                             0,
+                                                             vkglTF::RenderFlags::BindImages,
                                                              PPool::getPool()[m_pipeline]->getPipelineLayout(),
                                                              3);
 //        m_model->draw(_cb, 0, PPool::getPool()[m_pipeline]->getPipelineLayout());
