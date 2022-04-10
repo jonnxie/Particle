@@ -149,7 +149,8 @@ namespace vkglTF
         std::string name;
 		Node* skeletonRoot = nullptr;
 		std::vector<glm::mat4> inverseBindMatrices;
-		std::vector<Node*> joints;
+        std::vector<glm::mat4> jointMatrices;
+        std::vector<Node*> joints;
         struct UniformBuffer {
             VkBuffer buffer = VK_NULL_HANDLE;
             VkDeviceMemory memory = VK_NULL_HANDLE;

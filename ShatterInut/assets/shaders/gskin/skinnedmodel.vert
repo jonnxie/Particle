@@ -17,7 +17,7 @@ layout(set = 1,binding = 0) uniform UniformCameraObject{
 	mat4 proj;
 }c;
 
-layout(std430, set = 2, binding = 0) readonly buffer JointMatrices {
+layout(set = 2, binding = 0) readonly buffer JointMatrices {
 	mat4 jointMatrices[];
 };
 

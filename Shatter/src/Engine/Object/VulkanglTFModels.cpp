@@ -564,32 +564,9 @@ glm::mat4 vkglTF::Node::getMatrix() {
 
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
-        if (-1 == skinIndex) {
-            glm::mat4 m = getMatrix();
-            m = world_matrix * m;
-            memcpy(mesh->uniformBuffer.mapped, &world_matrix, sizeof(glm::mat4));
-        } else {
-            glm::mat4              nodeMatrix    = matrix;
-            Node *currentParent = parent;
-            while (currentParent)
-            {
-                nodeMatrix    = currentParent->matrix * nodeMatrix;
-                currentParent = currentParent->parent;
-            }
-            nodeMatrix = world_matrix * nodeMatrix;
-            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
-//			mesh->uniformBlock.matrix = getMatrix();
-			// Update join matrices
-            glm::mat4 inverseTransform = glm::inverse(getMatrix());
-            int numJoints = int(skin->joints.size());
-            std::vector<glm::mat4> jointMatrices(numJoints);
-			for (size_t i = 0; i < numJoints; i++) {
-				vkglTF::Node *jointNode = skin->joints[i];
-                jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-                jointMatrices[i] = inverseTransform * jointMatrices[i];
-			}
-			memcpy(skin->skinBuffer.mapped, jointMatrices.data(), numJoints * one_matrix);
-		}
+        glm::mat4 m = getMatrix();
+        m = world_matrix * m;
+        memcpy(mesh->uniformBuffer.mapped, &m, sizeof(glm::mat4));
 	}
 
 	for (auto& child : children) {
@@ -599,28 +576,24 @@ void vkglTF::Node::update(const glm::mat4& world_matrix) {
 
 void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
     if (mesh) {
-        if (-1 != skinIndex) {
-            glm::mat4              nodeMatrix    = matrix;
-            Node *currentParent = parent;
-            while (currentParent)
-            {
-                nodeMatrix    = currentParent->matrix * nodeMatrix;
-                currentParent = currentParent->parent;
-            }
-            nodeMatrix = world_matrix * nodeMatrix;
-            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
-//			mesh->uniformBlock.matrix = getMatrix();
-            // Update join matrices
-            glm::mat4 inverseTransform = glm::inverse(getMatrix());
-            int numJoints = int(skin->joints.size());
-            std::vector<glm::mat4> jointMatrices(numJoints);
-            for (size_t i = 0; i < numJoints; i++) {
-                vkglTF::Node *jointNode = skin->joints[i];
-                jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-                jointMatrices[i] = inverseTransform * jointMatrices[i];
-            }
-            memcpy(skin->skinBuffer.mapped, jointMatrices.data(), numJoints * one_matrix);
+        glm::mat4 nodeMatrix = matrix;
+        Node *currentParent = parent;
+        while (currentParent) {
+            nodeMatrix = currentParent->matrix * nodeMatrix;
+            currentParent = currentParent->parent;
         }
+        nodeMatrix = world_matrix * nodeMatrix;
+        memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
+    }
+    if (-1 != skinIndex) {
+        glm::mat4 inverseTransform = glm::inverse(getMatrix());
+        int numJoints = int(skin->joints.size());
+        for (size_t i = 0; i < numJoints; i++) {
+            vkglTF::Node *jointNode = skin->joints[i];
+            skin->jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
+            skin->jointMatrices[i] = inverseTransform * skin->jointMatrices[i];
+        }
+        memcpy(skin->skinBuffer.mapped, skin->jointMatrices.data(), numJoints * one_matrix);
     }
 
     for (auto& child : children) {
@@ -657,12 +630,12 @@ VkVertexInputAttributeDescription vkglTF::Vertex::inputAttributeDescription(uint
 			return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
 		case VertexComponent::Color:
 			return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color) });
-		case VertexComponent::Tangent:
-			return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent)} );
 		case VertexComponent::Joint0:
 			return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, joint0) });
 		case VertexComponent::Weight0:
 			return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, weight0) });
+        case VertexComponent::Tangent:
+            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent)} );
 		default:
 			return VkVertexInputAttributeDescription({});
 	}
@@ -1351,17 +1324,19 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
 			const tinygltf::BufferView &bufferView  = gltfModel.bufferViews[accessor.bufferView];
 			const tinygltf::Buffer &buffer          = gltfModel.buffers[bufferView.buffer];
 			newSkin->inverseBindMatrices.resize(accessor.count);
+            newSkin->jointMatrices.resize(accessor.count);
 			memcpy(newSkin->inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 
+            uint64_t size = one_matrix * newSkin->inverseBindMatrices.size();
             VK_CHECK_RESULT(device->createBuffer(
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    one_matrix * newSkin->inverseBindMatrices.size(),
+                    size,
                     &newSkin->skinBuffer.buffer,
                     &newSkin->skinBuffer.memory,
                     newSkin->inverseBindMatrices.data()));
-            VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, newSkin->skinBuffer.memory, 0, one_matrix * newSkin->inverseBindMatrices.size(), 0, &newSkin->skinBuffer.mapped));
-            newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, one_matrix * newSkin->inverseBindMatrices.size() };
+            VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, newSkin->skinBuffer.memory, 0, size, 0, &newSkin->skinBuffer.mapped));
+            newSkin->skinBuffer.descriptor = { newSkin->skinBuffer.buffer, 0, size };
         }
 
         skins.push_back(newSkin);
@@ -1602,7 +1577,12 @@ void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
             }
             // Initial pose
             if (node->mesh) {
-                node->update(world_matrix);
+                if (node->skin)
+                {
+                    node->updateSkin(world_matrix);
+                } else {
+                    node->update(world_matrix);
+                }
             }
         }
     }
@@ -1731,7 +1711,7 @@ void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
         }
     }
     for (auto skin : skins) {
-        if (skin->inverseBindMatrices.size() != 0) {
+        if (!skin->inverseBindMatrices.empty()) {
             skinCount++;
         }
     }
@@ -1869,7 +1849,13 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			}
 			// Initial pose
 			if (node->mesh) {
-				node->update(world_matrix);
+//				node->update(world_matrix);
+                if (node->skin)
+                {
+                    node->updateSkin(world_matrix);
+                } else {
+                    node->update(world_matrix);
+                }
 			}
 		}
 	}
@@ -2415,6 +2401,16 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 		}
 	}
 	if (updated) {
+        std::vector<std::string> meshNames;
+        std::vector<std::string> skinNames;
+        for (auto &node : linearNodes) {
+            if (node->mesh) {
+                meshNames.emplace_back(node->mesh->name);
+            }
+            if (node->skin) {
+                skinNames.emplace_back(node->skin->name);
+            }
+        }
 		for (auto &node : nodes) {
             if (ifSkin)
             {
