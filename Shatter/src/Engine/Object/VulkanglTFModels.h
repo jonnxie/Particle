@@ -179,6 +179,7 @@ namespace vkglTF
         void resetMatrix();
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
+        glm::mat4 getSkinMatrix();
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
         void updateSkin(const glm::mat4& world_matrix = glm::mat4(1.0f));
 		~Node();

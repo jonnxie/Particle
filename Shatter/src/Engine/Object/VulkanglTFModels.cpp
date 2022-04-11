@@ -562,6 +562,16 @@ glm::mat4 vkglTF::Node::getMatrix() {
 	return m;
 }
 
+glm::mat4 vkglTF::Node::getSkinMatrix() {
+    glm::mat4 m = localMatrix();
+    vkglTF::Node *p = parent;
+    while (p) {
+        m = p->localMatrix() * m;
+        p = p->parent;
+    }
+    return m;
+}
+
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
         glm::mat4 m = getMatrix();
@@ -583,6 +593,7 @@ void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
             currentParent = currentParent->parent;
         }
         nodeMatrix = world_matrix * nodeMatrix;
+        nodeMatrix = getMatrix();
         memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
     }
     if (-1 != skinIndex) {
@@ -1314,7 +1325,7 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
         for (int jointIndex : source.joints) {
             Node* node = nodeFromIndex(jointIndex);
             if (node) {
-                newSkin->joints.push_back(nodeFromIndex(jointIndex));
+                newSkin->joints.push_back(node);
             }
         }
 
@@ -1849,7 +1860,7 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			}
 			// Initial pose
 			if (node->mesh) {
-//				node->update(world_matrix);
+                std::cout << node->name << std::endl;
                 if (node->skin)
                 {
                     node->updateSkin(world_matrix);
