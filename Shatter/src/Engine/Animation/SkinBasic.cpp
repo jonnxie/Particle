@@ -28,7 +28,7 @@ SkinBasic::SkinBasic(const std::string &_files, glm::vec3 _pos, glm::vec3 _rotat
         m_pipeline(std::move(_pipeline)),
         m_sets{std::move(_sets)}
 {
-    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors;
+    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors;
     m_model = new vkglTF::Model;
     m_scale = glm::scale(glm::mat4(1.0f), _scale);
     m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);

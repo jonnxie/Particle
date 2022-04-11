@@ -8,10 +8,6 @@
 #include "Engine/Object/device.h"
 #include "Engine/Renderer/shatter_render_include.h"
 #include "Engine/Object/inputaction.h"
-//#include <ktx.h>
-//#include <ktxvulkan.h>
-//#include "../../external/ktx/include/ktx.h"
-//#include "../../external/ktx/include/ktxvulkan.h"
 using namespace Shatter::render;
 
 namespace file{
@@ -1843,3 +1839,11 @@ void testSIMD() {
     std::cout << "glm simd true" << std::endl;
 #endif
 }
+
+void printMat(const glm::mat4& _matrix) {
+    std::cout << "m[0]: " << std::fixed << _matrix[0][0] << " " << _matrix[0][1] << " " <<_matrix[0][2] << " " <<_matrix[0][3] << " " <<std::endl;
+    std::cout << "m[1]: " << std::fixed << _matrix[1][0] << " " << _matrix[1][1] << " " <<_matrix[1][2] << " " <<_matrix[1][3] << " " <<std::endl;
+    std::cout << "m[2]: " << std::fixed << _matrix[2][0] << " " << _matrix[2][1] << " " <<_matrix[2][2] << " " <<_matrix[2][3] << " " <<std::endl;
+    std::cout << "m[3]: " << std::fixed << _matrix[3][0] << " " << _matrix[3][1] << " " <<_matrix[3][2] << " " <<_matrix[3][3] << " " <<std::endl;
+}
+

@@ -593,7 +593,6 @@ void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
             currentParent = currentParent->parent;
         }
         nodeMatrix = world_matrix * nodeMatrix;
-        nodeMatrix = getMatrix();
         memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
     }
     if (-1 != skinIndex) {
@@ -1475,7 +1474,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 					glm::vec3 *buf = new glm::vec3[accessor.count];
 					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec3));
 					for (size_t index = 0; index < accessor.count; index++) {
-						sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+						sampler.outputsVec4.emplace_back(buf[index], 0.0f);
 					}
                     delete[] buf;
                     break;
@@ -1860,7 +1859,6 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			}
 			// Initial pose
 			if (node->mesh) {
-                std::cout << node->name << std::endl;
                 if (node->skin)
                 {
                     node->updateSkin(world_matrix);

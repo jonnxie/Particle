@@ -454,7 +454,7 @@ struct Point_CP{
     }
 };
 
-struct GltfPoint{
+struct GltfPoint {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 uv;
@@ -481,26 +481,26 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct RayTracingUniformData{
+struct RayTracingUniformData {
     glm::mat4 viewInverse;
     glm::mat4 projInverse;
     glm::vec4 lightPos;
     int32_t   vertexSize;
 };
 
-struct InstanceData{
+struct InstanceData {
     glm::vec3 pos;
     float scale;
 };
 
-struct ObjectBox{
+struct ObjectBox {
     glm::vec3 pos;
     float radius;
 };
 
 #define MAX_LOD_LEVEL 5
 
-static struct IndirectDrawState{
+static struct IndirectDrawState {
     uint32_t drawCount;						// Total number of indirect draw counts to be issued
     uint32_t lodCount[MAX_LOD_LEVEL + 1];	// Statistics for number of draws per LOD level (written by compute shader)
 } indirect_draw_state;
@@ -554,8 +554,8 @@ struct Tri{
  * 0  1
  */
 
-struct NPlane{
-    struct Point{
+struct NPlane {
+    struct Point {
         glm::vec3 pos;
         glm::vec2 uv;
     }points[4]{};
@@ -563,7 +563,7 @@ struct NPlane{
 
 #define NPlaneSize 100
 
-enum class CubePlane{
+enum class CubePlane {
     Front = 0,
     Back,
     Left,
@@ -573,9 +573,9 @@ enum class CubePlane{
     PlaneCount,
 };
 
-struct Cube{
-    struct Plane{
-        struct Point{
+struct Cube {
+    struct Plane {
+        struct Point {
             glm::vec3 pos;
             glm::vec3 normal;
             glm::vec2 uv;
@@ -610,7 +610,7 @@ static struct Material{
 
 Material& getMaterial();
 
-struct PBRMaterial{
+struct PBRMaterial {
     glm::vec4 baseColor;           // default: float4(1.0)
     glm::vec4 emissive;            // default: float4(0.0, 0.0, 0.0, 1.0)
     glm::vec4 postLightingColor;   // default: float4(0.0)
@@ -1251,5 +1251,6 @@ void transitionImageLayout(
 
 void testSIMD();
 
+void printMat(const glm::mat4& _matrix);
 
 #endif //SHATTER_ENGINE_SHATTER_ITEM_H
