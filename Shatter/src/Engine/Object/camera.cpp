@@ -217,6 +217,9 @@ void Camera::flush() {
     memcpy(buffer->mapped, &cameraPos, one_vec3);
     buffer->flush();
 
+    buffer = SingleBPool.getBuffer("ViewSpaceDepth",Buffer_Type::Uniform_Buffer);
+    float depth[2]{m_zNear, m_zFar};
+    memcpy(buffer->mapped, depth, 8);
 
     buffer = SingleBPool.getBuffer(tool::combine("DLines",m_dlineId),Buffer_Type::Vertex_Host_Buffer);
     std::array<Line,3> lines{
