@@ -49,19 +49,32 @@ void Camera::init() {
     camera_buffer.offset = 0;
     camera_buffer.range = sizeof(CameraBuffer);
 
-    VkWriteDescriptorSet descriptorWrites = {};
+    VkDescriptorBufferInfo view_space_buffer = {};
+    view_space_buffer.buffer = (*BPool::getPool().getBuffer("ViewSpaceDepth",Buffer_Type::Uniform_Buffer))();
+    view_space_buffer.offset = 0;
+    view_space_buffer.range = 8;
 
-    descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites.dstSet = SetPool::getPool()["Camera"];
-    descriptorWrites.dstBinding = 0;
-    descriptorWrites.dstArrayElement = 0;
-    descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorWrites.descriptorCount = 1;
-    descriptorWrites.pBufferInfo = &camera_buffer;
+    std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+
+    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet = SetPool::getPool()["Camera"];
+    descriptorWrites[0].dstBinding = 0;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].pBufferInfo = &camera_buffer;
+
+    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[1].dstSet = SetPool::getPool()["ViewSpaceDepth"];
+    descriptorWrites[1].dstBinding = 0;
+    descriptorWrites[1].dstArrayElement = 0;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[1].descriptorCount = 1;
+    descriptorWrites[1].pBufferInfo = &view_space_buffer;
 
     vkUpdateDescriptorSets(Device::getDevice()(),
-                           1,
-                           &descriptorWrites,
+                           descriptorWrites.size(),
+                           descriptorWrites.data(),
                            0,
                            nullptr);
     generateProj();

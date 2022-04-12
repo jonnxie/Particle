@@ -238,6 +238,7 @@ void BPool::init() {
     createUniformBuffer("CascadeShadow",CascadeShadowSize);
     createUniformBuffer("CascadeIndex",4);
     createUniformBuffer("ViewPort",8);
+    createUniformBuffer("ViewSpaceDepth",  8);
 
     createTexture(ImageType::KTXDimension,"glass",tool::combineTexture("colored_glass_rgba.ktx"));
     createVertexHostBuffer("CameraTargetPlane",CameraBufferSize);
@@ -246,6 +247,7 @@ void BPool::init() {
     m_uniform_map["CameraPos"]->map();
     m_uniform_map["CascadeShadow"]->map();
     m_uniform_map["CascadeIndex"]->map();
+    m_uniform_map["ViewSpaceDepth"]->map();
     m_vertex_map["CameraTargetPlane"]->map();
 
     m_uniform_map["ViewPort"]->map();

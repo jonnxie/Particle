@@ -81,6 +81,15 @@ void SlbPool::init(){
             nullptr}
     };
 
+    m_map["ViewSpaceDepth"] = std::vector<VkDescriptorSetLayoutBinding>{
+            VkDescriptorSetLayoutBinding{
+                    0,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    1,
+                    VK_SHADER_STAGE_FRAGMENT_BIT,
+                    nullptr}
+    };
+
     /*
      * basic
      */
