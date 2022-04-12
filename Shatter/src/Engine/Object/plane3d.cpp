@@ -68,7 +68,7 @@ bool Plane3d::existsIntersection(const Plane3d & _other) const {
 }
 
 glm::vec3 Plane3d::getMemberPoint() const {
-    return m_normal * -m_distance;
+    return m_normal * m_distance;
 }
 
 void Plane3d::recalculateD(const glm::vec3 & _memberPoint) {

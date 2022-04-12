@@ -306,3 +306,181 @@ DrawCube::DrawCube() {
         };
     };
 }
+
+DPlaneHandle::DPlaneHandle() {
+    {
+        m_localCoordiante = MPool<Target>::getPool()->malloc();
+        new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
+                                                                             SingleAPP.getWorkTargetCenter()};
+    }
+    m_pipeline = "Point";
+    m_sets = {"Camera", "ViewPort"};
+    m_listener = new DrawNPlaneHandle(this);
+    pushUI();
+}
+
+DPlaneHandle::~DPlaneHandle() {
+
+}
+
+NPlane &DPlaneHandle::operator[](size_t _index) {
+    return planes[_index]->plane;
+}
+
+void DPlaneHandle::pushNPlane(const NPlane &_point) {
+    planes.emplace_back(std::make_unique<DPlane>(_point));
+}
+
+void DPlaneHandle::pushUI() {
+    GUI::pushUI("DPlaneHandle", [&](){
+        ImGui::Begin("DPlaneHandleSetting");
+
+        static char buf[32] = "default";
+        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
+        if(ImGui::Button("LoadFile"))
+        {
+            loadFile(std::string(buf) + ".gltf");
+        }
+
+        if(ImGui::Button("drawPlane"))
+        {
+            drawNPlane();
+        }
+
+        if (ImGui::TreeNode("Select Pipeline"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& [id, val] : SinglePPool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    m_pipeline = id;
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Select Descriptor Sets"))
+        {
+            ShowHelpMarker("Hold CTRL and click to select multiple items.");
+            auto count = SingleSetPool.m_map.size();
+            auto static selection = std::vector<int>(count);
+            int num = 0;
+            for(auto& [id, val] : SingleSetPool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selection[num] == 1))
+                {
+                    if (!checkKey(GLFW_KEY_LEFT_CONTROL) && !checkKey(GLFW_KEY_RIGHT_CONTROL))
+                    {
+                        for(auto& s : selection)
+                        {
+                            s = 0;
+                        }
+                        m_sets.clear();
+                    }// Clear selection when CTRL is not held
+                    selection[num] ^= 1;
+                    m_sets.push_back(id);
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        ImGui::SliderFloat3("Color",
+                            reinterpret_cast<float *>(&m_color),
+                            0.0f,
+                            1.0f);
+        ImGui::SliderFloat3("Coordinate",
+                            reinterpret_cast<float *>(&m_localCoordiante),
+                            std::numeric_limits<float>::min() / 2.0f,
+                            std::numeric_limits<float>::max() / 2.0f);
+
+        if(ImGui::Button("end")) {
+            destroy();
+        }
+
+        ImGui::End();// End setting
+    });
+
+}
+
+int DPlaneHandle::getNPlaneCount() {
+    return planes.size();
+}
+
+void DPlaneHandle::loadFile(const std::string &_filename) {
+    auto planeCount = planes.size();
+
+    size_t vertexCount = 4 * planeCount;
+    std::vector<glm::vec3> pos_vec(vertexCount);
+    std::vector<glm::vec2> uv_vec(vertexCount);
+
+    size_t indexCount = 6 * planeCount;
+    std::vector<uint32_t> index_vec(indexCount);
+
+    for (int i = 0; i < planeCount; ++i) {
+        pos_vec[i * 4] = planes[i]->plane.points[0].pos;
+        uv_vec[i * 4] = planes[i]->plane.points[0].uv;
+
+        pos_vec[i * 4 + 1] = planes[i]->plane.points[1].pos;
+        uv_vec[i * 4 + 1] = planes[i]->plane.points[1].uv;
+
+        pos_vec[i * 4 + 2] = planes[i]->plane.points[2].pos;
+        uv_vec[i * 4 + 2] = planes[i]->plane.points[2].uv;
+
+        pos_vec[i * 4 + 3] = planes[i]->plane.points[3].pos;
+        uv_vec[i * 4 + 3] = planes[i]->plane.points[3].uv;
+
+        index_vec[i * 6] = i * 4;
+        index_vec[i * 6 + 1] = i * 4 + 2;
+        index_vec[i * 6 + 2] = i * 4 + 1;
+        index_vec[i * 6 + 3] = i * 4;
+        index_vec[i * 6 + 4] = i * 4 + 3;
+        index_vec[i * 6 + 5] = i * 4 + 2;
+    }
+    std::vector<void*> data_vec{pos_vec.data(), uv_vec.data()};
+
+    vkglTF::Model::writeMeshToFile(_filename,
+                         vertexCount,
+                         data_vec,
+                         index_vec,
+                         std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                              vkglTF::VertexComponent::UV});
+}
+
+void DPlaneHandle::drawNPlane() {
+    if (appendState) {
+        SingleAPP.appendListener("drawNPlane", m_listener);
+        appendState = false;
+    } else {
+        SingleAPP.removeListener("drawNPlane");
+        appendState = true;
+    }
+}
+
+void DPlaneHandle::destroy() const {
+    if (!appendState){
+        TaskPool::pushTask([](){
+            SingleAPP.deleteListener("drawNPlane");
+        });
+    } else {
+        TaskPool::pushTask([=](){
+            delete m_listener;
+        });
+    }
+}
+
+DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle) {
+
+}
+
+DrawNPlaneHandle::~DrawNPlaneHandle() {
+
+}

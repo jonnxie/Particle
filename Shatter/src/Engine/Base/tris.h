@@ -12,6 +12,7 @@
 #include MPoolCatalog
 #include DeviceCatalog
 #include ListenerCatalog
+#include HandleCatalog
 #include "tiny_gltf.h"
 #include "Engine/Object/VulkanglTFModels.h"
 
@@ -52,6 +53,36 @@ public:
     NPlane              plane;
     bool                changed = true;
     int                 id;
+};
+
+class DrawNPlaneHandle;
+
+class DPlaneHandle :public Handle {
+public:
+    DPlaneHandle();
+    ~DPlaneHandle() override;
+    DefineUnCopy(DPlaneHandle);
+public:
+    NPlane& operator[](size_t _index);
+    void pushNPlane(const NPlane& _point);
+    void pushUI() override;
+    int  getNPlaneCount();
+    void loadFile(const std::string& _filename) override;
+    void drawNPlane();
+    void destroy() const override;
+public:
+    ClassPointerElement(m_listener, DrawNPlaneHandle*, Listener);
+private:
+    std::deque<std::unique_ptr<DPlane>> planes;
+    bool appendState = true;
+};
+
+class DrawNPlaneHandle : public Shatter::Listener {
+public:
+    explicit DrawNPlaneHandle(DPlaneHandle* _handle);
+    ~DrawNPlaneHandle() override;
+private:
+    DPlaneHandle* handle;
 };
 
 class DrawNPlane : public Shatter::Listener{

@@ -2558,9 +2558,9 @@ std::pair<glm::vec4,glm::vec4> getExtremeVec4(void * _data,size_t _count)
 
 void vkglTF::Model::writeMeshToFile(const std::string& _filename,
                                     size_t _count,
-                                    std::vector<void*> _points,
-                                    std::vector<uint32_t> _indices,
-                                    std::vector<VertexComponent> _components) {
+                                    const std::vector<void*>& _points,
+                                    const std::vector<uint32_t>& _indices,
+                                    const std::vector<VertexComponent>& _components) {
     tinygltf::Model m;
     tinygltf::Scene scene;
     tinygltf::Mesh mesh;
