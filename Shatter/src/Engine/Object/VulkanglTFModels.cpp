@@ -2784,7 +2784,7 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
     // Save it to a file
     tinygltf::TinyGLTF gltf;
     gltf.WriteGltfSceneToFile(&m, _filename,
-                              false, // embedImages
+                              true, // embedImages
                               true, // embedBuffers
                               true, // pretty print
                               false); // write binary

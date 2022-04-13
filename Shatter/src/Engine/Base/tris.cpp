@@ -315,6 +315,7 @@ DPlaneHandle::DPlaneHandle() {
     }
     m_pipeline = "Point";
     m_sets = {"Camera", "ViewPort"};
+    m_color = RED_COLOR;
     m_listener = new DrawNPlaneHandle(this);
     pushUI();
 }
@@ -423,6 +424,7 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
 
     size_t vertexCount = 4 * planeCount;
     std::vector<glm::vec3> pos_vec(vertexCount);
+    std::vector<glm::vec3> normal_vec(vertexCount, glm::vec3{0.0f, 0.0f, 1.0f});
     std::vector<glm::vec2> uv_vec(vertexCount);
     std::vector<glm::vec4> color_vec(vertexCount, glm::vec4(m_color, 1.0f));
 
@@ -449,13 +451,14 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
         index_vec[i * 6 + 4] = i * 4 + 3;
         index_vec[i * 6 + 5] = i * 4 + 2;
     }
-    std::vector<void*> data_vec{pos_vec.data(), color_vec.data(), uv_vec.data()};
+    std::vector<void*> data_vec{pos_vec.data(), normal_vec.data(), color_vec.data(), uv_vec.data()};
 
     vkglTF::Model::writeMeshToFile(_filename,
                          vertexCount,
                          data_vec,
                          index_vec,
                          std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                              vkglTF::VertexComponent::Normal,
                                                               vkglTF::VertexComponent::Color,
                                                               vkglTF::VertexComponent::UV});
 }
