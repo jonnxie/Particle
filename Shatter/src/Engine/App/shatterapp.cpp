@@ -208,7 +208,13 @@ namespace Shatter::app{
                 if(drawNPlane)
                 {
                     drawNPlane = false;
-                    appendListener("drawNPlane",new DrawNPlane);
+                    if (Config::getConfig("enableScreenGui"))
+                    {
+                        auto planeHandle = new DPlaneHandle();
+                        SingleRender.normalChanged = true;
+                    } else {
+                        appendListener("drawNPlane", new DrawNPlane);
+                    }
                 }else{
                     deleteListener("drawNPlane");
                     drawNPlane = true;

@@ -320,15 +320,15 @@ DPlaneHandle::DPlaneHandle() {
 }
 
 DPlaneHandle::~DPlaneHandle() {
-
+    GUI::popUI("DPlaneHandle");
 }
 
 NPlane &DPlaneHandle::operator[](size_t _index) {
     return planes[_index]->plane;
 }
 
-void DPlaneHandle::pushNPlane(const NPlane &_point) {
-    planes.emplace_back(std::make_unique<DPlane>(_point));
+void DPlaneHandle::pushNPlane(const NPlane &_plane) {
+    planes.emplace_back(std::make_unique<DPlane>(_plane));
 }
 
 void DPlaneHandle::pushDPlane(std::unique_ptr<DPlane> _plane) {
@@ -412,7 +412,6 @@ void DPlaneHandle::pushUI() {
 
         ImGui::End();// End setting
     });
-
 }
 
 int DPlaneHandle::getNPlaneCount() {

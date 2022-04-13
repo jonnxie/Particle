@@ -64,7 +64,7 @@ public:
     DefineUnCopy(DPlaneHandle);
 public:
     NPlane& operator[](size_t _index);
-    void pushNPlane(const NPlane& _point);
+    void pushNPlane(const NPlane& _plane);
     void pushDPlane(std::unique_ptr<DPlane> _plane);
     void pushUI() override;
     int  getNPlaneCount();
