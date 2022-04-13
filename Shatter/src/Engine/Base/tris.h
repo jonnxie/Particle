@@ -65,6 +65,7 @@ public:
 public:
     NPlane& operator[](size_t _index);
     void pushNPlane(const NPlane& _point);
+    void pushDPlane(std::unique_ptr<DPlane> _plane);
     void pushUI() override;
     int  getNPlaneCount();
     void loadFile(const std::string& _filename) override;
@@ -72,8 +73,8 @@ public:
     void destroy() const override;
 public:
     ClassPointerElement(m_listener, DrawNPlaneHandle*, Listener);
+    ClassReferenceElement(planes, std::deque<std::unique_ptr<DPlane>>, Planes);
 private:
-    std::deque<std::unique_ptr<DPlane>> planes;
     bool appendState = true;
 };
 

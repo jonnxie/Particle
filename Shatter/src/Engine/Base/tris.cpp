@@ -331,6 +331,10 @@ void DPlaneHandle::pushNPlane(const NPlane &_point) {
     planes.emplace_back(std::make_unique<DPlane>(_point));
 }
 
+void DPlaneHandle::pushDPlane(std::unique_ptr<DPlane> _plane) {
+    planes.emplace_back(std::move(_plane));
+}
+
 void DPlaneHandle::pushUI() {
     GUI::pushUI("DPlaneHandle", [&](){
         ImGui::Begin("DPlaneHandleSetting");
@@ -477,10 +481,42 @@ void DPlaneHandle::destroy() const {
     }
 }
 
-DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle) {
-
+DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle):
+        handle(_handle) {
+    m_action[Event::MouseClick] = [&]() {
+        static bool draw = false;
+        static glm::vec3 pre_pos;
+        static glm::vec3 realPos;
+        static NPlane plane;
+        if (draw) {
+            TaskPool::popUpdateTask("DrawNPlaneUpdate");
+            draw = false;
+        } else {
+            pre_pos = input::getCursor();
+            pre_pos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, pre_pos - SingleAPP.getWorkTargetCenter())
+                      + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, pre_pos - SingleAPP.getWorkTargetCenter());
+            genPlane(pre_pos, pre_pos, plane);
+            auto p = std::make_unique<DPlane>(plane);
+            handle->pushDPlane(std::move(p));
+            TaskPool::pushUpdateTask("DrawNPlaneUpdate",[&](float _abs_time){
+                auto localPlane = std::move(handle->getPlanes().back());
+                handle->getPlanes().pop_back();
+                int id = localPlane->id;
+                realPos = input::getCursor();
+                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, realPos - SingleAPP.getWorkTargetCenter())
+                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, realPos - SingleAPP.getWorkTargetCenter());
+                genPlane(pre_pos, realPos, plane);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DPlane", id), Buffer_Type::Vertex_Host_Buffer);
+                auto* ptr = (Point*)buffer->mapped;
+                memcpy(ptr, &plane, NPlaneSize);
+                handle->getPlanes().push_back(std::move(localPlane));
+            });
+            SingleRender.drawChanged = true;
+            draw = true;
+        };
+    };
 }
 
 DrawNPlaneHandle::~DrawNPlaneHandle() {
-
+        delete handle;
 }
