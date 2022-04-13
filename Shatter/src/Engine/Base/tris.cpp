@@ -424,6 +424,7 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
     size_t vertexCount = 4 * planeCount;
     std::vector<glm::vec3> pos_vec(vertexCount);
     std::vector<glm::vec2> uv_vec(vertexCount);
+    std::vector<glm::vec4> color_vec(vertexCount, glm::vec4(m_color, 1.0f));
 
     size_t indexCount = 6 * planeCount;
     std::vector<uint32_t> index_vec(indexCount);
@@ -441,20 +442,21 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
         pos_vec[i * 4 + 3] = planes[i]->plane.points[3].pos;
         uv_vec[i * 4 + 3] = planes[i]->plane.points[3].uv;
 
-        index_vec[i * 6] = i * 4;
+        index_vec[i * 6]     = i * 4;
         index_vec[i * 6 + 1] = i * 4 + 2;
         index_vec[i * 6 + 2] = i * 4 + 1;
         index_vec[i * 6 + 3] = i * 4;
         index_vec[i * 6 + 4] = i * 4 + 3;
         index_vec[i * 6 + 5] = i * 4 + 2;
     }
-    std::vector<void*> data_vec{pos_vec.data(), uv_vec.data()};
+    std::vector<void*> data_vec{pos_vec.data(), color_vec.data(), uv_vec.data()};
 
     vkglTF::Model::writeMeshToFile(_filename,
                          vertexCount,
                          data_vec,
                          index_vec,
                          std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                              vkglTF::VertexComponent::Color,
                                                               vkglTF::VertexComponent::UV});
 }
 

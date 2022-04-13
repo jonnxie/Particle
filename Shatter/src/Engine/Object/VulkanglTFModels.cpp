@@ -2604,16 +2604,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
         switch (_components[index]) {
             case VertexComponent::Position:
             {
-                primitive.attributes["POSITION"] = index;  // The index of the accessor for positions
+                primitive.attributes["POSITION"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
                 auto pair = getExtremeVec3(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec3;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2624,16 +2624,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             }
             case VertexComponent::Normal:
             {
-                primitive.attributes["NORMAL"] = index;  // The index of the accessor for positions
+                primitive.attributes["NORMAL"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
                 auto pair = getExtremeVec3(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec3;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2645,16 +2645,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
             case VertexComponent::UV:
             {
-                primitive.attributes["TEXCOORD_0"] = index;  // The index of the accessor for positions
+                primitive.attributes["TEXCOORD_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec2);
                 auto pair = getExtremeVec2(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec2);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec2;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2666,16 +2666,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
             case VertexComponent::Color:
             {
-                primitive.attributes["COLOR_0"] = index;  // The index of the accessor for positions
+                primitive.attributes["COLOR_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2687,16 +2687,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
             case VertexComponent::Tangent:
             {
-                primitive.attributes["TANGENT"] = index;  // The index of the accessor for positions
+                primitive.attributes["TANGENT"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2708,16 +2708,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
             case VertexComponent::Joint0:
             {
-                primitive.attributes["JOINTS_0"] = index;  // The index of the accessor for positions
+                primitive.attributes["JOINTS_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2729,16 +2729,16 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
 
             case VertexComponent::Weight0:
             {
-                primitive.attributes["WEIGHTS_0"] = index;  // The index of the accessor for positions
+                primitive.attributes["WEIGHTS_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
                 auto pair = getExtremeVec4(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
-                view.buffer = index;
+                view.buffer = index + 1;
                 view.byteOffset = 0;
                 view.byteLength = _count * one_vec4;
                 view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-                access.bufferView = index;
+                access.bufferView = index + 1;
                 access.byteOffset = 0;
                 access.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
                 access.count = _count;
@@ -2788,8 +2788,6 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
                               true, // embedBuffers
                               true, // pretty print
                               false); // write binary
-
-
 }
 
 void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
