@@ -131,7 +131,7 @@ void DLinePool::constructD(){
     {
         Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
 
-        mat = glm::mat4{
+        mat = glm::mat4 {
             glm::vec4{target->plane.x_coordinate, 0.0f},
             glm::vec4{target->plane.y_coordinate, 0.0f},
             glm::vec4{target->plane.z_coordinate, 0.0f},

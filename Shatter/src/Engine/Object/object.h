@@ -149,20 +149,22 @@ public:
     };
     void release()
     {
-        auto& model_pool = ModelSetPool::getPool();
-        auto dpool = MPool<DObject>::getPool();
-        for(auto i : m_dobjs){
-            dpool->free(i);
-            model_pool.free((*dpool)[i]->m_model_index);
-        }
-        auto gpool = MPool<GObject>::getPool();
-        for(auto i: m_gobjs){
-            gpool->free(i);
-        }
+        if (!m_mem_released) {
+            auto& model_pool = ModelSetPool::getPool();
+            auto dpool = MPool<DObject>::getPool();
+            for(auto i : m_dobjs){
+                dpool->free(i);
+                model_pool.free((*dpool)[i]->m_model_index);
+            }
+            auto gpool = MPool<GObject>::getPool();
+            for(auto i: m_gobjs){
+                gpool->free(i);
+            }
 
-        auto cpool = MPool<CObject>::getPool();
-        for(auto i: m_cobjs){
-            cpool->free(i);
+            auto cpool = MPool<CObject>::getPool();
+            for(auto i: m_cobjs){
+                cpool->free(i);
+            }
         }
     };
     std::vector<int> m_dobjs{};
@@ -191,6 +193,7 @@ protected:
     glm::mat4   m_rotate{};
     glm::mat4   m_translation{};
     uint32_t    m_capture_id{};
+    bool        m_mem_released = false;
 //    VkDescriptorSet m_capture_set = VK_NULL_HANDLE;
 };
 

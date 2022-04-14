@@ -46,6 +46,7 @@ class DPlane : public Object{
 public:
     explicit DPlane(const NPlane& _plane);
     ~DPlane() override;
+    void releaseMem();
     void constructG() override;
     void constructD() override;
     void constructC() override{};
@@ -68,6 +69,8 @@ public:
     void pushDPlane(std::unique_ptr<DPlane> _plane);
     void pushUI() override;
     int  getNPlaneCount();
+    void releaseMem();
+    void batch();
     void loadFile(const std::string& _filename) override;
     void drawNPlane();
     void destroy() const override;
@@ -76,6 +79,9 @@ public:
     ClassReferenceElement(planes, std::deque<std::unique_ptr<DPlane>>, Planes);
 private:
     bool appendState = true;
+    bool batched = false;
+    int drawId{};
+    int modelId{};
 };
 
 class DrawNPlaneHandle : public Shatter::Listener {

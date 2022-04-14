@@ -84,7 +84,20 @@ DPlane::DPlane(const NPlane& _plane)
 };
 
 DPlane::~DPlane(){
+    if (!m_mem_released) {
+        TaskPool::popUpdateTask(tool::combine("DPlane",id));
+    }
+}
+
+void DPlane::releaseMem(){
+    SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Default);
+    Object::release();
     TaskPool::popUpdateTask(tool::combine("DPlane",id));
+    vkQueueWaitIdle(SingleRender.graphics_queue);
+    SingleBPool.freeBuffer(tool::combine("DPlane",id), Buffer_Type::Vertex_Host_Buffer);
+    SingleBPool.freeBuffer(tool::combine("DPlane",id), Buffer_Type::Index_Buffer);
+    m_mem_released = true;
+    SingleRender.normalChanged = true;
 }
 
 void DPlane::constructG(){
@@ -313,8 +326,8 @@ DPlaneHandle::DPlaneHandle() {
         new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
                                                                              SingleAPP.getWorkTargetCenter()};
     }
-    m_pipeline = "Point";
-    m_sets = {"Camera", "ViewPort"};
+    m_pipeline = "GPlane";
+    m_sets = {"Camera", "Planet"};
     m_color = RED_COLOR;
     m_listener = new DrawNPlaneHandle(this);
     pushUI();
@@ -350,6 +363,11 @@ void DPlaneHandle::pushUI() {
         if(ImGui::Button("drawPlane"))
         {
             drawNPlane();
+        }
+
+        if (ImGui::Button("batch"))
+        {
+            batch();
         }
 
         if (ImGui::TreeNode("Select Pipeline"))
@@ -417,6 +435,80 @@ void DPlaneHandle::pushUI() {
 
 int DPlaneHandle::getNPlaneCount() {
     return planes.size();
+}
+
+void DPlaneHandle::releaseMem() {
+    SingleRender.releaseObject(drawId, DrawObjectType::Default);
+    auto dpool = MPool<DObject>::getPool();
+    dpool->free(drawId);
+    auto& model_pool = ModelSetPool::getPool();
+    model_pool.free(modelId);
+    TaskPool::popUpdateTask("DPlaneHandle");
+    vkQueueWaitIdle(SingleRender.graphics_queue);
+    SingleBPool.freeBuffer("DPlaneHandle", Buffer_Type::Vertex_Buffer);
+    SingleBPool.freeBuffer("DPlaneHandle", Buffer_Type::Index_Buffer);
+}
+
+void DPlaneHandle::batch() {
+    if (!batched) {
+        batched = true;
+    } else {
+        releaseMem();
+    }
+    int planeCount = planes.size();
+    std::vector<NPlane> batch_plane(planeCount);
+    std::vector<uint32_t> batch_index(planeCount * 6);
+    int indexOffset = 0;
+    for (int i = 0; i < planeCount; ++i) {
+        batch_plane[i] = planes[i]->plane;
+        indexOffset = i * 6;
+        batch_index[indexOffset]     = i * 4;
+        batch_index[indexOffset + 1] = i * 4 + 2;
+        batch_index[indexOffset + 2] = i * 4 + 1;
+        batch_index[indexOffset + 3] = i * 4;
+        batch_index[indexOffset + 4] = i * 4 + 3;
+        batch_index[indexOffset + 5] = i * 4 + 2;
+        planes[i]->releaseMem();
+    }
+    SingleBPool.createVertexHostBuffer("DPlaneHandle", NPlaneSize * planeCount, batch_plane.data());
+    SingleBPool.createIndexBuffer("DPlaneHandle", 4 * batch_index.size(), batch_index.data());
+
+    auto dpool = MPool<DObject>::getPool();
+    drawId = dpool->malloc();
+    modelId = ModelSetPool::getPool().malloc();
+
+    glm::mat4 mat(1.0f);
+    if(m_localCoordiante != -1)
+    {
+        Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
+
+        mat = glm::mat4 {
+                glm::vec4{target->plane.x_coordinate, 0.0f},
+                glm::vec4{target->plane.y_coordinate, 0.0f},
+                glm::vec4{target->plane.z_coordinate, 0.0f},
+                glm::vec4{target->center, 1.0f},
+        };
+    }
+    (*dpool)[drawId]->m_type = DType::Normal;
+    (*dpool)[drawId]->prepare(mat,
+                              modelId,
+                              DrawType::Index,
+                              0,
+                              "DPlaneHandle",
+                              planeCount * 4,
+                              "DPlaneHandle",
+                              batch_index.size(),
+                              0,
+                              m_pipeline,
+                              m_sets,
+                              m_pipeline,
+                              m_sets);
+    TaskPool::pushUpdateTask("DPlaneHandle",[&](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + modelId, &(*SingleDPool)[drawId]->m_matrix, one_matrix);
+    });
+    SingleRender.getDObjects()->push_back(drawId);
+    SingleRender.drawChanged = true;
 }
 
 void DPlaneHandle::loadFile(const std::string &_filename) {
