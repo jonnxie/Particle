@@ -71,12 +71,11 @@ void releaseMouse(int _mouse){
 
 namespace input{
     genReferenceItem(Cursor, glm::vec3);
+    genReferenceItem(CursorRay, glm::vec3);
     genReferenceItem(CursorPress, glm::vec3);
     genReferenceItem(CursorWindow, glm::vec2);
     genReferenceItem(MousePressCoordiante, glm::uvec2);
     genReferenceItem(TargetDepth, float);
-
-
     genInOut(mouseRay, glm::vec3);
     genInOut(captureObject, uint32_t);
     genInOut(LineColor, glm::vec3);

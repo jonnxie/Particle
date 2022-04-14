@@ -176,6 +176,16 @@ void Camera::update(bool& cameraChanged) {
     }
 }
 
+void Camera::updateCursorRay() {
+    glm::vec3& ray = input::getCursorRay();
+    glm::vec3& target = input::getCursor();
+    ray = glm::normalize(target - (center + eye));
+}
+
+glm::vec3 Camera::getPos() {
+    return center + eye;
+}
+
 void Camera::reset(){
     m_camera_radius = 4.0f;
 

@@ -9,6 +9,8 @@
 #include "Engine/Object/aabb.h"
 #include <random>
 #include "Engine/Object/camera.h"
+#include "Engine/Pool/mpool.h"
+#include "Engine/Object/inputaction.h"
 
 std::default_random_engine rndEngine;
 
@@ -429,6 +431,16 @@ void genCube(const glm::vec2& _min, const glm::vec2& _max, float _height, Cube& 
     new ((void*)&_cube.planes[int(CubePlane::Bottom)].points[3]) Cube::Plane::Point{glm::vec3{_min.x, _max.y, _height},
                                                                         glm::vec3{.0f, .0f, 1.0f},
                                                                         glm::vec2{0.0f, 1.0f}};
+}
+
+void computeLocalCoordinate(glm::vec3& _coordinate, int _targetPlane) {
+    Target* target = (*MPool<Target>::getPool())[_targetPlane];
+    glm::vec3& ray = input::getCursorRay();
+    float height = glm::dot(SingleCamera.getPos() - target->center, target->plane.z_coordinate);
+    float angle = glm::dot(target->plane.z_coordinate, -ray);
+    glm::vec3 pos = SingleCamera.getPos() + (1.0f / angle) * height * ray;
+    _coordinate = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(target->plane.x_coordinate, pos - target->center) +
+                  glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(target->plane.y_coordinate, pos - target->center);
 }
 
 void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm::vec3 &_rotation,  glm::vec3 &_scale) {
