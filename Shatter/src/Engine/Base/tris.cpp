@@ -424,24 +424,26 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
 
     size_t vertexCount = 4 * planeCount;
     std::vector<glm::vec3> pos_vec(vertexCount);
-    std::vector<glm::vec3> normal_vec(vertexCount, glm::vec3{0.0f, 0.0f, 1.0f});
     std::vector<glm::vec2> uv_vec(vertexCount);
-    std::vector<glm::vec4> color_vec(vertexCount, glm::vec4(m_color, 1.0f));
 
     size_t indexCount = 6 * planeCount;
     std::vector<uint32_t> index_vec(indexCount);
 
     for (int i = 0; i < planeCount; ++i) {
         pos_vec[i * 4] = planes[i]->plane.points[0].pos;
+        printPoint(planes[i]->plane.points[0].pos);
         uv_vec[i * 4] = planes[i]->plane.points[0].uv;
 
         pos_vec[i * 4 + 1] = planes[i]->plane.points[1].pos;
+        printPoint(planes[i]->plane.points[1].pos);
         uv_vec[i * 4 + 1] = planes[i]->plane.points[1].uv;
 
         pos_vec[i * 4 + 2] = planes[i]->plane.points[2].pos;
+        printPoint(planes[i]->plane.points[2].pos);
         uv_vec[i * 4 + 2] = planes[i]->plane.points[2].uv;
 
         pos_vec[i * 4 + 3] = planes[i]->plane.points[3].pos;
+        printPoint(planes[i]->plane.points[3].pos);
         uv_vec[i * 4 + 3] = planes[i]->plane.points[3].uv;
 
         index_vec[i * 6]     = i * 4;
@@ -451,16 +453,14 @@ void DPlaneHandle::loadFile(const std::string &_filename) {
         index_vec[i * 6 + 4] = i * 4 + 3;
         index_vec[i * 6 + 5] = i * 4 + 2;
     }
-    std::vector<void*> data_vec{pos_vec.data(), normal_vec.data(), color_vec.data(), uv_vec.data()};
+    std::vector<void*> data_vec{pos_vec.data(), uv_vec.data()};
 
     vkglTF::Model::writeMeshToFile(_filename,
                          vertexCount,
                          data_vec,
                          index_vec,
                          std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
-                                                              vkglTF::VertexComponent::Normal,
-                                                              vkglTF::VertexComponent::Color,
-                                                              vkglTF::VertexComponent::UV});
+                                                                          vkglTF::VertexComponent::UV});
 }
 
 void DPlaneHandle::drawNPlane() {
@@ -512,6 +512,7 @@ DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle):
                 genPlane(pre_pos, realPos, plane);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DPlane", id), Buffer_Type::Vertex_Host_Buffer);
                 auto* ptr = (Point*)buffer->mapped;
+                localPlane->plane = plane;
                 memcpy(ptr, &plane, NPlaneSize);
                 handle->getPlanes().push_back(std::move(localPlane));
             });

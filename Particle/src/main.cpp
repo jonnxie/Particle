@@ -345,7 +345,6 @@ int main() {
                              -half_pai,
                              glm::vec3(1.0f),
                              0);
-
 //    initSet();
     TaskPool::executeMultiple();
     render.createCommandBuffer();
