@@ -163,9 +163,7 @@ DrawNPlane::DrawNPlane() {
             TaskPool::popUpdateTask("DrawNPlaneUpdate");
             draw = false;
         } else {
-            pre_pos = input::getCursor();
-            pre_pos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, pre_pos - SingleAPP.getWorkTargetCenter())
-                    + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, pre_pos - SingleAPP.getWorkTargetCenter());
+            computeLocalCoordinate(pre_pos);
             genPlane(pre_pos, pre_pos, plane);
             auto p = std::make_unique<DPlane>(plane);
             planes.push_back(std::move(p));
@@ -173,9 +171,7 @@ DrawNPlane::DrawNPlane() {
                 auto localPlane = std::move(planes.back());
                 planes.pop_back();
                 int id = localPlane->id;
-                realPos = input::getCursor();
-                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, realPos - SingleAPP.getWorkTargetCenter())
-                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, realPos - SingleAPP.getWorkTargetCenter());
+                computeLocalCoordinate(realPos);
                 genPlane(pre_pos, realPos, plane);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DPlane", id), Buffer_Type::Vertex_Host_Buffer);
                 auto* ptr = (Point*)buffer->mapped;
@@ -280,8 +276,8 @@ DrawCube::DrawCube() {
     m_action[Event::MouseClick] = [&]() {
         static bool draw_plane = false;
         static bool draw_cube = false;
-        static glm::vec2 pre_pos;
-        static glm::vec2 realPos;
+        static glm::vec3 preLocalPosition;
+        static glm::vec3 realLocalPosition;
         static float height;
         static Cube cube;
         if(draw_cube)
@@ -293,24 +289,22 @@ DrawCube::DrawCube() {
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 auto localCube = cubes.back();
                 int id = localCube->id;
-                height =  glm::dot(localCube->getTargetPlane().z_coordinate, input::getCursor() - localCube->getWorkCenter());
-                genCube(pre_pos, realPos, height, cube);
+                height = computeHeight((preLocalPosition + realLocalPosition) / 2.0f);
+                genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(realLocalPosition.x, realLocalPosition.y), height, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);
             });
             draw_plane = false;
             draw_cube = true;
         } else {
-            pre_pos = glm::vec2(1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, input::getCursor() - SingleAPP.getWorkTargetCenter())
-                    + glm::vec2(0.0f, 1.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, input::getCursor() - SingleAPP.getWorkTargetCenter());
-            genCube(pre_pos, pre_pos, .0f, cube);
+            computeLocalCoordinate(preLocalPosition);
+            genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(preLocalPosition.x, preLocalPosition.y), .0f, cube);
             cubes.emplace_back(new DCube(cube));
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 auto localCube = cubes.back();
                 int id = localCube->id;
-                realPos = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(localCube->getTargetPlane().x_coordinate, input::getCursor() - localCube->getWorkCenter())
-                          + glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(localCube->getTargetPlane().y_coordinate, input::getCursor() - localCube->getWorkCenter());
-                genCube(pre_pos, realPos, .0f, cube);
+                computeLocalCoordinate(realLocalPosition);
+                genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(realLocalPosition.x, realLocalPosition.y), .0f, cube);
                 auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
                 memcpy(buffer->mapped, &cube, CubeSize);
             });

@@ -11,6 +11,7 @@
 #include "Engine/Object/camera.h"
 #include "Engine/Pool/mpool.h"
 #include "Engine/Object/inputaction.h"
+#include "Engine/App/shatterapp.h"
 
 std::default_random_engine rndEngine;
 
@@ -441,6 +442,21 @@ void computeLocalCoordinate(glm::vec3& _coordinate, int _targetPlane) {
     glm::vec3 pos = SingleCamera.getPos() + (1.0f / angle) * height * ray;
     _coordinate = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(target->plane.x_coordinate, pos - target->center) +
                   glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(target->plane.y_coordinate, pos - target->center);
+}
+
+void computeLocalCoordinate(glm::vec3& _coordinate) {
+    glm::vec3& ray = input::getCursorRay();
+    float height = glm::dot(SingleCamera.getPos() - SingleAPP.getWorkTargetCenter(), SingleAPP.getWorkTargetPlane().z_coordinate);
+    float angle = glm::dot(SingleAPP.getWorkTargetPlane().z_coordinate, -ray);
+    glm::vec3 pos = SingleCamera.getPos() + (1.0f / angle) * height * ray;
+    _coordinate = glm::vec3(1.0f, 0.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().x_coordinate, pos - SingleAPP.getWorkTargetCenter()) +
+                  glm::vec3(0.0f, 1.0f, 0.0f) * glm::dot(SingleAPP.getWorkTargetPlane().y_coordinate, pos - SingleAPP.getWorkTargetCenter());
+}
+
+float computeHeight(const glm::vec3& _center) {
+    glm::vec3& ray = input::getCursorRay();
+    glm::vec3 z_axis = glm::cross(SingleCamera.m_targetPlane.x_coordinate, ray);
+    return glm::dot(z_axis, (SingleCamera.center + SingleCamera.eye) - _center);
 }
 
 void decomposeTransform(const glm::mat4 &_transform, glm::vec3 &_transition, glm::vec3 &_rotation,  glm::vec3 &_scale) {
