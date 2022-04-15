@@ -11,7 +11,7 @@
 
 class Handle {
 public:
-    Handle() = default;
+    Handle();
     virtual ~Handle();
     virtual void pushUI() = 0;
     virtual void loadFile(const std::string& _filename) = 0;

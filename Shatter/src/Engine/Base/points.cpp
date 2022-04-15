@@ -178,11 +178,6 @@ void DPointPool::reallocated() {
 }
 
 PointsHandle::PointsHandle() {
-    {
-        m_localCoordiante = MPool<Target>::getPool()->malloc();
-        new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
-                                                                             SingleAPP.getWorkTargetCenter()};
-    }
     m_pipeline = "Point";
     m_sets = {"Camera", "ViewPort"};
     m_size = 4;

@@ -200,11 +200,6 @@ void DLinePool::reallocated(){
 }
 
 LineHandle::LineHandle() {
-    {
-        m_localCoordiante = MPool<Target>::getPool()->malloc();
-        new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
-                                                                             SingleAPP.getWorkTargetCenter()};
-    }
     m_pipeline = "Polyline";
     m_sets = {"Camera"};
     m_listener = new DrawLineHandle(this);

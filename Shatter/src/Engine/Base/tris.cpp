@@ -203,6 +203,17 @@ DCube::~DCube() {
     TaskPool::popUpdateTask(tool::combine("DCube",id));
 }
 
+void DCube::releaseMem() {
+    SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Default);
+    Object::release();
+    TaskPool::popUpdateTask(tool::combine("DCube",id));
+    vkQueueWaitIdle(SingleRender.graphics_queue);
+    SingleBPool.freeBuffer(tool::combine("DCube",id), Buffer_Type::Vertex_Host_Buffer);
+    SingleBPool.freeBuffer(tool::combine("DCube",id), Buffer_Type::Index_Buffer);
+    m_mem_released = true;
+    SingleRender.normalChanged = true;
+}
+
 void DCube::constructG() {
     SingleBPool.createVertexHostBuffer(tool::combine("DCube",id), CubeSize, &cube);
     SingleBPool.getBuffer(tool::combine("DCube",id),Buffer_Type::Vertex_Host_Buffer)->map();
@@ -315,11 +326,6 @@ DrawCube::DrawCube() {
 }
 
 DPlaneHandle::DPlaneHandle() {
-    {
-        m_localCoordiante = MPool<Target>::getPool()->malloc();
-        new ((Target*)(*MPool<Target>::getPool())[m_localCoordiante]) Target{SingleAPP.getWorkTargetPlane(),
-                                                                             SingleAPP.getWorkTargetCenter()};
-    }
     m_pipeline = "GPlane";
     m_sets = {"Camera", "Planet"};
     m_color = RED_COLOR;
@@ -605,5 +611,341 @@ DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle):
 }
 
 DrawNPlaneHandle::~DrawNPlaneHandle() {
+    delete handle;
+}
+
+DCubeHandle::DCubeHandle() {
+    m_pipeline = "GCube";
+    m_sets = {"Camera", "Planet"};
+    m_color = RED_COLOR;
+    m_listener = new DrawCubeHandle(this);
+    pushUI();
+}
+
+DCubeHandle::~DCubeHandle() {
+    GUI::popUI("DCubeHandle");
+}
+
+Cube &DCubeHandle::operator[](size_t _index) {
+    return cubes[_index]->cube;
+}
+
+void DCubeHandle::pushCube(const Cube &_cube) {
+    cubes.emplace_back(std::make_unique<DCube>(_cube));
+}
+
+void DCubeHandle::pushDCube(std::unique_ptr<DCube> _cube) {
+    cubes.push_back(std::move(_cube));
+}
+
+void DCubeHandle::pushUI() {
+    GUI::pushUI("DCubeHandle", [&](){
+        ImGui::Begin("DCubeHandleSetting");
+
+        static char buf[32] = "default";
+        ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
+        if (ImGui::Button("LoadFile"))
+        {
+            loadFile(std::string(buf) + ".gltf");
+        }
+
+        if (ImGui::Button("drawCube"))
+        {
+            drawCube();
+        }
+
+        if (ImGui::Button("batch"))
+        {
+            batch();
+        }
+
+        if (ImGui::TreeNode("Select Pipeline"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& [id, val] : SinglePPool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    m_pipeline = id;
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Select Descriptor Sets"))
+        {
+            ShowHelpMarker("Hold CTRL and click to select multiple items.");
+            auto count = SingleSetPool.m_map.size();
+            auto static selection = std::vector<int>(count);
+            int num = 0;
+            for(auto& [id, val] : SingleSetPool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selection[num] == 1))
+                {
+                    if (!checkKey(GLFW_KEY_LEFT_CONTROL) && !checkKey(GLFW_KEY_RIGHT_CONTROL))
+                    {
+                        for(auto& s : selection)
+                        {
+                            s = 0;
+                        }
+                        m_sets.clear();
+                    }// Clear selection when CTRL is not held
+                    selection[num] ^= 1;
+                    m_sets.push_back(id);
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        ImGui::SliderFloat3("Color",
+                            reinterpret_cast<float *>(&m_color),
+                            0.0f,
+                            1.0f);
+        ImGui::SliderFloat3("Coordinate",
+                            reinterpret_cast<float *>(&m_localCoordiante),
+                            std::numeric_limits<float>::min() / 2.0f,
+                            std::numeric_limits<float>::max() / 2.0f);
+
+        if (ImGui::Button("end")) {
+            destroy();
+        }
+
+        ImGui::End();// End setting
+    });
+
+}
+
+int DCubeHandle::getCubeCount() {
+    return cubes.size();
+}
+
+void DCubeHandle::releaseMem() {
+    SingleRender.releaseObject(drawId, DrawObjectType::Default);
+    auto dpool = MPool<DObject>::getPool();
+    dpool->free(drawId);
+    auto& model_pool = ModelSetPool::getPool();
+    model_pool.free(modelId);
+    TaskPool::popUpdateTask("DCubeHandle");
+    vkQueueWaitIdle(SingleRender.graphics_queue);
+    SingleBPool.freeBuffer("DCubeHandle", Buffer_Type::Vertex_Buffer);
+    SingleBPool.freeBuffer("DCubeHandle", Buffer_Type::Index_Buffer);
+}
+
+void DCubeHandle::batch() {
+    if (!batched) {
+        batched = true;
+    } else {
+        releaseMem();
+    }
+    auto cubeCount = cubes.size();
+    size_t vertexCount = 24 * cubeCount;
+    std::vector<Cube::Plane::Point> point_vec(vertexCount);
+    size_t indexCount = 36 * cubeCount;
+    std::vector<uint32_t> index_vec(indexCount);
+
+    for (int i = 0; i < cubeCount; ++i) {
+        memcpy(point_vec.data() + i * CubeSize, &cubes[i]->cube, CubeSize);
+        cubes[i]->releaseMem();
+    }
+    combineIndex(index_vec);
+    SingleBPool.createVertexHostBuffer("DPlaneHandle", CubeSize * cubeCount, point_vec.data());
+    SingleBPool.createIndexBuffer("DPlaneHandle", 4 * index_vec.size(), index_vec.data());
+
+    auto dpool = MPool<DObject>::getPool();
+    drawId = dpool->malloc();
+    modelId = ModelSetPool::getPool().malloc();
+
+    glm::mat4 mat(1.0f);
+    if(m_localCoordiante != -1)
+    {
+        Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
+
+        mat = glm::mat4 {
+                glm::vec4{target->plane.x_coordinate, 0.0f},
+                glm::vec4{target->plane.y_coordinate, 0.0f},
+                glm::vec4{target->plane.z_coordinate, 0.0f},
+                glm::vec4{target->center, 1.0f},
+        };
+    }
+    (*dpool)[drawId]->m_type = DType::Normal;
+    (*dpool)[drawId]->prepare(mat,
+                              modelId,
+                              DrawType::Index,
+                              0,
+                              "DPlaneHandle",
+                              vertexCount,
+                              "DPlaneHandle",
+                              indexCount,
+                              0,
+                              m_pipeline,
+                              m_sets,
+                              m_pipeline,
+                              m_sets);
+    TaskPool::pushUpdateTask("DPlaneHandle",[&](float _abs_time){
+        glm::mat4* ptr = SingleBPool.getModels();
+        memcpy(ptr + modelId, &(*SingleDPool)[drawId]->m_matrix, one_matrix);
+    });
+    SingleRender.getDObjects()->push_back(drawId);
+    SingleRender.drawChanged = true;
+}
+
+void DCubeHandle::combine(std::vector<glm::vec3>& _posVec,
+             std::vector<glm::vec3>& _normalVec,
+             std::vector<glm::vec2>& _uvVec,
+             std::vector<uint32_t>& _index) {
+    auto cubeCount = cubes.size();
+    uint32_t baseVertex = 0;
+    uint32_t baseIndex = 0;
+    uint32_t baseFaceVertex = 0;
+    uint32_t baseFaceIndex = 0;
+    for (int cubeIndex = 0; cubeIndex < cubeCount; ++cubeIndex) {
+        baseVertex = cubeIndex * 24;
+        baseIndex = cubeIndex * 36;
+        Cube& cube = cubes[cubeIndex]->cube;
+        for (int faceIndex = 0; faceIndex < int(CubePlane::PlaneCount); faceIndex++) {
+            Cube::Plane& plane = cube.planes[faceIndex];
+            baseFaceVertex = faceIndex * 4;
+            baseFaceIndex = cubeIndex * 6;
+            _posVec[baseVertex + baseFaceVertex] = plane.points[0].pos;
+            _normalVec[baseVertex + baseFaceVertex] = plane.points[0].normal;
+            _uvVec[baseVertex + baseFaceVertex] = plane.points[0].uv;
+
+            _posVec[baseVertex + baseFaceVertex + 1] = plane.points[1].pos;
+            _normalVec[baseVertex + baseFaceVertex + 1] = plane.points[1].normal;
+            _uvVec[baseVertex + baseFaceVertex + 1] = plane.points[1].uv;
+
+            _posVec[baseVertex + baseFaceVertex + 2] = plane.points[2].pos;
+            _normalVec[baseVertex + baseFaceVertex + 2] = plane.points[2].normal;
+            _uvVec[baseVertex + baseFaceVertex + 2] = plane.points[2].uv;
+
+            _posVec[baseVertex + baseFaceVertex + 3] = plane.points[3].pos;
+            _normalVec[baseVertex + baseFaceVertex + 3] = plane.points[3].normal;
+            _uvVec[baseVertex + baseFaceVertex + 3] = plane.points[3].uv;
+        }
+    }
+    combineIndex(_index);
+}
+
+void DCubeHandle::combineIndex(std::vector<uint32_t>& _index) {
+    auto cubeCount = cubes.size();
+    uint32_t baseVertex = 0;
+    uint32_t baseIndex = 0;
+    uint32_t baseFaceVertex = 0;
+    uint32_t baseFaceIndex = 0;
+    for (int cubeIndex = 0; cubeIndex < cubeCount; ++cubeIndex) {
+        baseVertex = cubeIndex * 24;
+        baseIndex = cubeIndex * 36;
+        Cube& cube = cubes[cubeIndex]->cube;
+        for (int faceIndex = 0; faceIndex < int(CubePlane::PlaneCount); faceIndex++) {
+            Cube::Plane& plane = cube.planes[faceIndex];
+            baseFaceVertex = faceIndex * 4;
+            baseFaceIndex = cubeIndex * 6;
+            _index[baseIndex + baseFaceIndex]     = baseVertex + baseFaceVertex;
+            _index[baseIndex + baseFaceIndex + 1] = baseVertex + baseFaceVertex + 2;
+            _index[baseIndex + baseFaceIndex + 2] = baseVertex + baseFaceVertex + 1;
+            _index[baseIndex + baseFaceIndex + 3] = baseVertex + baseFaceVertex;
+            _index[baseIndex + baseFaceIndex + 4] = baseVertex + baseFaceVertex + 3;
+            _index[baseIndex + baseFaceIndex + 5] = baseVertex + baseFaceVertex + 2;
+        }
+    }
+}
+
+void DCubeHandle::loadFile(const std::string &_filename) {
+    auto cubeCount = cubes.size();
+    size_t vertexCount = 24 * cubeCount;
+    std::vector<glm::vec3> pos_vec(vertexCount);
+    std::vector<glm::vec3> normal_vec(vertexCount);
+    std::vector<glm::vec2> uv_vec(vertexCount);
+
+    size_t indexCount = 36 * cubeCount;
+    std::vector<uint32_t> index_vec(indexCount);
+
+    combine(pos_vec, normal_vec, uv_vec, index_vec);
+    std::vector<void*> data_vec{pos_vec.data(), normal_vec.data(), uv_vec.data()};
+
+    vkglTF::Model::writeMeshToFile(_filename,
+                                   vertexCount,
+                                   data_vec,
+                                   index_vec,
+                                   std::vector<vkglTF::VertexComponent>{vkglTF::VertexComponent::Position,
+                                                                                    vkglTF::VertexComponent::Normal,
+                                                                                    vkglTF::VertexComponent::UV});
+}
+
+void DCubeHandle::drawCube() {
+    if (appendState) {
+        SingleAPP.appendListener("drawCube", m_listener);
+        appendState = false;
+    } else {
+        SingleAPP.removeListener("drawCube");
+        appendState = true;
+    }
+}
+
+void DCubeHandle::destroy() const {
+    if (!appendState){
+        TaskPool::pushTask([](){
+            SingleAPP.deleteListener("drawCube");
+        });
+    } else {
+        TaskPool::pushTask([=](){
+            delete m_listener;
+        });
+    }
+}
+
+DrawCubeHandle::DrawCubeHandle(DCubeHandle *_handle):
+        handle(_handle) {
+    m_action[Event::MouseClick] = [&]() {
+        static bool draw_plane = false;
+        static bool draw_cube = false;
+        static glm::vec3 preLocalPosition;
+        static glm::vec3 realLocalPosition;
+        static float height;
+        static Cube cube;
+        if(draw_cube)
+        {
+            TaskPool::popUpdateTask("DrawCubeUpdate");
+            draw_cube = false;
+        }else if (draw_plane) {
+            TaskPool::popUpdateTask("DrawCubeUpdate");
+            TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
+                int id = handle->getCubes().back()->id;
+                height = computeHeight((preLocalPosition + realLocalPosition) / 2.0f);
+                genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(realLocalPosition.x, realLocalPosition.y), height, cube);
+                handle->getCubes().back()->cube = cube;
+                auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
+                memcpy(buffer->mapped, &cube, CubeSize);
+            });
+            draw_plane = false;
+            draw_cube = true;
+        } else {
+            computeLocalCoordinate(preLocalPosition);
+            genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(preLocalPosition.x, preLocalPosition.y), .0f, cube);
+            handle->getCubes().emplace_back(std::make_unique<DCube>(cube));
+            TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
+                int id = handle->getCubes().back()->id;
+                computeLocalCoordinate(realLocalPosition);
+                genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(realLocalPosition.x, realLocalPosition.y), .0f, cube);
+                auto buffer = SingleBPool.getBuffer(tool::combine("DCube", id), Buffer_Type::Vertex_Host_Buffer);
+                handle->getCubes().back()->cube = cube;
+                memcpy(buffer->mapped, &cube, CubeSize);
+            });
+            SingleRender.drawChanged = true;
+            draw_plane = true;
+        };
+    };
+}
+
+DrawCubeHandle::~DrawCubeHandle() {
+    TaskPool::popUpdateTask("DrawCubeHandle");
     delete handle;
 }

@@ -105,6 +105,7 @@ class DCube : public Object{
 public:
     explicit DCube(const Cube& _cube);
     ~DCube() override;
+    void releaseMem();
     void constructG() override;
     void constructD() override;
     void constructC() override{};
@@ -113,6 +114,47 @@ public:
     Cube                cube;
     bool                changed = true;
     int                 id;
+};
+
+class DrawCubeHandle;
+
+class DCubeHandle :public Handle {
+public:
+    DCubeHandle();
+    ~DCubeHandle() override;
+    DefineUnCopy(DCubeHandle);
+public:
+    Cube& operator[](size_t _index);
+    void pushCube(const Cube& _cube);
+    void pushDCube(std::unique_ptr<DCube> _cube);
+    void pushUI() override;
+    int  getCubeCount();
+    void releaseMem();
+    void batch();
+    void combine(std::vector<glm::vec3>& _posVec,
+                 std::vector<glm::vec3>& _normalVec,
+                 std::vector<glm::vec2>& _uvVec,
+                 std::vector<uint32_t>& _index);
+    void combineIndex(std::vector<uint32_t>& _index);
+    void loadFile(const std::string& _filename) override;
+    void drawCube();
+    void destroy() const override;
+public:
+    ClassPointerElement(m_listener, DrawCubeHandle*, Listener);
+    ClassReferenceElement(cubes, std::deque<std::unique_ptr<DCube>>, Cubes);
+private:
+    bool appendState = true;
+    bool batched = false;
+    int  drawId{};
+    int  modelId{};
+};
+
+class DrawCubeHandle : public Shatter::Listener {
+public:
+    explicit DrawCubeHandle(DCubeHandle* _handle);
+    ~DrawCubeHandle() override;
+private:
+    DCubeHandle* handle;
 };
 
 class DrawCube : public Shatter::Listener{
