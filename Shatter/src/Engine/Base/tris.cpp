@@ -756,8 +756,8 @@ void DCubeHandle::batch() {
         cubes[i]->releaseMem();
     }
     combineIndex(index_vec);
-    SingleBPool.createVertexHostBuffer("DPlaneHandle", CubeSize * cubeCount, point_vec.data());
-    SingleBPool.createIndexBuffer("DPlaneHandle", 4 * index_vec.size(), index_vec.data());
+    SingleBPool.createVertexHostBuffer("DCubeHandle", CubeSize * cubeCount, point_vec.data());
+    SingleBPool.createIndexBuffer("DCubeHandle", 4 * index_vec.size(), index_vec.data());
 
     auto dpool = MPool<DObject>::getPool();
     drawId = dpool->malloc();
@@ -780,16 +780,16 @@ void DCubeHandle::batch() {
                               modelId,
                               DrawType::Index,
                               0,
-                              "DPlaneHandle",
+                              "DCubeHandle",
                               vertexCount,
-                              "DPlaneHandle",
+                              "DCubeHandle",
                               indexCount,
                               0,
                               m_pipeline,
                               m_sets,
                               m_pipeline,
                               m_sets);
-    TaskPool::pushUpdateTask("DPlaneHandle",[&](float _abs_time){
+    TaskPool::pushUpdateTask("DCubeHandle",[&](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelId, &(*SingleDPool)[drawId]->m_matrix, one_matrix);
     });
@@ -847,7 +847,7 @@ void DCubeHandle::combineIndex(std::vector<uint32_t>& _index) {
         for (int faceIndex = 0; faceIndex < int(CubePlane::PlaneCount); faceIndex++) {
             Cube::Plane& plane = cube.planes[faceIndex];
             baseFaceVertex = faceIndex * 4;
-            baseFaceIndex = cubeIndex * 6;
+            baseFaceIndex = faceIndex * 6;
             _index[baseIndex + baseFaceIndex]     = baseVertex + baseFaceVertex;
             _index[baseIndex + baseFaceIndex + 1] = baseVertex + baseFaceVertex + 2;
             _index[baseIndex + baseFaceIndex + 2] = baseVertex + baseFaceVertex + 1;
@@ -931,6 +931,7 @@ DrawCubeHandle::DrawCubeHandle(DCubeHandle *_handle):
             computeLocalCoordinate(preLocalPosition);
             genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(preLocalPosition.x, preLocalPosition.y), .0f, cube);
             handle->getCubes().emplace_back(std::make_unique<DCube>(cube));
+            handle->getCubes().back()->cube = cube;
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 int id = handle->getCubes().back()->id;
                 computeLocalCoordinate(realLocalPosition);

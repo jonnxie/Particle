@@ -227,7 +227,13 @@ namespace Shatter::app{
                 if(drawCube)
                 {
                     drawCube = false;
-                    appendListener("drawCube",new DrawCube);
+                    if (Config::getConfig("enableScreenGui"))
+                    {
+                        auto cubeHandle = new DCubeHandle();
+                        SingleRender.normalChanged = true;
+                    } else {
+                        appendListener("drawCube",new DrawCube);
+                    }
                 }else{
                     deleteListener("drawCube");
                     drawCube = true;
