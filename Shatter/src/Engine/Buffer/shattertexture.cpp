@@ -68,7 +68,8 @@ namespace Shatter::buffer{
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                      stagingBuffer,
                      stagingBufferMemory);
-        void *data;       vkMapMemory(*m_device, stagingBufferMemory, 0, imageSize, 0, &data);
+        void *data;
+        vkMapMemory(*m_device, stagingBufferMemory, 0, imageSize, 0, &data);
         memcpy(data, pixels, static_cast<size_t>(imageSize));
         vkUnmapMemory(*m_device, stagingBufferMemory);
         stbi_image_free(pixels);
@@ -736,14 +737,16 @@ namespace Shatter::buffer{
     }
 
     ShatterTexture::~ShatterTexture() {
-        vkDestroySampler(*m_device, m_textureSampler, nullptr);
-        vkDestroyImageView(*m_device, m_textureImageView, nullptr);
-        if(m_memory != VK_NULL_HANDLE)
-        {
-            vkFreeMemory(*m_device, m_memory, nullptr);
-        }
+        if (!m_released) {
+            vkDestroySampler(*m_device, m_textureSampler, nullptr);
+            vkDestroyImageView(*m_device, m_textureImageView, nullptr);
+            if(m_memory != VK_NULL_HANDLE)
+            {
+                vkFreeMemory(*m_device, m_memory, nullptr);
+            }
 
-        vkDestroyImage(*m_device, m_textureImage, nullptr);
+            vkDestroyImage(*m_device, m_textureImage, nullptr);
+        }
     }
 
 

@@ -7,6 +7,7 @@
 
 #include <glm.hpp>
 #include <limits>
+#include <vulkan/vulkan.h>
 #include "Engine/Item/shatter_math.h"
 
 struct Line3d;

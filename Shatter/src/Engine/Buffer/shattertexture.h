@@ -187,6 +187,7 @@ namespace Shatter {
             VkSampler m_textureSampler;
             uint32_t m_width,m_height;
             uint32_t mipLevels;
+            bool m_released = false;
         };
 
     };

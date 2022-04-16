@@ -12,79 +12,11 @@
 #include "Engine/Item/shatter_macro.h"
 #include "LRUCache.hpp"
 #include "PriorityQueue.h"
+#include "TileHead.h"
+#include "traverseFunction.h"
 
 using namespace nlohmann;
 
-struct TileBase {
-    union {
-    /**
-     * An array of 12 numbers that define an oriented bounding box. The first three elements define the x, y, and z
-     * values for the center of the box. The next three elements (with indices 3, 4, and 5) define the x axis
-     * direction and half-length. The next three elements (indices 6, 7, and 8) define the y axis direction and
-     * half-length. The last three elements (indices 9, 10, and 11) define the z axis direction and half-length.
-     */
-     int box[12];
-    /**
-     * An array of four numbers that define a bounding sphere. The first three elements define the x, y, and z
-     * values for the center of the sphere. The last element (with index 3) defines the radius in meters.
-     */
-     int sphere[4];
-    } boundingVolume;
-
-    int geometricError;
-
-    std::vector<TileBase*> children;
-
-    struct Content{
-        json extensions;
-        json extras;
-        std::string url;
-    } content;
-
-    json extensions;
-    json extras;
-    std::string refine;
-    std::vector<int> transform;
-};
-
-struct Tile : public TileBase{
-    Tile* parent{};
-    float depth{};
-    int   error{};
-    float distanceFromCamera{};
-    bool  active{};
-    bool  used{};
-    bool  inFrustum{};
-    float depthFromRenderedParent{};
-};
-
-namespace std {
-    template <>
-    class hash<Tile>{
-    public:
-        size_t operator()(const Tile& tile) const
-        {
-            return std::hash<float>()(tile.depth) ^
-                   std::hash<float>()(tile.distanceFromCamera);
-        }
-    };
-
-    template<>
-    struct equal_to<Tile>{
-    public:
-        bool operator()(const Tile& t1, const Tile& t2) const
-        {
-            return t1.parent == t2.parent&&
-            t1.depth == t2.depth&&
-            t1.error == t2.error&&
-            t1.distanceFromCamera == t2.distanceFromCamera&&
-            t1.active == t2.active&&
-            t1.used == t2.used&&
-            t1.inFrustum == t2.inFrustum&&
-            t1.depthFromRenderedParent == t2.depthFromRenderedParent;
-        }
-    };
-}
 
 int priorityCallback(const Tile& a, const Tile& b);
 
@@ -129,7 +61,7 @@ struct TileSet {
 
     int geometricError;
 
-    TileBase* root;
+    Tile* root;
 
     std::vector<std::string> extensionUsed;
     std::vector<std::string> extensionRequired;
@@ -138,15 +70,17 @@ struct TileSet {
     json                     extras;
 };
 
+using TileCallback = std::function<bool(const Tile& tile, const Tile& parent, int depth)>;
+
 class TilesRendererBase {
 public:
     explicit TilesRendererBase(const std::string& _url);
     DefineUnCopy(TilesRendererBase);
 public:
     TileSet& rootTileSet();
-    TileBase* root();
-    void traverse(std::function<void(Tile tile, Tile parent, float depth)> beforeCb,
-                  std::function<void(Tile tile, Tile parent, float depth)> afterCb);
+    TileBase<>* root();
+    void traverse(const std::function<bool(const Tile& tile, const Tile& parent, int depth)>& beforeCb,
+                  const std::function<bool(const Tile& tile, const Tile& parent, int depth)>& afterCb);
     void update();
     virtual void parseTile(std::vector<unsigned char> buffer,
                            const Tile& tile,
@@ -157,6 +91,8 @@ public:
     void setTileVisible(const Tile& tile,bool state);
     int calculateError(const Tile& tile);
     bool tileInView(const Tile& tile);
+    void loadRootTileSet(const std::string& _url);
+    void requestTileContents(const Tile& tile){};
 protected:
     std::unordered_map<std::string, TileSet> tileSets{};
     ClassElement(rootUrl, std::string, RootURL);
@@ -177,11 +113,185 @@ protected:
     }stats;
     int frameCount = 0;
     int errorTarget = 6.0;
+    int errorThreshold;
     bool loadSiblings = true;
     bool displayActiveTiles = false;
     float maxDepth;
     bool stopAtEmptyTiles = true;
 };
+
+bool determineFrustumSet(Tile &_tile, TilesRendererBase *renderer) {
+    auto& stats = renderer->stats;
+    auto& frameCount = renderer->frameCount;
+    auto& errorTarget = renderer->errorTarget;
+    auto& maxDepth = renderer->maxDepth;
+    auto& loadSiblings = renderer->loadSiblings;
+    auto& lruCache = renderer->lruCache;
+    auto& stopAtEmptyTiles = renderer->stopAtEmptyTiles;
+    resetFrameState(_tile, renderer->frameCount);
+    if (!renderer->tileInView(_tile)) {
+        return false;
+    }
+    _tile.used = true;
+    renderer->lruCache.markUsed(_tile);
+    _tile.inFrustum = true;
+    renderer->stats.inFrustum++;
+
+    if ( (stopAtEmptyTiles || ! _tile.contentEmpty) && !_tile.externalTileSet) {
+        renderer->calculateError(_tile);
+
+        auto error = _tile.error;
+        if (error <= errorTarget) {
+            return true;
+        }
+
+        if (renderer->maxDepth > 0 && _tile.depth + 1 >= maxDepth) {
+            return true;
+        }
+    }
+    bool anyChildrenUsed = false;
+    for (auto & i : _tile.children) {
+        auto r = determineFrustumSet(*i, renderer);
+        anyChildrenUsed = anyChildrenUsed || r;
+    }
+
+    if (anyChildrenUsed && loadSiblings) {
+        for (auto & i : _tile.children) {
+
+        }
+    }
+
+}
+
+void markUsedSetLeaves(Tile &_tile, TilesRendererBase *_renderer) {
+    if (!isUsedThisFrame(_tile, _renderer->frameCount)) {
+        return;
+    }
+
+    _renderer->stats.used++;
+
+    bool anyChildrenUsed = false;
+    for (auto& i : _tile.children) {
+        anyChildrenUsed = anyChildrenUsed || isUsedThisFrame(*i, _renderer->frameCount);
+    }
+
+    if (!anyChildrenUsed) {
+        _tile.isLeaf = true;
+    } else {
+        bool childrenWereVisible = false;
+        bool allChildrenLoaded = true;
+        for (int i = 0; i < _tile.children.size(); ++i) {
+            markUsedSetLeaves(*_tile.children[i], _renderer);
+            childrenWereVisible = childrenWereVisible ||
+                    _tile.children[i]->wasSetVisible ||
+                    _tile.children[i]->childrenWereVisible;
+
+            if (isUsedThisFrame(*_tile.children[i],
+                                _renderer->frameCount)) {
+                bool childLoaded =
+                        _tile.children[i]->allChildrenLoaded ||
+                        ( ! _tile.children[i]->contentEmpty && isDownloadFinished( _tile.children[i]->loadingState ) ) ||
+                        ( _tile.children[i]->externalTileSet && _tile.children[i]->loadingState == FAILED );
+                allChildrenLoaded = allChildrenLoaded && childLoaded;
+            }
+        }
+        _tile.childrenWereVisible = childrenWereVisible;
+        _tile.allChildrenLoaded = allChildrenLoaded;
+    }
+}
+
+void skipTraversal(Tile& _tile, TilesRendererBase* _renderer ) {
+    auto stats = _renderer->stats;
+    auto frameCount = _renderer->frameCount;
+    if (!isUsedThisFrame(_tile, frameCount)) {
+        return;
+    }
+
+    auto parent = _tile.parent;
+    auto parentDepthToParent = parent ? parent->depthFromRenderedParent : - 1;
+    _tile.depthFromRenderedParent = parentDepthToParent;
+
+    auto& lruCache = _renderer->lruCache;
+    if ( _tile.isLeaf ) {
+
+        _tile.depthFromRenderedParent ++;
+
+        if ( _tile.loadingState == LOADED ) {
+
+            if ( _tile.inFrustum ) {
+
+                _tile.visible = true;
+                stats.visible ++;
+
+            }
+            _tile.active = true;
+            stats.active ++;
+
+        } else if ( ! lruCache.isFull() && ( ! _tile.contentEmpty || _tile.externalTileSet ) ) {
+            _renderer->requestTileContents( _tile );
+        }
+        return;
+    }
+    auto errorRequirement = ( _renderer->errorTarget + 1 ) * _renderer->errorThreshold;
+    auto meetsSSE = _tile.error <= errorRequirement;
+    auto includeTile = meetsSSE || _tile.refine == "ADD";
+    auto hasModel = ! _tile.contentEmpty;
+    auto hasContent = hasModel || _tile.externalTileSet;
+    auto loadedContent = isDownloadFinished( _tile.loadingState ) && hasContent;
+    auto childrenWereVisible = _tile.childrenWereVisible;
+    auto children = _tile.children;
+    auto allChildrenHaveContent = _tile.allChildrenLoaded;
+
+    if ( includeTile && hasModel) {
+        _tile.depthFromRenderedParent++;
+    }
+
+    if ( includeTile && ! loadedContent && ! lruCache.isFull() && hasContent ) {
+        _renderer->requestTileContents(_tile);
+    }
+
+    if (( meetsSSE && ! allChildrenHaveContent && ! childrenWereVisible && loadedContent )
+            || ( _tile.refine == "ADD" && loadedContent )
+            ) {
+
+        if ( _tile.inFrustum ) {
+
+            _tile.visible = true;
+            stats.visible ++;
+
+        }
+        _tile.active = true;
+        stats.active ++;
+    }
+
+    if ( _tile.refine != "ADD" && meetsSSE && ! allChildrenHaveContent && loadedContent ) {
+
+        // load the child content if we've found that we've been loaded so we can move down to the next tile
+        // layer when the data has loaded.
+        for ( int i = 0, l = children.size(); i < l; i ++ ) {
+
+            auto c = children[ i ];
+            if ( isUsedThisFrame(*c, frameCount ) && ! lruCache.isFull() ) {
+                c->depthFromRenderedParent =_tile.depthFromRenderedParent + 1;
+                recursivelyLoadTiles( *c, c->depthFromRenderedParent, _renderer );
+            }
+
+        }
+
+    } else {
+        for ( int i = 0, l = children.size(); i < l; i ++ ) {
+
+            auto c = children[ i ];
+            if ( isUsedThisFrame( *c, frameCount ) ) {
+                skipTraversal( *c, _renderer );
+            }
+        }
+    }
+}
+
+bool recursivelyLoadTiles(Tile &_tile, int _depthFromRenderedParent, TilesRendererBase *_renderer) {
+    return false;
+}
 
 
 #endif //MAIN_TILE_H

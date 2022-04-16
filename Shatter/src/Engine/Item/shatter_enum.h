@@ -371,6 +371,11 @@ enum class FeatureType{
     VEC4,
 };
 
+enum class TextureType {
+    Texture1D,
+    Texture2DDefault,
+    Texture3D,
+};
 
 /*
  * custom color
@@ -423,6 +428,12 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define numObjectsPerThread 2
 
 #define TreeSize 8
+
+#define UNLOADED  0
+#define LOADING  1
+#define PARSING  2
+#define LOADED  3
+#define FAILED  4
 
 #define ObjectCatalog      "Engine/Object/object.h"
 #define CObjectCatalog     "Engine/Object/cobject.h"

@@ -25,11 +25,8 @@ public:
 
     bool Set(const ID_Type& _id, Value_Type _value){
         std::lock_guard<std::mutex> guard(m_mutex);
-        for(auto & i : m_map){
-            if(i.first == _id){
-                assert(0);
-                return false;
-            }
+        if (m_map.count(_id) != 0) {
+            printf("%s has already been occupied", _id);
         }
         m_map[_id] = _value;
         return true;

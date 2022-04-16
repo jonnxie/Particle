@@ -4,6 +4,7 @@
 
 #include "precompiledhead.h"
 #include "Tile.h"
+#include "traverseFunction.h"
 
 TilesRendererBase::TilesRendererBase(const std::string &_url) {
     lruCache.unloadPriorityCallback = lruPriorityCallback;
@@ -24,17 +25,32 @@ TileSet &TilesRendererBase::rootTileSet() {
     return tileSets[rootUrl];
 }
 
-TileBase *TilesRendererBase::root() {
+TileBase<> *TilesRendererBase::root() {
     return tileSets[rootUrl].root;
 }
 
-void TilesRendererBase::traverse(std::function<void(Tile, Tile, float)> beforeCb,
-                                 std::function<void(Tile, Tile, float)> afterCb) {
+void TilesRendererBase::traverse(const std::function<bool(const Tile& , const Tile&, int)>& beforeCb,
+                                 const std::function<bool(const Tile& , const Tile&, int)>& afterCb) {
+    auto rootTileSet = tileSets[rootUrl];
+    if (!rootTileSet.root) return;
 
+    traverseSet(*rootTileSet.root, beforeCb, afterCb);
 }
 
 void TilesRendererBase::update() {
+    if (tileSets.count(rootUrl) == 0) {
+        loadRootTileSet(rootUrl);
+    } else if (!tileSets[rootUrl].root) {
+        return;
+    }
+    auto root = rootTileSet().root;
+    stats.inFrustum = 0;
+    stats.used = 0;
+    stats.active = 0;
+    stats.visible = 0;
+    frameCount++;
 
+    determineFrustumSet(*rootTileSet().root, this);
 }
 
 void TilesRendererBase::parseTile(std::vector<unsigned char> buffer, const Tile &tile, const std::string &extension) {
@@ -65,6 +81,9 @@ bool TilesRendererBase::tileInView(const Tile& tile) {
     return true;
 }
 
+void TilesRendererBase::loadRootTileSet(const std::string& _url) {
+
+}
 
 int priorityCallback(const Tile &a, const Tile &b) {
     if ( a.depth != b.depth ){
@@ -97,3 +116,5 @@ int priorityCallback(const Tile &a, const Tile &b) {
 
     return 0;
 }
+
+
