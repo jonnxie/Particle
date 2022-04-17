@@ -84,7 +84,7 @@ DPlane::DPlane(const NPlane& _plane,
                std::string _setId)
 :plane(_plane),
 textured(_textured),
- setId(std::move(_setId))
+setId(std::move(_setId))
 {
     id = mallocId();
     init();

@@ -480,6 +480,20 @@ void TexturePool::create2DTexture(const std::string& _key,
     SingleSetPool.AllocateDescriptorSets(_key,
                                          {"BaseTexture"},
                                          &_tex.set);
+
+    VkDescriptorImageInfo imageInfo{_tex.sampler,
+                                    _tex.view,
+                                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    VkWriteDescriptorSet writeSet = tool::writeDescriptorSet(_tex.set,
+                                                             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                             0,
+                                                             &imageInfo);
+    vkUpdateDescriptorSets(SingleDevice(),
+                           1,
+                           &writeSet,
+                           0,
+                           nullptr);
+
 }
 
 
