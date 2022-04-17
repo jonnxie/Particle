@@ -85,20 +85,6 @@ void SetPool::setPool(VkDescriptorPool _pool){
     m_set_pool = _pool;
 }
 
-void SetPool::AllocateDescriptorSets(const Set_id & _id,const std::vector<VkDescriptorSetLayout>& _des_set_layout,
-                                     VkDescriptorSet* _set){
-   VkDescriptorSetAllocateInfo allocInfo = {};
-   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-   allocInfo.descriptorPool = m_set_pool;
-   allocInfo.descriptorSetCount = _des_set_layout.size();
-   allocInfo.pSetLayouts = _des_set_layout.data();
-
-   if (vkAllocateDescriptorSets(*ShatterRender::getRender().getDevice(), &allocInfo, _set) != VK_SUCCESS) {
-       throw std::runtime_error("failed to allocate " + _id +"descriptor set!");
-   }
-   m_map[_id] = *_set;
-}
-
 void SetPool::AllocateDescriptorSets(const std::vector<Set_id>& _ids, VkDescriptorSet *_set) {
     std::vector<VkDescriptorSetLayout> sl_vec;
     for(auto& id : _ids)

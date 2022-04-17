@@ -17,10 +17,7 @@
 class LightManager {
 public:
     static LightManager& getLight();
-    LightManager(const LightManager&) = delete;
-    LightManager(LightManager&&) = delete;
-    LightManager& operator = (const LightManager&) = delete;
-    LightManager& operator = (LightManager&&) = delete;
+    DefineUnCopy(LightManager);
     PassLight& operator[](size_t _index){
         if(_index >= lights.size())
         {

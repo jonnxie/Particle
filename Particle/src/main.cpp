@@ -12,6 +12,7 @@
 #include "Engine/Pool/ppool.h"
 #include "Engine/Pool/bpool.h"
 #include "Engine/Pool/mpool.h"
+#include "Engine/Pool/TexturePool.h"
 #include "Engine/Object/line3d.h"
 #include "Engine/Object/cobject.h"
 #include "Engine/Event/threadpool.h"
@@ -191,6 +192,9 @@ int main() {
     auto& model_pool = SingleModelSetPool;
     auto& light_manager = SingleLM;
     auto& offScreen = SingleOffScreen;
+    auto& texPool = SingleTexturePool;
+
+    texPool.addTexture("test", tool::combineTexture("Skybox_top3.png"), TextureType::Texture2DDefault);
 
     auto line_pool = MPool<Line3d>::getPool();
     {
@@ -376,6 +380,7 @@ int main() {
         delete ah;
         delete skin;
         SingleOffScreen.release();
+        texPool.release();
         SingleCascade.release();
 //        delete abasic;
         delete build;

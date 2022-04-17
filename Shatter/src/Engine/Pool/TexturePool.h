@@ -16,6 +16,7 @@ struct Texture{
     VkSampler sampler{VK_NULL_HANDLE};
     VkImageView view{VK_NULL_HANDLE};
     VkDeviceMemory memory{VK_NULL_HANDLE};
+    VkDescriptorSet set{VK_NULL_HANDLE};
 };
 
 class TexturePool : public Pool<std::string , Texture> {
@@ -37,5 +38,6 @@ private:
     TexturePool() = default;
 };
 
+#define SingleTexturePool  TexturePool::getPool()
 
 #endif //MAIN_TEXTUREPOOL_H

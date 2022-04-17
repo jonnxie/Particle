@@ -22,8 +22,6 @@ public:
     void release() override;
 
     void setPool(VkDescriptorPool _pool);
-    void AllocateDescriptorSets(const Set_id & _id,const std::vector<VkDescriptorSetLayout>& _des_set_layout,
-                                             VkDescriptorSet* _set);
 
     void AllocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& _des_set_layout,
                                 VkDescriptorSet* _set) const;
