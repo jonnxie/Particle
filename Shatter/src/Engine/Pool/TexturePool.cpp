@@ -235,13 +235,14 @@ static void setImageLayout(
             imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             break;
 
-        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: {
             if (imageMemoryBarrier.srcAccessMask == 0)
             {
                 imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
             }
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             break;
+        }
         default:
             // Other source layouts aren't handled (yet)
             break;
@@ -448,20 +449,20 @@ void TexturePool::create2DTexture(const std::string& _filename, Texture& _tex) {
                   _tex.image,
                   _tex.memory);
 
-    transitionImageLayout(_tex.image,
-                          VK_FORMAT_R8G8B8A8_UNORM,
-                          VK_IMAGE_LAYOUT_UNDEFINED,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    setImageLayout(_tex.image,
+                   VK_IMAGE_ASPECT_COLOR_BIT,
+                   VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     copyBufferToImage(stagingBuffer,
                       _tex.image,
                       static_cast<uint32_t>(texWidth),
                       static_cast<uint32_t>(texHeight));
 
-    transitionImageLayout(_tex.image,
-                          VK_FORMAT_R8G8B8A8_UNORM,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    setImageLayout(_tex.image,
+                   VK_IMAGE_ASPECT_COLOR_BIT,
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     create2dImageView(_tex.image,
                       VK_FORMAT_R8G8B8A8_UNORM,
