@@ -97,6 +97,7 @@ void ShaderPool::init() {
 
     createShaderStage("plane_vs",tool::combineShader("Plane/vert.spv"),VertexShader);
     createShaderStage("plane_fs",tool::combineShader("Plane/frag.spv"),FragmentShader);
+    createShaderStage("planeTex_fs",tool::combineShader("Plane/tex_frag.spv"),FragmentShader);
 
     createShaderStage("cube_vs",tool::combineShader("cube/vert.spv"),VertexShader);
     createShaderStage("cube_fs",tool::combineShader("cube/frag.spv"),FragmentShader);

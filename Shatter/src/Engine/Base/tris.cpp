@@ -4,6 +4,8 @@
 #include "precompiledhead.h"
 
 #include "tris.h"
+
+#include <utility>
 #include SetPoolCatalog
 #include PPoolCatalog
 #include TaskCatalog
@@ -15,6 +17,7 @@
 #include OffScreenCatalog
 #include AppCatalog
 #include CameraCatalog
+#include TexturePoolCatalog
 #include "Engine/Object/inputaction.h"
 
 DTris::DTris(size_t _initCount, MeshDrawType _type): type(_type){
@@ -32,7 +35,7 @@ void DTris::constructG(){
     SingleBPool.getBuffer(tool::combine("DTris",id),Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
-void DTris::constructD(){
+void DTris::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
@@ -76,20 +79,24 @@ static int mallocId()
     return initIdVal++;
 }
 
-DPlane::DPlane(const NPlane& _plane)
-:plane(_plane)
+DPlane::DPlane(const NPlane& _plane,
+               bool _textured,
+               std::string _setId)
+:plane(_plane),
+textured(_textured),
+ setId(std::move(_setId))
 {
     id = mallocId();
     init();
 };
 
-DPlane::~DPlane(){
+DPlane::~DPlane() {
     if (!m_mem_released) {
         TaskPool::popUpdateTask(tool::combine("DPlane",id));
     }
 }
 
-void DPlane::releaseMem(){
+void DPlane::releaseMem() {
     SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Default);
     Object::release();
     TaskPool::popUpdateTask(tool::combine("DPlane",id));
@@ -100,7 +107,7 @@ void DPlane::releaseMem(){
     SingleRender.normalChanged = true;
 }
 
-void DPlane::constructG(){
+void DPlane::constructG() {
     SingleBPool.createVertexHostBuffer(tool::combine("DPlane",id), NPlaneSize, &plane);
     SingleBPool.getBuffer(tool::combine("DPlane",id),Buffer_Type::Vertex_Host_Buffer)->map();
     uint32_t indices[6]{0, 2, 1, 0, 3, 2};
@@ -113,11 +120,18 @@ void DPlane::constructD(){
     int ms_index = ModelSetPool::getPool().malloc();
 
     std::vector<std::string> s_vec(2);
+    std::string pipeline;
     s_vec[0]="Camera";
-    s_vec[1]="Planet";
+    if (textured) {
+        s_vec[1] = setId;
+        pipeline = "GPlaneTex";
+    } else {
+        s_vec[1]="Planet";
+        pipeline = "GPlane";
+    }
     (*dpool)[d]->m_type = DType::Normal;
 
-    glm::mat4 matrix{
+    glm::mat4 matrix {
             glm::vec4{SingleAPP.getWorkTargetPlane().x_coordinate, 0.0f},
             glm::vec4{SingleAPP.getWorkTargetPlane().y_coordinate, 0.0f},
             glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
@@ -135,9 +149,9 @@ void DPlane::constructD(){
                          tool::combine("DPlane", id),
                          6,
                          0,
-                         "GPlane",
+                         pipeline,
                          s_vec,
-                         "GPlane",
+                         pipeline,
                          s_vec);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("DPlane",id),[&, ms_index, d](float _abs_time){
@@ -388,6 +402,24 @@ void DPlaneHandle::pushUI() {
             ImGui::TreePop();
         }
 
+        if (ImGui::TreeNode("AddTexture"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& [id, val] : SingleTexturePool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    setTextureId(id);
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("Select Descriptor Sets"))
         {
             ShowHelpMarker("Hold CTRL and click to select multiple items.");
@@ -590,7 +622,9 @@ DrawNPlaneHandle::DrawNPlaneHandle(DPlaneHandle *_handle):
         } else {
             computeLocalCoordinate(pre_pos, handle->getCoordinate());
             genPlane(pre_pos, pre_pos, plane);
-            auto p = std::make_unique<DPlane>(plane);
+            auto p = std::make_unique<DPlane>(plane,
+                                              handle->getTextured(),
+                                              handle->getTextureId());
             handle->pushDPlane(std::move(p));
             TaskPool::pushUpdateTask("DrawNPlaneUpdate",[&](float _abs_time){
                 auto localPlane = std::move(handle->getPlanes().back());

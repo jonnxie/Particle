@@ -448,6 +448,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define ModelSetCatalog    "Engine/Pool/modelsetpool.h"
 #define TaskCatalog        "Engine/Event/taskpool.h"
 #define ShaderCatalog      "Engine/Pool/shaderpool.h"
+#define TexturePoolCatalog "Engine/Pool/TexturePool.h"
 #define GLTFCatalog        "Engine/Object/VulkanglTFModels.h"
 #define CameraCatalog      "Engine/Object/camera.h"
 #define SGroupCatalog      "Engine/Pool/shadergrouppool.h"

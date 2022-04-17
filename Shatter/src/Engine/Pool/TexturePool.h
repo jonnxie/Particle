@@ -32,12 +32,14 @@ public:
                     const std::string& _filename,
                     TextureType _type);
 
-    void create2DTexture(const std::string& _filename, Texture& _tex);
+    void create2DTexture(const std::string& _key,
+                         const std::string& _filename,
+                         Texture& _tex);
 
 private:
     TexturePool() = default;
 };
 
-#define SingleTexturePool  TexturePool::getPool()
+#define SingleTexturePool TexturePool::getPool()
 
 #endif //MAIN_TEXTUREPOOL_H

@@ -109,6 +109,26 @@ void SetPool::AllocateDescriptorSets(const std::vector<Set_id>& _ids, VkDescript
     }
 }
 
+void SetPool::AllocateDescriptorSets(const std::string& _setId, const Slb_id& _id, VkDescriptorSet* _set) {
+    VkDescriptorSetLayout layout = SlbPool::getPool().m_sl_map[_id];
+
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = m_set_pool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &layout;
+
+    if (vkAllocateDescriptorSets(Device::getDevice()(), &allocInfo, _set) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate descriptor set!");
+    }
+
+    if (m_map.count(_setId) != 0) {
+        std::cout<< "AllocateDescriptorSets function parameter" << _setId << "already existed" << std::endl;
+    } else {
+        m_map[_setId] = *_set;
+    }
+}
+
 void SetPool::addRelease(VkDescriptorSet _set){
     static int count = 0;
     m_map[tool::combine("release",count++)] = _set;

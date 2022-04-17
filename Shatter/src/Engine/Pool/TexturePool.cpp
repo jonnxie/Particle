@@ -26,7 +26,7 @@ TexturePool &TexturePool::getPool() {
 }
 
 void TexturePool::init() {
-
+    addTexture("default", tool::combineTexture("default.png"), TextureType::Texture2DDefault);
 }
 
 void TexturePool::release() {
@@ -55,7 +55,7 @@ void TexturePool::addTexture(const std::string& _key,
             break;
         }
         case TextureType::Texture2DDefault: {
-            create2DTexture(_filename, texture);
+            create2DTexture( _key, _filename, texture);
             break;
         }
         case TextureType::Texture3D: {
@@ -416,7 +416,9 @@ void createDefaultSampler(VkSampler& sampler){
     }
 }
 
-void TexturePool::create2DTexture(const std::string& _filename, Texture& _tex) {
+void TexturePool::create2DTexture(const std::string& _key,
+                                  const std::string& _filename,
+                                  Texture& _tex) {
     int texWidth, texHeight, texChannels;
     if (!file::fileExists(_filename)) {
         throwFile(_filename);
@@ -472,7 +474,12 @@ void TexturePool::create2DTexture(const std::string& _filename, Texture& _tex) {
 
     createDefaultSampler(_tex.sampler);
 
-    SingleSetPool.AllocateDescriptorSets({"BaseTexture"}, &_tex.set);
+    vkDestroyBuffer(SingleDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(SingleDevice(), stagingBufferMemory, nullptr);
+
+    SingleSetPool.AllocateDescriptorSets(_key,
+                                         {"BaseTexture"},
+                                         &_tex.set);
 }
 
 

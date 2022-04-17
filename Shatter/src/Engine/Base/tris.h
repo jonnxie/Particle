@@ -1,4 +1,4 @@
-//
+ //
 // Created by jonnxie on 2022/1/28.
 //
 
@@ -44,13 +44,17 @@ public:
 
 class DPlane : public Object{
 public:
-    explicit DPlane(const NPlane& _plane);
+    explicit DPlane(const NPlane& _plane ,
+                    bool _textured = false,
+                    std::string  _setId = "");
     ~DPlane() override;
     void releaseMem();
     void constructG() override;
     void constructD() override;
     void constructC() override{};
 public:
+    bool                textured = false;
+    std::string         setId{};
     NPlane              plane;
     bool                changed = true;
     int                 id;
@@ -92,7 +96,7 @@ private:
     DPlaneHandle* handle;
 };
 
-class DrawNPlane : public Shatter::Listener{
+class DrawNPlane : public Shatter::Listener {
 public:
     DrawNPlane();
     ~DrawNPlane() override;
@@ -101,7 +105,7 @@ private:
 };
 
 
-class DCube : public Object{
+class DCube : public Object {
 public:
     explicit DCube(const Cube& _cube);
     ~DCube() override;
@@ -157,7 +161,7 @@ private:
     DCubeHandle* handle;
 };
 
-class DrawCube : public Shatter::Listener{
+class DrawCube : public Shatter::Listener {
 public:
     DrawCube();
     ~DrawCube() override;

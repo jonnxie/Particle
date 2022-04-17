@@ -28,6 +28,8 @@ public:
 
     void AllocateDescriptorSets(const std::vector<Set_id>& _ids,VkDescriptorSet* _set);
 
+    void AllocateDescriptorSets(const std::string& _setId, const Slb_id& _id, VkDescriptorSet* _set);
+
     void addRelease(VkDescriptorSet _set);
 
     void allocateDefaultDescriptorSets() const;

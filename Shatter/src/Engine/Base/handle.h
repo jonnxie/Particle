@@ -19,11 +19,22 @@ public:
 public:
     [[nodiscard]] glm::vec3& getWorkCenter() const;
     [[nodiscard]] TargetPlane& getTargetPlane() const;
-private:
+public:
     ClassProtectedElement(m_pipeline, std::string, Pipeline);
     ClassProtectedElement(m_sets, std::vector<std::string>, Sets);
     ClassProtectedElement(m_color, glm::vec3 , Color);
     ClassProtectedElement(m_localCoordiante, int, Coordinate);
+    ClassElementInitial(m_textured, bool, Textured, false);
+protected:
+    std::string m_textureId{};
+public:
+    void setTextureId(const std::string &_in) {
+        setTextured(true);
+        m_textureId = _in;
+    }
+    std::string getTextureId() {
+        return m_textureId;
+    }
 };
 
 
