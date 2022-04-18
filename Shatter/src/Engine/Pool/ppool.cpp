@@ -179,6 +179,19 @@ void PPool::init() {
                  RenderPassType::Default,
                  SubpassG);
 
+        createGP("GCubeTex",
+                 std::vector<Input_Type>{Input_Type::Point3dNormalUV},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("cube_vs"),
+                                                              ShaderPool::getPool().Get("cubeTex_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
+                 std::vector<Sl_id> {"Default", "Camera", "BaseTexture"},
+                 RenderPassType::Default,
+                 SubpassG);
+
         createGP("GSkin",
                  std::vector<Input_Type>{Input_Type::GLTF},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gskin_vs"),

@@ -206,8 +206,12 @@ static int mallocCubeId()
     return initIdVal++;
 }
 
-DCube::DCube(const Cube &_cube):
-cube(_cube)
+DCube::DCube(const Cube& _cube,
+             bool _textured,
+             std::string  _setId):
+cube(_cube),
+textured(_textured),
+setId(_setId)
 {
     id = mallocCubeId();
     init();
@@ -252,10 +256,17 @@ void DCube::constructD() {
     int ms_index = ModelSetPool::getPool().malloc();
 
     std::vector<std::string> s_vec(2);
+    std::string pipeline;
     s_vec[0]="Camera";
     s_vec[1]="Planet";
     (*dpool)[d]->m_type = DType::Normal;
-
+    if (textured) {
+        s_vec[1] = setId;
+        pipeline = "GCubeTex";
+    } else {
+        s_vec[1]="Planet";
+        pipeline = "GCube";
+    }
     /*
      * There must have displacement matrix component.
      */
@@ -277,9 +288,9 @@ void DCube::constructD() {
                          tool::combine("DCube", id),
                          36,
                          0,
-                         "GCube",
+                         pipeline,
                          s_vec,
-                         "GCube",
+                         pipeline,
                          s_vec);
     insertDObject(d);
     TaskPool::pushUpdateTask(tool::combine("DCube",id),[&, ms_index, d](float _abs_time){
@@ -711,6 +722,24 @@ void DCubeHandle::pushUI() {
             ImGui::TreePop();
         }
 
+        if (ImGui::TreeNode("AddTexture"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& [id, val] : SingleTexturePool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    setTextureId(id);
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("Select Descriptor Sets"))
         {
             ShowHelpMarker("Hold CTRL and click to select multiple items.");
@@ -964,7 +993,9 @@ DrawCubeHandle::DrawCubeHandle(DCubeHandle *_handle):
         } else {
             computeLocalCoordinate(preLocalPosition);
             genCube(glm::vec2(preLocalPosition.x, preLocalPosition.y), glm::vec2(preLocalPosition.x, preLocalPosition.y), .0f, cube);
-            handle->getCubes().emplace_back(std::make_unique<DCube>(cube));
+            handle->getCubes().emplace_back(std::make_unique<DCube>(cube,
+                                                                    handle->getTextured(),
+                                                                    handle->getTextureId()));
             handle->getCubes().back()->cube = cube;
             TaskPool::pushUpdateTask("DrawCubeUpdate", [&](float _abs_time){
                 int id = handle->getCubes().back()->id;

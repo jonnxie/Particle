@@ -107,7 +107,9 @@ private:
 
 class DCube : public Object {
 public:
-    explicit DCube(const Cube& _cube);
+    explicit DCube(const Cube& _cube,
+                   bool _textured = false,
+                   std::string  _setId = "");
     ~DCube() override;
     void releaseMem();
     void constructG() override;
@@ -115,6 +117,8 @@ public:
     void constructC() override{};
 
 public:
+    bool                textured = false;
+    std::string         setId{};
     Cube                cube;
     bool                changed = true;
     int                 id;

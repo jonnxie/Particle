@@ -73,13 +73,13 @@ void vkglTF::Texture::destroy()
 	}
 }
 
-void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, Device *device, VkQueue copyQueue) {
+void vkglTF::Texture::fromGlTfImage(tinygltf::Image &gltfImage, std::string path, Device *device, VkQueue copyQueue) {
     this->device = device;
 
     bool isKtx = false;
     // Image points to an external ktx file
-    if (gltfimage.uri.find_last_of(".") != std::string::npos) {
-        if (gltfimage.uri.substr(gltfimage.uri.find_last_of(".") + 1) == "ktx") {
+    if (gltfImage.uri.find_last_of(".") != std::string::npos) {
+        if (gltfImage.uri.substr(gltfImage.uri.find_last_of(".") + 1) == "ktx") {
             isKtx = true;
         }
     }
@@ -92,14 +92,14 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
         unsigned char* buffer = nullptr;
         VkDeviceSize bufferSize = 0;
         bool deleteBuffer = false;
-        if (gltfimage.component == 3) {
+        if (gltfImage.component == 3) {
             // Most devices don't support RGB only on Vulkan so convert if necessary
             // TODO: Check actual format support and transform only if required
-            bufferSize = gltfimage.width * gltfimage.height * 4;
+            bufferSize = gltfImage.width * gltfImage.height * 4;
             buffer = new unsigned char[bufferSize];
             unsigned char* rgba = buffer;
-            unsigned char* rgb = &gltfimage.image[0];
-            for (size_t i = 0; i < gltfimage.width * gltfimage.height; ++i) {
+            unsigned char* rgb = &gltfImage.image[0];
+            for (size_t i = 0; i < gltfImage.width * gltfImage.height; ++i) {
                 for (int32_t j = 0; j < 3; ++j) {
                     rgba[j] = rgb[j];
                 }
@@ -109,16 +109,16 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
             deleteBuffer = true;
         }
         else {
-            buffer = &gltfimage.image[0];
-            bufferSize = gltfimage.image.size();
+            buffer = &gltfImage.image[0];
+            bufferSize = gltfImage.image.size();
         }
 
         format = VK_FORMAT_R8G8B8A8_UNORM;
 
         VkFormatProperties formatProperties;
 
-        width = gltfimage.width;
-        height = gltfimage.height;
+        width = gltfImage.width;
+        height = gltfImage.height;
         mipLevels = static_cast<uint32_t>(floor(log2(std::max(width, height))) + 1.0);
 
         vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
@@ -284,12 +284,16 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path
             imageMemoryBarrier.subresourceRange = subresourceRange;
             vkCmdPipelineBarrier(blitCmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         }
+
+        if (deleteBuffer) {
+            delete[] buffer;
+        }
+
         Shatter::render::ShatterRender::getRender().endSingleTimeCommands(blitCmd);
-//        device->flushCommandBuffer(blitCmd, copyQueue, true);
     }
     else {
         // Texture is stored in an external ktx file
-        std::string filename = path + "/" + gltfimage.uri;
+        std::string filename = path + "/" + gltfImage.uri;
 
         ktxTexture* ktxTexture;
 
@@ -1357,7 +1361,7 @@ void vkglTF::Model::loadImages(tinygltf::Model &gltfModel, Device *device, VkQue
 {
 	for (tinygltf::Image &image : gltfModel.images) {
 		vkglTF::Texture texture;
-		texture.fromglTfImage(image, path, device, transferQueue);
+        texture.fromGlTfImage(image, path, device, transferQueue);
 		textures.push_back(texture);
 	}
 	// Create an empty texture to be used for empty material images

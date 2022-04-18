@@ -62,7 +62,7 @@ namespace vkglTF
 		VkSampler sampler;
 		void updateDescriptor();
 		void destroy();
-		void fromglTfImage(tinygltf::Image& gltfimage, std::string path, Device* device, VkQueue copyQueue);
+		void fromGlTfImage(tinygltf::Image& gltfImage, std::string path, Device* device, VkQueue copyQueue);
 	};
 
 	/*
