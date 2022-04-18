@@ -58,10 +58,10 @@ public:
     void reallocated();
     ClassElement(m_pipeline, std::string, Pipeline);
     ClassElement(m_sets, std::vector<std::string>, Sets);
+    ClassElement(m_localCoordiante, int, Coordinate);
     ClassReferenceElement(m_points, std::vector<Point3dColorSize>, Points);
     ClassPointerElement(id, int, ID);
     ClassPointerElement(pointCount, int, PointCount);
-    ClassElement(m_localCoordiante, int, Coordinate);
 private:
     bool                updateFunc;
     bool                changed = true;
@@ -78,26 +78,33 @@ public:
     DefineUnCopy(PointsHandle);
 public:
     Point3dColorSize& operator[](size_t _index);
-    void pushPoint(const glm::vec3& _point);
-    void pushPoint(const Point3dColorSize& _point);
+    void pushPoint(const glm::vec3& _point, bool _textured = false);
+    void pushPoint(const Point3dColorSize& _point, bool _textured = false);
     void pushPoints(const std::vector<glm::vec3>& _points);
     void pushUI() override;
     int  getPointCount();
     void loadFile(const std::string& _filename) override;
     void drawPoint();
+    void drawPointTex();
     void destroy() const override;
 public:
     ClassPointerElement(m_listener, DrawPointHandle*, Listener);
     ClassProtectedElement(m_size, float , Size);
 private:
     bool appendState = true;
+    bool appendTexState = true;
     std::unique_ptr<DPointPool> m_points{nullptr};
+    std::unique_ptr<DPointPool> m_pointsTex{nullptr};
 };
 
 class DrawPointHandle : public Shatter::Listener{
 public:
     explicit DrawPointHandle(PointsHandle* _handle);
     ~DrawPointHandle() override;
+
+protected:
+    friend PointsHandle;
+    bool textured = false;
 private:
     PointsHandle* handle;
 };

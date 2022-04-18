@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2022/2/10.
 //
+#include <Engine/Pool/TexturePool.h>
 #include "precompiledhead.h"
 
 #include "points.h"
@@ -79,9 +80,9 @@ static int mallocId()
 
 DPointPool::DPointPool(const std::vector<Point3dColorSize> &_points, int _coordinate, bool _updateFunc, std::string _pipeline,
                        std::vector<std::string> _sets):
-                       updateFunc(_updateFunc),
-                       m_pipeline(std::move(_pipeline)),
-                       m_sets(std::move(_sets)){
+        updateFunc(_updateFunc),
+        m_pipeline(std::move(_pipeline)),
+        m_sets(std::move(_sets)){
     m_localCoordiante = _coordinate;
     m_points = _points;
     id = mallocId();
@@ -183,6 +184,8 @@ PointsHandle::PointsHandle() {
     m_size = 4;
     m_listener = new DrawPointHandle(this);
     m_points = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, m_pipeline, m_sets);
+    m_sets.emplace_back("test");
+    m_pointsTex = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, "PointTex", m_sets);
     pushUI();
 }
 
@@ -194,14 +197,21 @@ Point3dColorSize &PointsHandle::operator[](size_t _index) {
     return m_points->getPoints()[_index];
 }
 
-void PointsHandle::pushPoint(const glm::vec3 &_point) {
-    return pushPoint(Point3dColorSize{_point,
-                                      m_color,
-                                      m_size});
+void PointsHandle::pushPoint(const glm::vec3 &_point, bool _textured) {
+    return pushPoint(Point3dColorSize{
+                             _point,
+                             m_color,
+                             m_size
+                     },
+                     _textured);
 }
 
-void PointsHandle::pushPoint(const Point3dColorSize &_point) {
-    return m_points->pushPoint(_point);
+void PointsHandle::pushPoint(const Point3dColorSize &_point, bool _textured) {
+    if (!_textured) {
+        return m_points->pushPoint(_point);
+    } else {
+        return m_pointsTex->pushPoint(_point);
+    }
 }
 
 void PointsHandle::pushPoints(const std::vector<glm::vec3> &_points) {
@@ -228,6 +238,11 @@ void PointsHandle::pushUI() {
             drawPoint();
         }
 
+        if(ImGui::Button("drawPointTex"))
+        {
+            drawPointTex();
+        }
+
         if (ImGui::TreeNode("Select Pipeline"))
         {
             static int selected = -1;
@@ -240,6 +255,25 @@ void PointsHandle::pushUI() {
                 {
                     selected = num;
                     m_pipeline = id;
+                }
+                num++;
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("AddTexture"))
+        {
+            static int selected = -1;
+            int num = 0;
+            for(auto& [id, val] : SingleTexturePool.m_map)
+            {
+                char buf[32];
+                sprintf(buf, id.c_str());
+                if (ImGui::Selectable(buf, selected == num))
+                {
+                    selected = num;
+                    setTextureId(id);
+                    m_pointsTex->getSets()[2]= id;
                 }
                 num++;
             }
@@ -329,6 +363,16 @@ void PointsHandle::drawPoint() {
     }
 }
 
+void PointsHandle::drawPointTex() {
+    if (appendTexState) {
+        m_listener->textured = true;
+        appendTexState = false;
+    } else {
+        m_listener->textured = false;
+        appendTexState = true;
+    }
+}
+
 void PointsHandle::destroy() const {
     if (!appendState){
         TaskPool::pushTask([](){
@@ -342,7 +386,7 @@ void PointsHandle::destroy() const {
 }
 
 DrawPointHandle::DrawPointHandle(PointsHandle *_handle):
-handle(_handle)
+        handle(_handle)
 {
     m_action[Event::MouseClick] = [&]() {
         static glm::vec3 dis;
@@ -352,7 +396,7 @@ handle(_handle)
         local = {glm::dot(dis, handle->getTargetPlane().x_coordinate),
                  glm::dot(dis, handle->getTargetPlane().y_coordinate),
                  glm::dot(dis, handle->getTargetPlane().z_coordinate)};
-        handle->pushPoint(local);
+        handle->pushPoint(local, textured);
     };
 }
 

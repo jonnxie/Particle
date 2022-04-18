@@ -83,17 +83,17 @@ void ShaderPool::createShaderStage(const Shader_id& _id,const std::string& _file
 }
 
 void ShaderPool::init() {
-    createShaderStage("build_vs",tool::combineShader("g/gbuffer_vert.spv"),VertexShader);
-    createShaderStage("build_fs",tool::combineShader("g/gbuffer_frag.spv"),FragmentShader);
+    createShaderStage("build_vs",tool::combineShader("g/gbuffer_vert.spv"), VertexShader);
+    createShaderStage("build_fs",tool::combineShader("g/gbuffer_frag.spv"), FragmentShader);
 
-    createShaderStage("agbasic_vs",tool::combineShader("agbasic/vert.spv"),VertexShader);
-    createShaderStage("agbasic_fs",tool::combineShader("agbasic/frag.spv"),FragmentShader);
+    createShaderStage("agbasic_vs",tool::combineShader("agbasic/vert.spv"), VertexShader);
+    createShaderStage("agbasic_fs",tool::combineShader("agbasic/frag.spv"), FragmentShader);
 
-    createShaderStage("aginstance_vs",tool::combineShader("aginstance/vert.spv"),VertexShader);
-    createShaderStage("aginstance_fs",tool::combineShader("aginstance/frag.spv"),FragmentShader);
+    createShaderStage("aginstance_vs",tool::combineShader("aginstance/vert.spv"), VertexShader);
+    createShaderStage("aginstance_fs",tool::combineShader("aginstance/frag.spv"), FragmentShader);
 
-    createShaderStage("gplanet_vs",tool::combineShader("gplanet/vert.spv"),VertexShader);
-    createShaderStage("gplanet_fs",tool::combineShader("gplanet/frag.spv"),FragmentShader);
+    createShaderStage("gplanet_vs",tool::combineShader("gplanet/vert.spv"), VertexShader);
+    createShaderStage("gplanet_fs",tool::combineShader("gplanet/frag.spv"), FragmentShader);
 
     createShaderStage("plane_vs",tool::combineShader("Plane/vert.spv"), VertexShader);
     createShaderStage("plane_fs",tool::combineShader("Plane/frag.spv"), FragmentShader);
@@ -103,22 +103,23 @@ void ShaderPool::init() {
     createShaderStage("cube_fs",tool::combineShader("cube/frag.spv"), FragmentShader);
     createShaderStage("cubeTex_fs",tool::combineShader("cube/tex_frag.spv"), FragmentShader);
 
-    createShaderStage("transparent_vs",tool::combineShader("pass/transparent_vert.spv"),VertexShader);
-    createShaderStage("transparent_fs",tool::combineShader("pass/transparent_frag.spv"),FragmentShader);
+    createShaderStage("transparent_vs",tool::combineShader("pass/transparent_vert.spv"), VertexShader);
+    createShaderStage("transparent_fs",tool::combineShader("pass/transparent_frag.spv"), FragmentShader);
 
-    createShaderStage("composition_vs",tool::combineShader("pass/composition_vert.spv"),VertexShader);
-    createShaderStage("composition_fs",tool::combineShader("pass/composition_frag.spv"),FragmentShader);
+    createShaderStage("composition_vs",tool::combineShader("pass/composition_vert.spv"), VertexShader);
+    createShaderStage("composition_fs",tool::combineShader("pass/composition_frag.spv"), FragmentShader);
 
-    createShaderStage("shadowDepth_vs",tool::combineShader("cascade_shadow/depthpass_vert.spv"),VertexShader);
-    createShaderStage("shadowDepth_fs",tool::combineShader("cascade_shadow/depthpass_frag.spv"),FragmentShader);
+    createShaderStage("shadowDepth_vs",tool::combineShader("cascade_shadow/depthpass_vert.spv"), VertexShader);
+    createShaderStage("shadowDepth_fs",tool::combineShader("cascade_shadow/depthpass_frag.spv"), FragmentShader);
 
-    createShaderStage("polyline_vs",tool::combineShader("polyline/pc_vert.spv"),VertexShader);
-    createShaderStage("polyline_fs",tool::combineShader("polyline/pc_frag.spv"),FragmentShader);
+    createShaderStage("polyline_vs",tool::combineShader("polyline/pc_vert.spv"), VertexShader);
+    createShaderStage("polyline_fs",tool::combineShader("polyline/pc_frag.spv"), FragmentShader);
 
-    createShaderStage("simple_ms",tool::combineShader("TaskMesh/mesh.spv"),MeshShader);
+    createShaderStage("simple_ms",tool::combineShader("TaskMesh/mesh.spv"), MeshShader);
 
-    createShaderStage("particle_vs", tool::combineShader("point/vert.spv"),VertexShader);
-    createShaderStage("particle_fs", tool::combineShader("point/frag.spv"),FragmentShader);
+    createShaderStage("particle_vs", tool::combineShader("point/vert.spv"), VertexShader);
+    createShaderStage("particle_fs", tool::combineShader("point/frag.spv"), FragmentShader);
+    createShaderStage("particleTex_fs", tool::combineShader("point/tex_frag.spv"), FragmentShader);
 
     createShaderStage("planet_vs", tool::combineShader("planet/vert.spv"), VertexShader);
     createShaderStage("planet_fs", tool::combineShader("planet/frag.spv"), FragmentShader);

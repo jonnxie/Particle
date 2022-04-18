@@ -246,6 +246,20 @@ void PPool::init() {
                  SubpassTransparency
         );
 
+        createGP("PointTex",
+                 std::vector<Input_Type>{Input_Type::Point3dColorSize},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("particle_vs"),
+                                                              ShaderPool::getPool().Get("particleTex_fs")},
+                 AssemState::Point_List,
+                 RasterState::Point,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 std::vector<Sl_id> {"Default", "Camera", "ViewPort", "BaseTexture"},
+                 RenderPassType::Default,
+                 SubpassTransparency
+        );
+
         createGP("Planet_Face",
                  std::vector<Input_Type>{Input_Type::Point3d},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("planet_vs"),
