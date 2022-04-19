@@ -86,7 +86,7 @@ public:
                            const Tile& tile,
                            const std::string& extension);
     void disposeTile(const Tile& tile);
-    void preprocessNode(const Tile& tile, const Tile& parentTile, const std::string& tileSetDir);
+    void preprocessNode(Tile& tile, Tile* parentTile, const std::string& tileSetDir);
     void setTileActive(const Tile& tile,bool state);
     void setTileVisible(const Tile& tile,bool state);
     int calculateError(const Tile& tile);
@@ -285,6 +285,39 @@ void skipTraversal(Tile& _tile, TilesRendererBase* _renderer ) {
             if ( isUsedThisFrame( *c, frameCount ) ) {
                 skipTraversal( *c, _renderer );
             }
+        }
+    }
+}
+
+void toggleTiles(Tile& _tile, TilesRendererBase* _renderer ) {
+    int frameCount = _renderer->frameCount;
+    bool isUsed = isUsedThisFrame(_tile, frameCount);
+    if (isUsed || _tile.usedLastFrame) {
+        bool setActive = false;
+        bool setVisible = false;
+        if (isUsed) {
+            setActive = _tile.active;
+            if (_renderer->displayActiveTiles) {
+                setVisible = _tile.active || _tile.visible;
+            } else {
+                setVisible = _tile.visible;
+            }
+        }
+        if (!_tile.contentEmpty && _tile.loadingState == LOADED) {
+            if (_tile.wasSetActive != setActive) {
+                _renderer->setTileActive(_tile, setActive);
+            }
+
+            if (_tile.wasSetVisible != setVisible) {
+                _renderer->setTileVisible(_tile, setVisible);
+            }
+        }
+        _tile.wasSetActive = setActive;
+        _tile.wasSetVisible = setVisible;
+        _tile.usedLastFrame = isUsed;
+
+        for (auto & t : _tile.children) {
+            toggleTiles(*t, _renderer);
         }
     }
 }

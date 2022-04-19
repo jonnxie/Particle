@@ -33,6 +33,8 @@ void markUsedSetLeaves(Tile& _tile, TilesRendererBase* _renderer );
 
 void skipTraversal(Tile& _tile, TilesRendererBase* _renderer );
 
+void toggleTiles(Tile& _tile, TilesRendererBase* _renderer );
+
 bool recursivelyLoadTiles(Tile& _tile, int _depthFromRenderedParent, TilesRendererBase* _renderer);
 
 bool isUsedThisFrame(const Tile& _tile, int _frameCount);

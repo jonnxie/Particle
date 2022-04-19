@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <functional>
+#include <optional>
 #include "json.hpp"
 #include "Engine/Item/shatter_macro.h"
 
@@ -38,8 +39,10 @@ struct TileBase {
     struct Content{
         json extensions;
         json extras;
-        std::string url;
-    } content;
+        std::optional<std::reference_wrapper<std::string>> uri;
+        std::optional<std::reference_wrapper<std::string>> url;
+    };
+    std::optional<Content> content;
 
     json extensions;
     json extras;
@@ -60,11 +63,15 @@ struct Tile : public TileBase<Tile>{
     bool  isLeaf;
     bool  visible;
     bool  wasSetVisible;
+    bool  wasSetActive;
     bool  childrenWereVisible;
     bool  allChildrenLoaded;
     bool  contentEmpty;
     bool  externalTileSet;
     int   loadingState;
+    int   loadAbort;
+    int   loadIndex;
+    bool  usedLastFrame;
 };
 
 namespace std {

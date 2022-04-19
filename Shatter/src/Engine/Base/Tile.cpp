@@ -5,6 +5,7 @@
 #include "precompiledhead.h"
 #include "Tile.h"
 #include "traverseFunction.h"
+#include <regex>
 
 TilesRendererBase::TilesRendererBase(const std::string &_url) {
     lruCache.unloadPriorityCallback = lruPriorityCallback;
@@ -51,18 +52,138 @@ void TilesRendererBase::update() {
     frameCount++;
 
     determineFrustumSet(*rootTileSet().root, this);
+    markUsedSetLeaves(*rootTileSet().root, this);
+    skipTraversal(*rootTileSet().root, this);
+    toggleTiles(*rootTileSet().root, this);
+
+    lruCache.scheduleUnload();
 }
 
-void TilesRendererBase::parseTile(std::vector<unsigned char> buffer, const Tile &tile, const std::string &extension) {
+void TilesRendererBase::parseTile(std::vector<unsigned char> _buffer,
+                                  const Tile& _tile,
+                                  const std::string& _extension) {
+
 
 }
 
-void TilesRendererBase::disposeTile(const Tile& tile) {
+void TilesRendererBase::disposeTile(const Tile& _tile) {
 
 }
 
-void TilesRendererBase::preprocessNode(const Tile &tile, const Tile &parentTile, const std::string &tileSetDir) {
+std::string urlJoin(const std::vector<std::string>& _args, const std::string& _path) {
+    std::regex protocolRegex("[a-zA-Z]+:\\/\\/");
+    int lastRoot = -1;
+    for (int i = 0, l = _args.size(); i < l; i++) {
+        if (std::regex_match(_args[i], protocolRegex)) {
+            lastRoot = i;
+        }
+    }
+    if (lastRoot == -1) {
+        std::string path = _path;
+        for (auto& s : _args) {
+            path += s;
+        }
+        std::regex regex("\\");
+        return std::regex_replace(path, regex,"/");
+    } else {
+        std::vector<std::string> parts = _args;
+        if (lastRoot > 0) {
+            auto it = parts.begin();
+            std::advance(it, lastRoot);
+            parts.erase(it);
+        }
+        std::smatch match;
+        std::regex_match(parts[0], match, protocolRegex);
+        auto protocol = match[0].str();
+        parts[0].erase(parts[0].find(protocol), protocol.length());
+        std::string result = protocol + _path;
+        for (auto& s : parts) {
+            result += s;
+        }
+        std::regex regex("\\");
+        return std::regex_replace(result, regex,"/");
+    }
+}
 
+std::string getUrlExtension(const std::string& _url) {
+    auto filename = _url.substr(0, _url.find('/'));
+    int dotIndex = filename.find_last_of('.');
+    if (dotIndex == -1 || dotIndex == filename.length() - 1) {
+        return "";
+    }
+    return filename.substr(0, dotIndex+1);
+}
+
+void TilesRendererBase::preprocessNode(Tile &_tile, Tile* _parentTile, const std::string &_tileSetDir) {
+    if (_tile.content.has_value()) {
+        if (!_tile.content->uri.has_value() && _tile.content->url.has_value()) {
+            _tile.content->uri->get() = _tile.content->url->get();
+            _tile.content->url->get().clear();
+        }
+
+        if (_tile.content->uri.has_value()) {
+            _tile.content->uri->get() = urlJoin(std::vector<std::string>{_tileSetDir, _tile.content->uri->get()}, "");
+        }
+
+        //
+        {
+//        if (
+//                tile.content.boundingVolume &&
+//                ! (
+//                        'box' in tile.content.boundingVolume ||
+//                                 'sphere' in tile.content.boundingVolume ||
+//                                             'region' in tile.content.boundingVolume
+//        )
+//        ) {
+//
+//            delete tile.content.boundingVolume;
+//
+//        }
+        }
+    }
+
+    _tile.parent = _parentTile;
+    if (_tile.content->uri.has_value()) {
+        auto extension = getUrlExtension(_tile.content->uri->get());
+        bool isExternalTileSet = bool(extension == "json");
+        _tile.externalTileSet = isExternalTileSet;
+        _tile.contentEmpty = isExternalTileSet;
+    } else {
+        _tile.externalTileSet = false;
+        _tile.contentEmpty = true;
+    }
+
+    _tile.distanceFromCamera = 0;
+    _tile.error = 0;
+
+    _tile.inFrustum = false;
+    _tile.isLeaf = false;
+
+    _tile.usedLastFrame = false;
+    _tile.used = false;
+
+    _tile.wasSetVisible = false;
+    _tile.visible = false;
+    _tile.childrenWereVisible = false;
+    _tile.allChildrenLoaded = false;
+
+    _tile.wasSetActive = false;
+    _tile.active = false;
+
+    _tile.loadingState = UNLOADED;
+    _tile.loadIndex = 0;
+
+    _tile.loadAbort = 0;
+
+    _tile.depthFromRenderedParent = - 1;
+
+    if (_parentTile == nullptr) {
+        _tile.depth = 0;
+        _tile.refine = _tile.refine + "REPLACE";
+    } else {
+        _tile.depth = _parentTile->depth+1;
+        _tile.refine = _tile.refine + _parentTile->refine;
+    }
 }
 
 void TilesRendererBase::setTileActive(const Tile& tile,bool state) {
