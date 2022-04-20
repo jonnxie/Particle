@@ -118,6 +118,7 @@ namespace Shatter::app{
             if (key == GLFW_KEY_F1)
             {
                 Config::setConfig("enableScreenGui", 1 - Config::getConfig("enableScreenGui"));
+                SingleRender.guiChanged = true;
             }
 
             if (key == GLFW_KEY_DELETE)
@@ -132,7 +133,7 @@ namespace Shatter::app{
                 {
                     drawLine = false;
                     appendListener("DrawLine",new DrawLine);
-                }else{
+                } else {
                     deleteListener("DrawLine");
                     drawLine = true;
                 }
@@ -145,7 +146,7 @@ namespace Shatter::app{
                 {
                     drawPlane = false;
                     appendListener("DrawPlane",new DrawPlane);
-                }else{
+                } else {
                     deleteListener("DrawPlane");
                     drawPlane = true;
                 }
@@ -215,7 +216,7 @@ namespace Shatter::app{
                     } else {
                         appendListener("drawNPlane", new DrawNPlane);
                     }
-                }else{
+                } else {
                     deleteListener("drawNPlane");
                     drawNPlane = true;
                 }
@@ -234,7 +235,7 @@ namespace Shatter::app{
                     } else {
                         appendListener("drawCube",new DrawCube);
                     }
-                }else{
+                } else {
                     deleteListener("drawCube");
                     drawCube = true;
                 }
@@ -247,7 +248,7 @@ namespace Shatter::app{
                 {
                     chooseWorkPlane = false;
                     appendListener("chooseWorkPlane",new ChooseWorkPlane);
-                }else{
+                } else {
                     deleteListener("chooseWorkPlane");
                     chooseWorkPlane = true;
                 }

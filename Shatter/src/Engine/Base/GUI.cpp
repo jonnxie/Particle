@@ -14,6 +14,8 @@
 #include BufferCatalog
 #include DeviceCatalog
 #include ShaderCatalog
+#include ListenerCatalog
+#include AppCatalog
 
 GUI *GUI::gui = new GUI;
 
@@ -521,13 +523,12 @@ void GUI::init(float width, float height) {
     ImGui::StyleColorsLight();
 
     pushUI("default", [&]() {
-//        ImGui::Begin("Setting", nullptr, ImGuiWindowFlags_NoMove);
         ImGui::Begin("Setting");
 
         static char buf[32] = "1";
         ImGui::InputText("filename", buf, IM_ARRAYSIZE(buf));
 
-        if (ImGui::Button("captureScreenShot"))
+        if (ImGui::Button("CaptureScreenShot"))
         {
             PushDelayAction([=]() {
                 tool::saveScreenshot(std::string(buf) + ".ppm");
@@ -535,11 +536,19 @@ void GUI::init(float width, float height) {
                 std::cout << "action!" << std::endl;
             });
         }
-//        ImGui::SliderFloat("roughness", &getMaterial().roughness, 0.1f, 1.0f);
-//        ImGui::SliderFloat("metallic", &getMaterial().metallic, 0.1f, 1.0f);
-//        ImGui::SliderFloat("R", &getMaterial().r, 0.0f, 1.0f);
-//        ImGui::SliderFloat("G", &getMaterial().g, 0.0f, 1.0f);
-//        ImGui::SliderFloat("B", &getMaterial().b, 0.0f, 1.0f);
+
+        if (ImGui::Button("CaptureObject"))
+        {
+            static bool captureObject = true;
+            if(captureObject)
+            {
+                captureObject = false;
+                SingleAPP.appendListener("CaptureObject",new Shatter::CaptureObject);
+            } else {
+                SingleAPP.deleteListener("CaptureObject");
+                captureObject = true;
+            }
+        }
 
         ImGui::End();// End setting
 

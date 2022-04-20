@@ -858,14 +858,14 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 		}
 	};
 
-	// Node with children
-	if (!node.children.empty()) {
-		for (int i : node.children) {
-			loadNode(newNode, model.nodes[i], i, model, indexBuffer, vertexBuffer, globalscale);
-		}
-	}
+    // Node with children
+    if (!node.children.empty()) {
+        for (int i : node.children) {
+            loadNode(newNode, model.nodes[i], i, model, indexBuffer, vertexBuffer, globalscale);
+        }
+    }
 
-	// Node contains mesh data
+    // Node contains mesh data
 	if (node.mesh > -1) {
 		const tinygltf::Mesh mesh = model.meshes[node.mesh];
 		Mesh *newMesh = new Mesh(device, newNode->matrix);
@@ -1019,11 +1019,13 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 		}
 		newNode->mesh = newMesh;
 	}
-	if (parent) {
+
+    if (parent) {
 		parent->children.push_back(newNode);
 	} else {
 		nodes.push_back(newNode);
 	}
+
 	linearNodes.push_back(newNode);
 }
 

@@ -61,7 +61,7 @@ public:
 
     std::unordered_map<Task_id,std::function<void()>> m_tasks;
 public:
-    struct PushConstBlock{
+    struct PushConstBlock {
         glm::vec2 scale;
         glm::vec2 translate;
     } pushConstBlock{};
