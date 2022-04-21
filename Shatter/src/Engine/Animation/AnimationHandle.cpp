@@ -23,6 +23,24 @@ AnimationHandle::AnimationHandle() {
 
 }
 
+static void selectable(const std::vector<vkglTF::Node*>& nodes) {
+    static int selected = -1;
+    int num = 0;
+    for(auto& node : nodes)
+    {
+        char buf[32];
+        sprintf(buf, node->name.c_str());
+        if (ImGui::Selectable(buf, selected == num))
+        {
+            selected = num;
+            if (!node->children.empty()) {
+                selectable(node->children);
+            }
+        }
+        num++;
+    }
+}
+
 void AnimationHandle::pushUI() {
     GUI::pushUI("AnimationHandle",[&](){
 //        ImGui::Begin("AnimationSetting", nullptr, ImGuiWindowFlags_NoMove);
@@ -87,6 +105,13 @@ void AnimationHandle::pushUI() {
             }
             ImGui::TreePop();
         }
+
+        if (ImGui::TreeNode("Node Index"))
+        {
+            selectable(m_animation->getModel()->nodes);
+            ImGui::TreePop();
+        }
+
         static float local_time = 0.0f;
         static float pre_time = 0.0f;
         if(ImGui::SliderFloat("AnimationLocalTime",
