@@ -130,7 +130,7 @@ void AnimationHandle::pushUI() {
     });
 }
 
-void AnimationHandle::loadAnimation(const std::string &_files) {
+void AnimationHandle::loadAnimation(const std::string &_files, bool _binary) {
     m_animation = std::make_unique<ABasic>(_files,
                                            m_pos,
                                            m_rotationAxis,
@@ -139,7 +139,8 @@ void AnimationHandle::loadAnimation(const std::string &_files) {
                                            mallocId(),
                                            m_pipeline,
                                            m_sets,
-                                           m_drawType);
+                                           m_drawType,
+                                           _binary);
     pushUI();
     SingleRender.normalChanged = true;
 }

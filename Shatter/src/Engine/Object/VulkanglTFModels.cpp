@@ -1812,7 +1812,8 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
                                  VkQueue transferQueue,
                                  uint32_t fileLoadingFlags,
                                  const glm::mat4& world_matrix,
-                                 float scale)
+                                 float scale,
+                                 bool binary)
 {
 	tinygltf::Model gltfModel;
 	tinygltf::TinyGLTF gltfContext;
@@ -1838,7 +1839,12 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 	// We let tinygltf handle this, by passing the asset manager of our app
 	tinygltf::asset_manager = androidApp->activity->assetManager;
 #endif
-	bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, filename);
+    bool fileLoaded;
+    if (binary) {
+        fileLoaded = gltfContext.LoadBinaryFromFile(&gltfModel, &error, &warning, filename);
+    } else {
+        fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, filename);
+    }
 
 	std::vector<uint32_t> indexBuffer;
 	std::vector<Vertex> vertexBuffer;

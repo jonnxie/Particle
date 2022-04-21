@@ -24,7 +24,8 @@ public:
                    int _id,
                    std::string  _pipeline = "ABasic",
                    std::vector<std::string>  _sets = {"Camera", "Planet"},
-                   DrawObjectType _type = DrawObjectType::Normal);
+                   DrawObjectType _type = DrawObjectType::Normal,
+                   bool _binary = false);
 
     DefineUnCopy(ABasic);
     ~ABasic() override{

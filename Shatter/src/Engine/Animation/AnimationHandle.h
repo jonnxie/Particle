@@ -16,7 +16,7 @@ public:
     ~AnimationHandle();
     DefineUnCopy(AnimationHandle);
     void pushUI();
-    void loadAnimation(const std::string& _files);
+    void loadAnimation(const std::string& _files, bool _binary = false);
     ClassElement(m_pos, glm::vec3, Pos);
     ClassElement(m_rotationAxis, glm::vec3, RotationAxis);
     ClassElement(m_angle, float, Angle);

@@ -24,7 +24,8 @@ ABasic::ABasic(const std::string& _files,
              int _id,
              std::string  _pipeline,
              std::vector<std::string>  _sets,
-             DrawObjectType _type):
+             DrawObjectType _type,
+             bool _binary):
         m_pipeline(std::move(_pipeline)),
         m_sets{std::move(_sets)}
 //        m_draw_type(_type)
@@ -36,7 +37,7 @@ ABasic::ABasic(const std::string& _files,
     m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
     m_translation = glm::translate(glm::mat4(1.0f), _pos);
     m_world = m_translation * m_scale * m_rotate;
-    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_world);
+    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_world, 1.0f, _binary);
     m_id = _id;
     init();
 }

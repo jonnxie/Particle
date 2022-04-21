@@ -321,7 +321,8 @@ namespace vkglTF
                           VkQueue transferQueue,
                           uint32_t fileLoadingFlags = vkglTF::FileLoadingFlags::DontLoadImages,
                           const glm::mat4& world_matrix = glm::mat4(1.0f),
-                          float scale = 1.0f
+                          float scale = 1.0f,
+                          bool binary = false
                           );
 
         void loadFromFileDefault(const std::string& filename,
