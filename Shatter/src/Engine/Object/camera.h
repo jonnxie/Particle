@@ -21,8 +21,8 @@ public:
     void generateLookAt();
     void generateProj();
     void update(bool& cameraChanged);
-    void updateCursorRay();
-    glm::vec3 getPos();
+    void updateCursorRay() const;
+    glm::vec3 getPos() const;
     void reset();
     void flush();
     void init();

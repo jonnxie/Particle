@@ -181,7 +181,7 @@ void DPointPool::reallocated() {
 PointsHandle::PointsHandle() {
     m_pipeline = "Point";
     m_sets = {"Camera", "ViewPort"};
-    m_size = 4;
+    m_size = 2;
     m_listener = new DrawPointHandle(this);
     m_points = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, m_pipeline, m_sets);
     m_sets.emplace_back("test");
@@ -315,7 +315,7 @@ void PointsHandle::pushUI() {
         ImGui::SliderFloat("Size",
                            reinterpret_cast<float *>(&m_size),
                            0.0f,
-                           4.0f);
+                           2.0f);
         ImGui::SliderFloat3("Coordinate",
                             reinterpret_cast<float *>(&m_localCoordiante),
                             std::numeric_limits<float>::min() / 2.0f,

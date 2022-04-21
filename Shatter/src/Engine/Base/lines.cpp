@@ -20,8 +20,13 @@
 #include InputActionCatalog
 #include CameraCatalog
 #include GLTFCatalog
+#include AABBCatalog
 
-DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc):updateFunc(_updateFunc){
+DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc, int _modelIndex, bool _capture):
+updateFunc(_updateFunc),
+m_modelIndex(_modelIndex),
+capture(_capture)
+{
     lines = _lines;
     id = mallocId();
     for(auto& line : lines)
@@ -56,13 +61,18 @@ void DLines::constructG(){
 void DLines::constructD(){
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int ms_index = ModelSetPool::getPool().malloc();
+    int model_index ;
+    if (m_modelIndex == -1) {
+        model_index = ModelSetPool::getPool().malloc();
+    } else {
+        model_index = m_modelIndex;
+    }
 
     std::vector<std::string> s_vec(1);
     s_vec[0]="Camera";
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->prepare(glm::mat4(1.0f),
-                         ms_index,
+                         model_index,
                          DrawType::Vertex,
                          0,
                          tool::combine("DLines",id),
@@ -75,13 +85,15 @@ void DLines::constructD(){
     insertDObject(d);
     if(updateFunc)
     {
-        TaskPool::pushUpdateTask(tool::combine("LinesBasic",id),[&,ms_index,d](float _abs_time){
+        TaskPool::pushUpdateTask(tool::combine("LinesBasic",id),[&,model_index,d](float _abs_time){
             glm::mat4* ptr = SingleBPool.getModels();
-            memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+            memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
         });
     }
     SingleRender.getNObjects()->push_back(d);
-    addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
+    if (capture) {
+        addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
+    }
 }
 
 void DLines::pushLine(const Line &_line) {
@@ -396,3 +408,33 @@ DrawLineHandle::~DrawLineHandle() {
     TaskPool::popUpdateTask("DrawLineHandleUpdate");
     delete handle;
 }
+
+AABBLine::AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color) : aabbIndex(_aabbIndex), captureIndex(_captureIndex){
+    std::vector<glm::vec3> points;
+    genLineVertexBufferFromAABB(*(*SingleAABBPool)[_aabbIndex], points);
+    std::vector<Line> lines(points.size() / 2);
+    for (size_t i = 0, size = lines.size(); i < size; i++) {
+        new ((Point*)&lines[i].begin) Point{points[i * 2], _color};
+        new ((Point*)&lines[i].end) Point{points[i * 2 + 1], _color};
+    }
+    line = std::make_unique<DLines>(lines, false, (*SingleAABBPool)[_aabbIndex]->m_model_index, false);
+    line->init();
+}
+
+AABBLine::~AABBLine() {
+    (*SingleDPool)[line->m_dobjs[0]]->m_model_index = -1;
+}
+
+CaptureObjectListener::CaptureObjectListener() {
+    m_action[Event::SingleClick] = [this](){
+        glm::uvec2& coordinate = input::getMousePressCoordiante();
+
+        uint32_t object_id = ((VulkanFrameBuffer*)SingleRender.getCaptureFrameBuffer())->capture(coordinate.x, coordinate.y, 0);
+        input::captureObject(object_id, STATE_IN);
+//        line = std::make_unique<AABBLine>(SingleRender.aabb_map[object_id], object_id, RED_COLOR);
+//        SingleRender.normalChanged = true;
+        std::cout << "Capture Object Id: " << object_id << std::endl;
+    };
+}
+
+CaptureObjectListener::~CaptureObjectListener() = default;

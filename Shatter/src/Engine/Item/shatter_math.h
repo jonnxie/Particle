@@ -49,6 +49,8 @@ struct AABB;
 
 void genFaceVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer);
 
+void genLineVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer);
+
 void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vector<glm::vec3>& _buffer);
 
 struct NPlane;

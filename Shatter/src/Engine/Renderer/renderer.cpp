@@ -457,6 +457,7 @@ namespace Shatter::render{
         createInfo.clipped = VK_TRUE;
 
         Config::setConfig("SwapChainImageCount", imageCount);
+        SingleAPP.setSwapChainCount(imageCount);
 
         if(swapChainSupport.capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT){
             createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -1458,20 +1459,20 @@ namespace Shatter::render{
     void ShatterRender::updateCaptureCommandBuffers(VkCommandBuffer _cb,int _imageIndex)
     {
         std::array<VkClearValue,2> clearCaptureValue{};
-        clearValues[0].color = { { uint32_t(0) } };
-        clearValues[1].depthStencil = { 1.0f, 0 };
+        clearCaptureValue[0].color.uint32[0] = uint32_t(0);
+        clearCaptureValue[1].depthStencil.depth = 1.0f;
+        clearCaptureValue[1].depthStencil.stencil = 0;
 
         VkRenderPassBeginInfo renderPassBeginInfo{};
-        {
-            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
-            renderPassBeginInfo.renderPass = m_captureRenderPass;
-            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
-            renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = getScissor().extent;
-            renderPassBeginInfo.clearValueCount = 2;
-            renderPassBeginInfo.pClearValues = clearCaptureValue.data();
-        }
+        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+        renderPassBeginInfo.renderPass = m_captureRenderPass;
+        renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+        renderPassBeginInfo.renderArea.offset = {0, 0};
+        renderPassBeginInfo.renderArea.extent = getScissor().extent;
+        renderPassBeginInfo.clearValueCount = 2;
+        renderPassBeginInfo.pClearValues = clearCaptureValue.data();
+
         vkCmdBeginRenderPass(_cb, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         if(!aabb_map.empty())

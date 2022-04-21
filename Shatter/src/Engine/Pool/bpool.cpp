@@ -124,6 +124,19 @@ void BPool::createUniformBuffer(const B_id& _id, VkDeviceSize _size) {
     m_size_map[_id] = _size;
 }
 
+void BPool::createMultipleUniformBuffer(const B_id& _id, int _count, VkDeviceSize _size) {
+    std::lock_guard<std::mutex> guard(m_u_mutex);
+    std::string id;
+    for (int i = 0; i < _count; i++) {
+        if (m_uniform_map.count(tool::combine(_id, _count)) != 0) {
+            printf("Uniform Buffer Key is already exited\n");
+            freeBuffer(tool::combine(_id, _count), Buffer_Type::Uniform_Buffer);
+        }
+        m_uniform_map[tool::combine(_id, _count)] = ShatterBuffer::createBuffer(_size, Buffer_Type::Uniform_Buffer, nullptr);
+    }
+    m_size_map[_id] = _size;
+}
+
 void BPool::createTexture(const B_id& _id,const std::string& _filename){
     std::lock_guard<std::mutex> guard(m_t_mutex);
     checkMapPrint(m_texture_map)

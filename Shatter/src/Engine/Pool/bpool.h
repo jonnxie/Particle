@@ -53,6 +53,8 @@ public:
 
     void createUniformBuffer(const B_id& _id,VkDeviceSize _size);
 
+    void createMultipleUniformBuffer(const B_id& _id, int _count, VkDeviceSize _size);
+
     void createTexture(const B_id& _id,const std::string& _filename);
 
     void createTexture(const B_id& _id,const std::string& _filename, ImageType _type);

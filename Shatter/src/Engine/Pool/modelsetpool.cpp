@@ -129,7 +129,9 @@ int ModelSetPool::malloc()
 void ModelSetPool::free(int _index)
 {
     std::lock_guard<std::mutex> guard_mutex(m_mutex);
-    m_idle.insert(m_idle.end(),_index);
+    if (_index != -1) {
+        m_idle.insert(m_idle.end(),_index);
+    }
 }
 
 

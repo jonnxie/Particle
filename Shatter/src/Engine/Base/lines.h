@@ -54,7 +54,7 @@ private:
 
 class DLines : public Object{
 public:
-    explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true);
+    explicit DLines(const std::vector<Line>& _lines, bool _updateFunc = true, int _modelIndex = -1, bool _capture = true);
     ~DLines() override;
     void constructG() override;
     void constructD() override;
@@ -65,9 +65,30 @@ public:
 
 public:
     std::vector<Line>   lines;
+    int                 m_modelIndex;
     bool                updateFunc;
+    bool                capture;
     bool                changed = true;
     int                 id;
+};
+
+class AABBLine {
+public:
+    explicit AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color);
+    ~AABBLine();
+private:
+    ClassPointerElement(aabbIndex, int, Index);
+    ClassPointerElement(captureIndex, int, CaptureIndex);
+    std::unique_ptr<DLines> line;
+};
+
+class AABBLine;
+class CaptureObjectListener : public Shatter::Listener{
+public:
+    CaptureObjectListener();
+    ~CaptureObjectListener() override;
+private:
+    std::unique_ptr<AABBLine> line {nullptr};
 };
 
 class DrawLineHandle;

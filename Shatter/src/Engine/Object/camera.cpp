@@ -176,13 +176,13 @@ void Camera::update(bool& cameraChanged) {
     }
 }
 
-void Camera::updateCursorRay() {
+void Camera::updateCursorRay() const {
     glm::vec3& ray = input::getCursorRay();
     glm::vec3& target = input::getCursor();
     ray = glm::normalize(target - (center + eye));
 }
 
-glm::vec3 Camera::getPos() {
+glm::vec3 Camera::getPos() const {
     return center + eye;
 }
 

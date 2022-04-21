@@ -421,7 +421,7 @@ namespace animation {
                          GREEN_COLOR}
                 },
         };
-        m_localCoordinate = new DLines(lines,false);
+        m_localCoordinate = new DLines(lines,false, -1, true);
         m_localCoordinate->init();
 //        SingleRender.getNObjects()->push_back(d);
         TaskPool::pushUpdateTask(tool::combine("Animation",m_id),[&](float _abs_time){

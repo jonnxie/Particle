@@ -59,6 +59,8 @@ namespace Shatter{
             glm::vec3&   getWorkTargetCenter();
             TargetPlane& getCameraTargetPlane();
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
+            ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
+            ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
         private:
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);

@@ -6,22 +6,13 @@
 #include CameraCatalog
 #include "inputaction.h"
 #include "Engine/Renderer/renderer.h"
+#include "Engine/Base/lines.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 
 namespace Shatter{
     DeleteObject::DeleteObject() {
         m_action[Event::DeletePress] = [](){
             SingleRender.cleanupObject();
-        };
-    }
-
-    CaptureObject::CaptureObject() {
-        m_action[Event::SingleClick] = [](){
-            glm::uvec2& coordinate = input::getMousePressCoordiante();
-
-            uint32_t object_id = ((VulkanFrameBuffer*)SingleRender.getCaptureFrameBuffer())->capture(coordinate.x, coordinate.y, 0);
-            input::captureObject(object_id, STATE_IN);
-            printf("Capture Object Id: %u.\n", object_id);
         };
     }
 

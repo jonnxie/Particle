@@ -177,7 +177,7 @@ namespace Shatter::app{
                 if(captureObject)
                 {
                     captureObject = false;
-                    appendListener("CaptureObject",new CaptureObject);
+                    appendListener("CaptureObject",new CaptureObjectListener);
                 } else {
                     deleteListener("CaptureObject");
                     captureObject = true;

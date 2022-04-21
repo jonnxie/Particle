@@ -266,6 +266,10 @@ void genFaceVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buff
     _buffer.emplace_back(glm::vec3(minPos.x, maxPos.y, minPos.z));
 }
 
+void genLineVertexBufferFromAABB(const AABB& _box, std::vector<glm::vec3>& _buffer) {
+    genLineVertexBuffer(_box.m_min_edgy, _box.m_max_edgy, _buffer);
+}
+
 void genLineVertexBuffer(const glm::vec3& _min, const glm::vec3& _max, std::vector<glm::vec3>& _buffer)
 {
     glm::vec3 minPos = _min;

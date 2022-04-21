@@ -16,6 +16,7 @@
 #include ShaderCatalog
 #include ListenerCatalog
 #include AppCatalog
+#include DLineCatalog
 
 GUI *GUI::gui = new GUI;
 
@@ -543,7 +544,7 @@ void GUI::init(float width, float height) {
             if(captureObject)
             {
                 captureObject = false;
-                SingleAPP.appendListener("CaptureObject",new Shatter::CaptureObject);
+                SingleAPP.appendListener("CaptureObject",new CaptureObjectListener);
             } else {
                 SingleAPP.deleteListener("CaptureObject");
                 captureObject = true;
