@@ -44,11 +44,6 @@ namespace Shatter{
         public:
             void updateTimer();
             void update();
-            std::vector<int>* getDObjects();
-            std::vector<int>* getCObjects();
-            std::vector<int>* getOffDObjects();
-            std::vector<int>* getNObjects();
-            std::vector<int>* getTObjects();
             void key_event_callback(int key, int action);
             void mouse_event_callback(int button, int action, double xpos, double ypos);
             void listener(Listener* _listener);

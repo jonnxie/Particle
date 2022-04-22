@@ -28,11 +28,6 @@ static int mallocCaptureId()
     return initCaptureIdVal++;
 }
 
-struct CaptureObject{
-    int model_index;
-    int aabb_box;
-};
-
 class Object {
 public:
     Object()
@@ -160,7 +155,7 @@ public:
             for(auto i: m_gobjs){
                 gpool->free(i);
             }
-
+            MPool<AABB>::getPool()->free(m_aabbIndex);
             auto cpool = MPool<CObject>::getPool();
             for(auto i: m_cobjs){
                 cpool->free(i);

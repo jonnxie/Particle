@@ -297,26 +297,6 @@ namespace Shatter::app{
         m_otherListener[_name] = _listener;
     }
 
-    std::vector<int> *ShatterApp::getCObjects() {
-        return &m_cobjects;
-    }
-
-    std::vector<int> *ShatterApp::getDObjects() {
-        return &m_dobjects;
-    }
-
-    std::vector<int> *ShatterApp::getOffDObjects() {
-        return &m_offscreenobjects;
-    }
-
-    std::vector<int>* ShatterApp::getNObjects(){
-        return &normal_vec;
-    }
-
-    std::vector<int> *ShatterApp::getTObjects() {
-        return &transparency_vec;
-    }
-
     void ShatterApp::deleteListener(const std::string &_name) {
         delete m_otherListener[_name];
         m_otherListener.erase(_name);

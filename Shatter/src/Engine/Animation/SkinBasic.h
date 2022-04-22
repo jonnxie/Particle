@@ -25,7 +25,7 @@ public:
                    std::vector<std::string>  _sets = {"Camera", "Skin"},
                    DrawObjectType _type = DrawObjectType::Normal);
     DefineUnCopy(SkinBasic);
-    ~SkinBasic() {
+    ~SkinBasic() override {
         delete m_model;
     }
     void constructG() override;
@@ -42,6 +42,25 @@ private:
 
     int                         m_id;
 };
+
+class SkinBasicInstance : public Object{
+public:
+    explicit SkinBasicInstance(const std::string& _files,
+                               const std::vector<glm::vec3>& _instances,
+                               glm::vec3 _rotationAxis,
+                               float _angle,
+                               glm::vec3 _scale,
+                               std::string  _pipeline = "GSkinInstance",
+                               std::vector<std::string>  _sets = {"Camera", "Skin"},
+                               DrawObjectType _type = DrawObjectType::Normal);
+    SkinBasicInstance(SkinBasic& skin, std::vector<glm::vec3> _instances);
+
+private:
+
+};
+
+
+
 
 
 #endif //MAIN_SKINBASIC_H
