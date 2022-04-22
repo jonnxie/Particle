@@ -605,7 +605,7 @@ void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
         for (size_t i = 0; i < numJoints; i++) {
             vkglTF::Node *jointNode = skin->joints[i];
             skin->jointMatrices[i] = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-            skin->jointMatrices[i] = inverseTransform * skin->jointMatrices[i];
+//            skin->jointMatrices[i] = inverseTransform * skin->jointMatrices[i];
         }
         memcpy(skin->skinBuffer.mapped, skin->jointMatrices.data(), numJoints * one_matrix);
     }

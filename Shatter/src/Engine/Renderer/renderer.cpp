@@ -1407,8 +1407,9 @@ namespace Shatter::render{
         int threadIndex = 0;
         for(auto& pair: aabb_map)
         {
-            int Id =  pair.second;
-            (*SingleThreadPool)[threadIndex]->addTask([&, Id, threadIndex, index](){
+            int aabbIndex =  pair.second;
+            int captureIndex =  pair.first;
+            (*SingleThreadPool)[threadIndex]->addTask([&, aabbIndex, threadIndex, captureIndex, index](){
                 VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool, threadIndex);
                 VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
                 commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1422,13 +1423,13 @@ namespace Shatter::render{
                 vkCmdSetViewport(captureBuffers[index], 0, 1, &tmp);
                 vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
                 vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
-                int model_index = (*SingleAABBPool)[Id]->m_model_index;
-                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", Id), Buffer_Type::Vertex_Buffer);
+                int model_index = (*SingleAABBPool)[aabbIndex]->m_model_index;
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", aabbIndex), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
                 set_array[0] = *(*set_pool)[model_index];
                 set_array[1] = SingleSetPool["Camera"];
-                set_array[2] = (*SingleAABBPool)[Id]->m_capture_set;
+                set_array[2] = (*SingleAABBPool)[aabbIndex]->m_capture_set;
                 vkCmdBindDescriptorSets(captureBuffers[index],
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
                                         (*SinglePPool["AABBCapture"]).getPipelineLayout(),

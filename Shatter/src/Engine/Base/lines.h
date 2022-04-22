@@ -86,9 +86,10 @@ class AABBLine;
 class CaptureObjectListener : public Shatter::Listener{
 public:
     CaptureObjectListener();
-    ~CaptureObjectListener() override;
+//    ~CaptureObjectListener() override = default ;
 private:
     std::unique_ptr<AABBLine> line {nullptr};
+    int preCaptureId = 0;
 };
 
 class DrawLineHandle;

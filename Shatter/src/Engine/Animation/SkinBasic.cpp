@@ -95,4 +95,5 @@ void SkinBasic::constructD() {
         }
     });
     insertRenderObject(d);
+    addGPUCaptureComponent(m_model->dimensions.min, m_model->dimensions.max, d);
 }

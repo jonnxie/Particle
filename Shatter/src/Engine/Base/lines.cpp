@@ -423,6 +423,7 @@ AABBLine::AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color) : aabbIn
 
 AABBLine::~AABBLine() {
     (*SingleDPool)[line->m_dobjs[0]]->m_model_index = -1;
+    line->destroy();
 }
 
 CaptureObjectListener::CaptureObjectListener() {
@@ -431,10 +432,11 @@ CaptureObjectListener::CaptureObjectListener() {
 
         uint32_t object_id = ((VulkanFrameBuffer*)SingleRender.getCaptureFrameBuffer())->capture(coordinate.x, coordinate.y, 0);
         input::captureObject(object_id, STATE_IN);
-//        line = std::make_unique<AABBLine>(SingleRender.aabb_map[object_id], object_id, RED_COLOR);
-//        SingleRender.normalChanged = true;
+        if (object_id != 0 && object_id != preCaptureId) {
+            preCaptureId = object_id;
+            line = std::make_unique<AABBLine>(SingleRender.aabb_map[object_id], object_id, RED_COLOR);
+            SingleRender.normalChanged = true;
+        }
         std::cout << "Capture Object Id: " << object_id << std::endl;
     };
 }
-
-CaptureObjectListener::~CaptureObjectListener() = default;
