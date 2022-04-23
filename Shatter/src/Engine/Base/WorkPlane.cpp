@@ -6,6 +6,7 @@
 #include "Engine/Object/inputaction.h"
 #include "Engine/App/shatterapp.h"
 #include "Engine/Object/camera.h"
+#include CaptureCatalog
 
 
 void WorkPlane::regenerate(TargetPlane& _coordinate, const glm::vec3& _center){
@@ -25,8 +26,8 @@ void WorkPlane::constructG() {
     SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->map();
     for(auto& line : m_axis)
     {
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.end.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
     }
 }
 
@@ -56,7 +57,7 @@ void WorkPlane::constructD() {
         memcpy(SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->mapped, m_axis.data(), TargetPlaneDoubleCoordinateSize);
     });
     SingleRender.getNObjects()->push_back(d);
-    addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
+    m_captureObject = std::make_unique<CaptureObject>(this, m_boxIndex, d);
 }
 
 WorkPlane::~WorkPlane()
@@ -67,6 +68,14 @@ WorkPlane::~WorkPlane()
     SingleBPool.freeBuffer("WorkPlane", Buffer_Type::Vertex_Host_Buffer);
     SingleRender.releaseObject(int(m_capture_id), DrawObjectType::AABB);
     SingleRender.normalChanged = true;
+}
+
+WorkPlane::WorkPlane(TargetPlane &_coordinate, const glm::vec3 &_center):
+        m_center(_center),
+        m_coordinate(_coordinate)
+{
+    m_boxIndex = MPool<AABB>::getPool()->malloc();
+    init();
 }
 
 ChooseWorkPlane::ChooseWorkPlane() {

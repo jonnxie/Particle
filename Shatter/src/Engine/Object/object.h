@@ -18,9 +18,14 @@
 #include "Engine/Pool/modelsetpool.h"
 #include TaskCatalog
 #include BufferCatalog
+#include CaptureCatalog
 
 static int initCaptureIdVal = 1;
 static std::mutex captureIdLock;
+
+class Object;
+
+class CaptureObject;
 
 static int mallocCaptureId()
 {
@@ -30,29 +35,8 @@ static int mallocCaptureId()
 
 class Object {
 public:
-    Object()
-    {
-        m_capture_id = mallocCaptureId();
-        auto aabbPool = MPool<AABB>::getPool();
-        m_aabbIndex = aabbPool->malloc();
-
-        SingleBPool.createUniformBuffer(tool::combine("Capture",m_capture_id), 4);
-        auto buffer = SingleBPool.getBuffer(tool::combine("Capture",m_capture_id),Buffer_Type::Uniform_Buffer);
-        buffer->map();
-        memcpy(buffer->mapped, &m_capture_id, 4);
-        buffer->unmap();
-        SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*aabbPool)[m_aabbIndex]->m_capture_set);
-
-        VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
-        VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*aabbPool)[m_aabbIndex]->m_capture_set,
-                                                                            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                            0,
-                                                                            &descriptorBufferInfos);
-
-        vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
-    };
-    virtual ~Object()
-    {
+    Object() = default;
+    virtual ~Object() {
         release();
     };
     DefineUnCopy(Object);
@@ -112,24 +96,7 @@ public:
             }
         }
     };
-    void addGPUCaptureComponent(const glm::vec3& _min, const glm::vec3& _max, int _dId) const
-    {
-        int model_index = ModelSetPool::getPool().malloc();
-        int d = _dId;
-        TaskPool::pushUpdateTask(tool::combine("Capture", m_aabbIndex),[&, model_index, d](float _abs_time){
-            glm::mat4* ptr = SingleBPool.getModels();
-            memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
-        });
-        auto aabbPool = MPool<AABB>::getPool();
-        (*aabbPool)[m_aabbIndex]->addInternalPoint(_min);
-        (*aabbPool)[m_aabbIndex]->addInternalPoint(_max);
-        (*aabbPool)[m_aabbIndex]->m_model_index = model_index;
-        SingleRender.aabb_map[int(m_capture_id)] = m_aabbIndex;
 
-        std::vector<glm::vec3> aabbBuffer{};
-        genFaceVertexBufferFromAABB(*(*SingleAABBPool)[m_aabbIndex], aabbBuffer);
-        SingleBPool.createVertexBuffer(tool::combine("Capture", m_aabbIndex), aabbBuffer.size() * one_vec3, aabbBuffer.data());
-    };
     void insertDObject(int _obj)
     {
         m_dobjs.emplace_back(_obj);
@@ -144,7 +111,7 @@ public:
     };
     void release()
     {
-        if (!m_mem_released) {
+        if (!m_memReleased) {
             auto& model_pool = ModelSetPool::getPool();
             auto dpool = MPool<DObject>::getPool();
             for(auto i : m_dobjs){
@@ -155,17 +122,18 @@ public:
             for(auto i: m_gobjs){
                 gpool->free(i);
             }
-            MPool<AABB>::getPool()->free(m_aabbIndex);
+//            MPool<AABB>::getPool()->free(m_aabbIndex);
             auto cpool = MPool<CObject>::getPool();
             for(auto i: m_cobjs){
                 cpool->free(i);
             }
+//            delete m_captureObject;
         }
     };
     std::vector<int> m_dobjs{};
     std::vector<int> m_gobjs{};
     std::vector<int> m_cobjs{};
-    int m_aabbIndex;
+    int m_boxIndex;
 public:
     void construct()
     {
@@ -183,13 +151,14 @@ public:
     ClassProtectedReferenceElement(m_center, glm::vec3, WorkCenter);
     ClassElement(m_draw_type, DrawObjectType, DrawType);
 protected:
-    glm::mat4   m_world{};
-    glm::mat4   m_scale{};
-    glm::mat4   m_rotate{};
-    glm::mat4   m_translation{};
-    uint32_t    m_capture_id{};
-    bool        m_mem_released = false;
-//    VkDescriptorSet m_capture_set = VK_NULL_HANDLE;
+    glm::mat4           m_world{};
+    glm::mat4           m_scale{};
+    glm::mat4           m_rotate{};
+    glm::mat4           m_translation{};
+    uint32_t            m_capture_id{};
+    bool                m_memReleased = false;
+
+    std::unique_ptr<CaptureObject>   m_captureObject{nullptr};
 };
 
 

@@ -91,7 +91,7 @@ setId(std::move(_setId))
 };
 
 DPlane::~DPlane() {
-    if (!m_mem_released) {
+    if (!m_memReleased) {
         TaskPool::popUpdateTask(tool::combine("DPlane",id));
     }
 }
@@ -103,7 +103,7 @@ void DPlane::releaseMem() {
     vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer(tool::combine("DPlane",id), Buffer_Type::Vertex_Host_Buffer);
     SingleBPool.freeBuffer(tool::combine("DPlane",id), Buffer_Type::Index_Buffer);
-    m_mem_released = true;
+    m_memReleased = true;
     SingleRender.normalChanged = true;
 }
 
@@ -228,7 +228,7 @@ void DCube::releaseMem() {
     vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer(tool::combine("DCube",id), Buffer_Type::Vertex_Host_Buffer);
     SingleBPool.freeBuffer(tool::combine("DCube",id), Buffer_Type::Index_Buffer);
-    m_mem_released = true;
+    m_memReleased = true;
     SingleRender.normalChanged = true;
 }
 

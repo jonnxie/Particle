@@ -16,14 +16,6 @@
 #include ListenerCatalog
 #include HandleCatalog
 
-static int initIdVal = 0;
-static std::mutex idLock;
-
-static int mallocId()
-{
-    std::lock_guard<std::mutex> lockGuard(idLock);
-    return initIdVal++;
-}
 
 class DLinePool : public Object{
 public:

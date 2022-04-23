@@ -181,22 +181,22 @@ ShatterBuffer* BPool::getBuffer(const B_id& _id, Buffer_Type _type){
     switch(_type){
         case Buffer_Type::Vertex_Host_Buffer:
         case Buffer_Type::Vertex_Buffer:{
-            findMap(m_vertex_map);
+            findMap(m_vertex_map, VertexBuffer);
             return m_vertex_map[_id];
         }
         case Buffer_Type::Index_Host_Buffer:
         case Buffer_Type::Index_Buffer:{
-            findMap(m_index_map);
+            findMap(m_index_map, IndexBuffer);
             return m_index_map[_id];
         }
         case Buffer_Type::Uniform_Buffer:{
-            findMap(m_uniform_map);
+            findMap(m_uniform_map, UniformBuffer);
             return m_uniform_map[_id];
         }
         case Buffer_Type::VS_Buffer:
         case Buffer_Type::Storage_Host_Buffer:
         case Buffer_Type::Storage_Buffer:{
-            findMap(m_storage_map);
+            findMap(m_storage_map, StorageBuffer);
             return m_storage_map[_id];
         }
     }
@@ -213,18 +213,27 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             {
                 return;
             }
+            std::cout<< "VertexBuffer: " << _id << " released" << std::endl;
             delete m_vertex_map[_id];
             m_vertex_map.erase(_id);
             break;
         }
         case Buffer_Type::Index_Buffer:{
-            findMap(m_index_map);
+            if(m_index_map.count(_id) == 0)
+            {
+                return;
+            }
+            std::cout<< "IndexBuffer: " << _id << " released" << std::endl;
             delete m_index_map[_id];
             m_index_map.erase(_id);
             break;
         }
         case Buffer_Type::Uniform_Buffer:{
-            findMap(m_uniform_map);
+            if(m_uniform_map.count(_id) == 0)
+            {
+                return;
+            }
+            std::cout<< "UniformBuffer: " << _id << " released" << std::endl;
             delete m_uniform_map[_id];
             m_uniform_map.erase(_id);
             break;
@@ -232,7 +241,11 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
         case Buffer_Type::Storage_Host_Buffer:
         case Buffer_Type::VS_Buffer:
         case Buffer_Type::Storage_Buffer:{
-            findMap(m_storage_map);
+            if(m_storage_map.count(_id) == 0)
+            {
+                return;
+            }
+            std::cout<< "StorageBuffer: " << _id << " released" << std::endl;
             delete m_storage_map[_id];
             m_storage_map.erase(_id);
             break;
@@ -285,16 +298,19 @@ void BPool::release() {
     {
         delete i.second;
     }
+    m_vertex_map.clear();
 
     for(auto &i:m_index_map)
     {
         delete i.second;
     }
+    m_index_map.clear();
 
     for(auto &i:m_uniform_map)
     {
         delete i.second;
     }
+    m_uniform_map.clear();
 
     for(auto &j:m_storage_map)
     {
@@ -302,11 +318,13 @@ void BPool::release() {
         checkMapContinue(m_vertex_map);
         delete j.second;
     }
+    m_storage_map.clear();
 
     for(auto &i:m_texture_map)
     {
         delete i.second;
     }
+    m_texture_map.clear();
 }
 
 int BPool::mallocModel() {

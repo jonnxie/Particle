@@ -13,6 +13,7 @@
 #include MathCatalog
 #include OffScreenCatalog
 #include RenderCatalog
+#include CaptureCatalog
 
 static int mallocId()
 {
@@ -95,5 +96,5 @@ void SkinBasic::constructD() {
         }
     });
     insertRenderObject(d);
-    addGPUCaptureComponent(m_model->dimensions.min, m_model->dimensions.max, d);
+    m_captureObject = CaptureObject::mallocCapture(this, m_model->dimensions.min, m_model->dimensions.max, d);
 }

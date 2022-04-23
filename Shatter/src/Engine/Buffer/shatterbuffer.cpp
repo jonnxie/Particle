@@ -417,21 +417,14 @@ namespace Shatter::buffer{
     }
 
     void ShatterBuffer::release(){
-//        if(!m_released)
-//        {
-//            if(VK_NULL_HANDLE != m_buffer){
-                vkDestroyBuffer(*render::ShatterRender::getRender().getDevice(),
-                                m_buffer,
-                                nullptr);
-//            }
+        vkDestroyBuffer(*render::ShatterRender::getRender().getDevice(),
+                        m_buffer,
+                        nullptr);
 
-//            if(VK_NULL_HANDLE != m_memory){
-                vkFreeMemory(*render::ShatterRender::getRender().getDevice(),
-                             m_memory,
-                             nullptr);
-//            }
-            m_released = true;
-//        }
+        vkFreeMemory(*render::ShatterRender::getRender().getDevice(),
+                     m_memory,
+                     nullptr);
+        m_released = true;
     }
 
     void ShatterBuffer::setupDescriptor(VkDeviceSize size, VkDeviceSize offset) {

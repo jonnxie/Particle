@@ -1424,7 +1424,7 @@ namespace Shatter::render{
                 vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
                 vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
                 int model_index = (*SingleAABBPool)[aabbIndex]->m_model_index;
-                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", aabbIndex), Buffer_Type::Vertex_Buffer);
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", captureIndex), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
                 set_array[0] = *(*set_pool)[model_index];

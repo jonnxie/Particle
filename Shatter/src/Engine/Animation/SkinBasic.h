@@ -17,13 +17,13 @@
 class SkinBasic : public Object{
 public:
     explicit SkinBasic(const std::string& _files,
-                   glm::vec3 _pos,
-                   glm::vec3 _rotationAxis,
-                   float _angle,
-                   glm::vec3 _scale,
-                   std::string  _pipeline = "GSkin",
-                   std::vector<std::string>  _sets = {"Camera", "Skin"},
-                   DrawObjectType _type = DrawObjectType::Normal);
+                       glm::vec3 _pos,
+                       glm::vec3 _rotationAxis,
+                       float _angle,
+                       glm::vec3 _scale,
+                       std::string  _pipeline = "GSkin",
+                       std::vector<std::string>  _sets = {"Camera", "Skin"},
+                       DrawObjectType _type = DrawObjectType::Normal);
     DefineUnCopy(SkinBasic);
     ~SkinBasic() override {
         delete m_model;

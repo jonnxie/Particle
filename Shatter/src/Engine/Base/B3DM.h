@@ -126,7 +126,7 @@ private:
 //                }
 //            }
 //
-////            unsigned char* data;
+//            unsigned char* data;
 //            int arrayStart = binOffset + byteOffset;
 //            int arrayLength = _count * stride;
 //

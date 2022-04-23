@@ -15,6 +15,7 @@
 #include MathCatalog
 #include OffScreenCatalog
 #include RenderCatalog
+#include CaptureCatalog
 
 ABasic::ABasic(const std::string& _files,
              glm::vec3 _pos,
@@ -98,5 +99,5 @@ void ABasic::constructD()
         }
     });
     insertRenderObject(d);
-    addGPUCaptureComponent(m_model->dimensions.min, m_model->dimensions.max, d);
+    m_captureObject = CaptureObject::mallocCapture(this, m_model->dimensions.min, m_model->dimensions.max, d);
 }

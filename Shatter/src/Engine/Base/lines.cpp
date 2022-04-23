@@ -21,6 +21,16 @@
 #include CameraCatalog
 #include GLTFCatalog
 #include AABBCatalog
+#include CaptureCatalog
+
+static int initIdVal = 0;
+static std::mutex idLock;
+
+static int mallocId()
+{
+    std::lock_guard<std::mutex> lockGuard(idLock);
+    return initIdVal++;
+}
 
 DLines::DLines(const std::vector<Line>& _lines, bool _updateFunc, int _modelIndex, bool _capture):
 updateFunc(_updateFunc),
@@ -29,10 +39,11 @@ capture(_capture)
 {
     lines = _lines;
     id = mallocId();
+    m_boxIndex = MPool<AABB>::getPool()->malloc();
     for(auto& line : lines)
     {
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.end.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
     }
 }
 
@@ -92,22 +103,22 @@ void DLines::constructD(){
     }
     SingleRender.getNObjects()->push_back(d);
     if (capture) {
-        addGPUCaptureComponent((*SingleAABBPool)[m_aabbIndex]->m_min_edgy, (*SingleAABBPool)[m_aabbIndex]->m_max_edgy, d);
+        m_captureObject = std::make_unique<CaptureObject>(this, m_boxIndex, d);
     }
 }
 
 void DLines::pushLine(const Line &_line) {
     lines.push_back(_line);
-    (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(_line.begin.pos);
-    (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(_line.end.pos);
+    (*SingleAABBPool)[m_boxIndex]->addInternalPoint(_line.begin.pos);
+    (*SingleAABBPool)[m_boxIndex]->addInternalPoint(_line.end.pos);
 }
 
 void DLines::pushLines(const std::vector<Line>& _lines) {
     lines.insert(lines.end(),_lines.begin(),_lines.end());
     for(auto& line : _lines)
     {
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_aabbIndex]->addInternalPoint(line.end.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
     }
 }
 

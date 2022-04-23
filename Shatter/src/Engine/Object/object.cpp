@@ -5,5 +5,5 @@
 
 #include "object.h"
 #include "gobject.h"
-
+#include "CaptureObject.h"
 

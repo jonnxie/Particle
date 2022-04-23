@@ -12,12 +12,7 @@
 
 class WorkPlane : public Object {
 public:
-    WorkPlane(TargetPlane& _coordinate, const glm::vec3& _center):
-    m_center(_center),
-    m_coordinate(_coordinate)
-    {
-        init();
-    };
+    WorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
     void regenerate(TargetPlane& _coordinate, const glm::vec3& _center);
     void constructG() override;
     void constructD() override;

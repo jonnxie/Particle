@@ -15,11 +15,7 @@ public:
     static GCoor* createGCoor(const std::vector<glm::vec3>& _in);
 
 public:
-    GCoor(const std::vector<glm::vec3>& _in):
-	lines(_in)
-    {
-    	init();
-    };
+    GCoor(const std::vector<glm::vec3>& _in);
     void constructG() override;
     void constructD() override;
 private:

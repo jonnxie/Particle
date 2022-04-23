@@ -32,12 +32,12 @@ for(auto& i:map){ \
 #define checkMapPrint(map) \
 if(map.count(_id) != 0)    \
 {                          \
-     std::cout << _id + "is already exit" << std::endl;       \
+     std::cout << _id + " is already exit" << std::endl;       \
 }
 
-#define findMap(map) \
+#define findMap(map, type) \
 if(map.count(_id) == 0){\
-    std::cout << _id + "is not exit"<< std::endl;                      \
+    std::cout << #type << ": " + _id + " is not exit"<< std::endl;                      \
 }
 
 #define checkMapContinue(map) \

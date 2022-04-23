@@ -45,10 +45,10 @@ void GCoor::constructG() {
     (*gpool)[g]->genVBuffer("coordinate");
     insertGObject(g);
 
+    auto aabbPool = MPool<AABB>::getPool();
     for(auto & i : vertex)
     {
-        auto aabbPool = MPool<AABB>::getPool();
-        (*aabbPool)[m_aabbIndex]->addInternalPoint(i.pos);
+        (*aabbPool)[m_boxIndex]->addInternalPoint(i.pos);
     }
 }
 
@@ -77,8 +77,15 @@ void GCoor::constructD() {
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
     SingleRender.getNObjects()->push_back(d);
+    m_captureObject = std::make_unique<CaptureObject>(this, m_boxIndex, d);
 }
 
+GCoor::GCoor(const std::vector<glm::vec3>& _in):
+        lines(_in)
+{
+    m_boxIndex = MPool<AABB>::getPool()->malloc();
+    init();
+};
 
 
 
