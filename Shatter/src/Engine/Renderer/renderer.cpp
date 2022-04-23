@@ -171,6 +171,8 @@ namespace Shatter::render{
         glfwDestroyWindow(window);
 
         glfwTerminate();
+
+        Config::setConfig("RendererReleased", 1);
     }
 
     void ShatterRender::initWindow(){

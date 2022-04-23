@@ -103,7 +103,8 @@ void DLines::constructD(){
     }
     SingleRender.getNObjects()->push_back(d);
     if (capture) {
-        m_captureObject = std::make_unique<CaptureObject>(this, m_boxIndex, d);
+        m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
+        SingleAPP.capturedPush(m_captureObject);
     }
 }
 

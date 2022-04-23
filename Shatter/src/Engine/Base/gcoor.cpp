@@ -77,7 +77,8 @@ void GCoor::constructD() {
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
     SingleRender.getNObjects()->push_back(d);
-    m_captureObject = std::make_unique<CaptureObject>(this, m_boxIndex, d);
+    m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
+    SingleAPP.capturedPush(m_captureObject);
 }
 
 GCoor::GCoor(const std::vector<glm::vec3>& _in):

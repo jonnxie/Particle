@@ -17,7 +17,7 @@ class AABBLine;
 
 class CaptureObject {
 public:
-    static std::unique_ptr<CaptureObject> mallocCapture(Object* _parent, const glm::vec3& _min, const glm::vec3& _max, int _drawId);
+    static std::shared_ptr<CaptureObject> mallocCapture(Object* _parent, const glm::vec3& _min, const glm::vec3& _max, int _drawId);
 
     CaptureObject(Object* _parent, int _boxId, int _drawId);
 

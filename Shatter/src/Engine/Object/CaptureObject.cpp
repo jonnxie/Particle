@@ -7,8 +7,10 @@
 #include "Engine/Base/lines.h"
 #include "Engine/Object/object.h"
 #include "Engine/Object/aabb.h"
+#include "Engine/App/shatterapp.h"
+#include ConfigCatalog
 
-std::unique_ptr<CaptureObject>
+std::shared_ptr<CaptureObject>
 CaptureObject::mallocCapture(Object *_parent, const glm::vec3 &_min, const glm::vec3 &_max, int _drawId) {
     auto pool = MPool<AABB>::getPool();
     int boxIndex = pool->malloc();
@@ -41,8 +43,9 @@ CaptureObject::mallocCapture(Object *_parent, const glm::vec3 &_min, const glm::
                                                                         &descriptorBufferInfos);
 
     vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
-//        auto ptr = new CaptureObject(_parent, captureId, boxIndex);
-    return std::move(std::make_unique<CaptureObject>(_parent, captureId, boxIndex));
+    auto ptr = std::make_shared<CaptureObject>(_parent, captureId, boxIndex);
+    SingleAPP.capturedPush(ptr);
+    return ptr;
 }
 
 CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId):
@@ -87,19 +90,21 @@ CaptureObject::CaptureObject(Object *_parent, uint32_t _captureId, int _boxId):
 }
 
 CaptureObject::~CaptureObject() {
-    vkQueueWaitIdle(SingleRender.graphics_queue);
-    std::cout << "Capture Object: " << captureId << " released" << std::endl;
-    /*
-     * Box vertex buffer
-     */
-    SingleBPool.freeBuffer(bufferId, Buffer_Type::Vertex_Buffer);
-    /*
-     * Capture value uniform buffer
-     */
-    SingleBPool.freeBuffer(bufferId, Buffer_Type::Uniform_Buffer);
-    SingleRender.releaseObject(int(captureId),DrawObjectType::AABB);
-    MPool<AABB>::getPool()->free(boxId);
-    SingleRender.normalChanged = true;
+    if (!Config::getConfig("RendererReleased")) {
+        vkQueueWaitIdle(SingleRender.graphics_queue);
+        std::cout << "Capture Object: " << captureId << " released" << std::endl;
+        /*
+         * Box vertex buffer
+         */
+        SingleBPool.freeBuffer(bufferId, Buffer_Type::Vertex_Buffer);
+        /*
+         * Capture value uniform buffer
+         */
+        SingleBPool.freeBuffer(bufferId, Buffer_Type::Uniform_Buffer);
+        SingleRender.releaseObject(int(captureId),DrawObjectType::AABB);
+        MPool<AABB>::getPool()->free(boxId);
+        SingleRender.normalChanged = true;
+    }
 }
 
 void CaptureObject::drawBox() {

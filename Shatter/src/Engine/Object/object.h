@@ -158,7 +158,7 @@ protected:
     uint32_t            m_capture_id{};
     bool                m_memReleased = false;
 
-    std::unique_ptr<CaptureObject>   m_captureObject{nullptr};
+    std::shared_ptr<CaptureObject>   m_captureObject{nullptr};
 };
 
 

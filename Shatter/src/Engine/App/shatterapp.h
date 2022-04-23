@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <unordered_map>
+#include "Engine/Object/CaptureObject.h"
 
 //namespace Shatter::camera{
 //    class ShatterCamera;
@@ -56,16 +57,22 @@ namespace Shatter{
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
             ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
             ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
+
+            std::mutex m_captured_lock;
+            void capturedPush(const std::shared_ptr<CaptureObject>& _id) {
+                std::lock_guard<std::mutex> guardLock(m_captured_lock);
+                m_captured.push_back(_id);
+            }
+            void capturedRelease(const std::shared_ptr<CaptureObject>& _id) {
+                auto index = std::find(m_captured.begin(), m_captured.end(), _id);
+                if (index != m_captured.end()) { m_captured.erase(index); }
+            }
+            std::vector<std::shared_ptr<CaptureObject>> m_captured;
         private:
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);
             WorkPlane* m_work_plane{nullptr};
         private:
-            std::vector<int> m_dobjects;
-            std::vector<int> m_offscreenobjects;
-            std::vector<int> transparency_vec;
-            std::vector<int> normal_vec;
-            std::vector<int> m_cobjects;
             std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
