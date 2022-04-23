@@ -58,17 +58,12 @@ namespace Shatter{
             ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
             ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
 
-            std::mutex m_captured_lock;
-            void capturedPush(const std::shared_ptr<CaptureObject>& _id) {
-                std::lock_guard<std::mutex> guardLock(m_captured_lock);
-                m_captured.push_back(_id);
-            }
-            void capturedRelease(const std::shared_ptr<CaptureObject>& _id) {
-                auto index = std::find(m_captured.begin(), m_captured.end(), _id);
-                if (index != m_captured.end()) { m_captured.erase(index); }
-            }
+            void capturedPush(const std::shared_ptr<CaptureObject>& _id);
+            void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
+            std::shared_ptr<CaptureObject> getCaptureById(uint32_t _id);
             std::vector<std::shared_ptr<CaptureObject>> m_captured;
         private:
+            std::mutex m_captured_lock;
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);
             WorkPlane* m_work_plane{nullptr};

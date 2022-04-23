@@ -32,6 +32,7 @@ public:
 
     ~MPool()
     {
+        std::lock_guard<std::mutex> lockGuard(ptr_lock);
         delete[] m_ptr;
     };
 
@@ -40,7 +41,7 @@ public:
 
     void malloc(int _count, std::vector<int> &_out)
     {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
+        std::lock_guard<std::mutex> guard_mutex(idle_lock);
         while(_count > m_idle_list.size())
         {
             reallocated();
@@ -50,18 +51,18 @@ public:
     }
 
     void free(int _count, const std::vector<int> &_in) {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
+        std::lock_guard<std::mutex> guard_mutex(idle_lock);
         m_idle_list.insert(m_idle_list.end(),_in.begin(), _in.begin() + _count);
     }
 
 
     void free(const std::vector<int> &_in) {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
+        std::lock_guard<std::mutex> guard_mutex(idle_lock);
         m_idle_list.insert(m_idle_list.end(),_in.begin(), _in.end());
     }
 
     int malloc() {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
+        std::unique_lock<std::mutex> uniqueLock(idle_lock);
         int val;
         if(m_idle_list.empty())
         {
@@ -73,7 +74,7 @@ public:
     }
 
     void free(int _index) {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
+        std::lock_guard<std::mutex> guard_mutex(idle_lock);
         m_idle_list.insert(m_idle_list.end(),_index);
     }
 
@@ -131,35 +132,34 @@ public:
     }
 
     Object_Type* operator[](int _index) {
-        std::lock_guard<std::mutex> guard_mutex(m_idle_mutex);
-        std::lock_guard<std::mutex> guard_mutex2(m_mutex);
+        std::scoped_lock lock(idle_lock, ptr_lock);
         auto index = std::find(m_idle_list.begin(),m_idle_list.end(),_index);
         if( index != m_idle_list.end()){
-//            throwError("cant use idle object");
             m_idle_list.erase(index);
         }
-        if (m_ptr == nullptr)
-        {
-            std::cout << "pointer free" << std::endl;
-            return nullptr;
-        }else{
+//        if (m_ptr == nullptr)
+//        {
+//            std::cout << "pointer free" << std::endl;
+//            return nullptr;
+//        }else{
             return &m_ptr[_index];
-        }
+//        }
     }
 
     Object_Type *operator()() {
-        std::lock_guard<std::mutex> guard_mutex(m_mutex);
+        std::lock_guard<std::mutex> guard_mutex(ptr_lock);
 
         return m_ptr;
     }
 
     void reallocated() {
-        std::lock_guard<std::mutex> guard_mutex(m_mutex);
+        std::unique_lock<std::mutex> uniqueLock(ptr_lock);
         Object_Type* new_ptr = new Object_Type[m_count*2];
         int old_num = m_count;
         memcpy(new_ptr, m_ptr, m_count * sizeof(Object_Type));
         delete[] m_ptr;
         m_ptr = new_ptr;
+        uniqueLock.unlock();
         m_count *= 2;
         int num = m_count - old_num;
         for(auto i = 0; i < num; i++){
@@ -215,8 +215,8 @@ public:
     Object_Type* m_ptr;
     int m_count;
     std::vector<int> m_idle_list;
-    std::mutex m_mutex;
-    std::mutex m_idle_mutex;
+    std::mutex ptr_lock;
+    std::mutex idle_lock;
 private:
     static MPool<Line3d>* m_line3d_pool;
     static MPool<Plane3d>* m_plane3d_pool;

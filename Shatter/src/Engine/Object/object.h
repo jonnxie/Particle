@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <Engine/Item/configs.h>
 #include "aabb.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/shatter_enum.h"
@@ -111,7 +112,7 @@ public:
     };
     void release()
     {
-        if (!m_memReleased) {
+        if (!m_memReleased && !Config::getConfig("RendererReleased")) {
             auto& model_pool = ModelSetPool::getPool();
             auto dpool = MPool<DObject>::getPool();
             for(auto i : m_dobjs){
@@ -122,12 +123,10 @@ public:
             for(auto i: m_gobjs){
                 gpool->free(i);
             }
-//            MPool<AABB>::getPool()->free(m_aabbIndex);
             auto cpool = MPool<CObject>::getPool();
             for(auto i: m_cobjs){
                 cpool->free(i);
             }
-//            delete m_captureObject;
         }
     };
     std::vector<int> m_dobjs{};
@@ -147,6 +146,15 @@ public:
     virtual void constructD(){};
 
     virtual void constructC(){};
+
+    virtual std::string getName() {
+        return "Object";
+    };
+
+    virtual void show(){};
+
+    virtual void hide(){};
+
     ClassProtectedReferenceElement(m_plane, TargetPlane, TargetPlane);
     ClassProtectedReferenceElement(m_center, glm::vec3, WorkCenter);
     ClassElement(m_draw_type, DrawObjectType, DrawType);

@@ -26,13 +26,14 @@ public:
     DefineUnCopy(CaptureObject);
 public:
     ClassElement(color, glm::vec3, Color);
+    ClassPointerElement(captureId, uint32_t, CaptureId);
+    ClassPointerElement(parent, Object* , Parent);
     void drawBox();
+    void hide();
 private:
-    std::unique_ptr<AABBLine>   line;
+    std::unique_ptr<AABBLine>   line{nullptr};
     std::string                 bufferId;
-    uint32_t                    captureId;
     int                         boxId;
-    Object*                     parent;
 };
 
 

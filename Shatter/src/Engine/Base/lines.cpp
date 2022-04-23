@@ -123,6 +123,22 @@ void DLines::pushLines(const std::vector<Line>& _lines) {
     }
 }
 
+void DLines::hide() {
+    if (showed) {
+        SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
+        SingleRender.normalChanged = true;
+        showed = false;
+    }
+}
+
+void DLines::show() {
+    if (!showed) {
+        SingleRender.getNObjects()->push_back(m_dobjs[0]);
+        SingleRender.normalChanged = true;
+        showed = true;
+    }
+}
+
 DLinePool::DLinePool(const std::vector<Line>& _lines,
                      int _coordinate,
                      bool _updateFunc,std::string _pipeline,
@@ -434,8 +450,18 @@ AABBLine::AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color) : aabbIn
 }
 
 AABBLine::~AABBLine() {
-    (*SingleDPool)[line->m_dobjs[0]]->m_model_index = -1;
-    line->destroy();
+    if (!Config::getConfig("RendererReleased")) {
+        (*SingleDPool)[line->m_dobjs[0]]->m_model_index = -1;
+        line->destroy();
+    }
+}
+
+void AABBLine::show() const {
+    line->show();
+}
+
+void AABBLine::hide() const {
+    line->hide();
 }
 
 CaptureObjectListener::CaptureObjectListener() {
@@ -446,9 +472,30 @@ CaptureObjectListener::CaptureObjectListener() {
         input::captureObject(object_id, STATE_IN);
         if (object_id != 0 && object_id != preCaptureId) {
             preCaptureId = object_id;
-            line = std::make_unique<AABBLine>(SingleRender.aabb_map[object_id], object_id, RED_COLOR);
+            if (captureObject) captureObject->hide();
+            captureObject = SingleAPP.getCaptureById(object_id);
+            captureObject->drawBox();
+            pushUI();
             SingleRender.normalChanged = true;
+        } else {
+            GUI::popUI("CapturedObject");
         }
         std::cout << "Capture Object Id: " << object_id << std::endl;
     };
+}
+
+CaptureObjectListener::~CaptureObjectListener() {
+    GUI::popUI("CapturedObject");
+}
+
+void CaptureObjectListener::pushUI() {
+    GUI::popUI("CapturedObject");
+    GUI::pushUI("CapturedObject", [this](){
+        ImGui::Begin("LineHandleSetting");
+
+        static char buf[32] = "default";
+        ImGui::Text("Captured object Name: %s", captureObject->getParent()->getName().c_str());
+
+        ImGui::End();// End setting
+    });
 }

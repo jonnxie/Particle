@@ -51,6 +51,12 @@ public:
     void constructG() override;
     void constructD() override;
     void constructC() override{};
+    void hide() override;
+    void show() override;
+    std::string getName() override {
+        return "DLines";
+    }
+
     void destroy();
     void pushLine(const Line& _line);
     void pushLines(const std::vector<Line>& _lines);
@@ -61,6 +67,7 @@ public:
     bool                updateFunc;
     bool                capture;
     bool                changed = true;
+    bool                showed = true;
     int                 id;
 };
 
@@ -68,6 +75,8 @@ class AABBLine {
 public:
     explicit AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color);
     ~AABBLine();
+    void show() const;
+    void hide() const;
 private:
     ClassPointerElement(aabbIndex, int, Index);
     ClassPointerElement(captureIndex, int, CaptureIndex);
@@ -78,9 +87,10 @@ class AABBLine;
 class CaptureObjectListener : public Shatter::Listener{
 public:
     CaptureObjectListener();
-//    ~CaptureObjectListener() override = default ;
+    ~CaptureObjectListener() override;
+    void pushUI();
 private:
-    std::unique_ptr<AABBLine> line {nullptr};
+    std::shared_ptr<CaptureObject> captureObject{nullptr};
     int preCaptureId = 0;
 };
 

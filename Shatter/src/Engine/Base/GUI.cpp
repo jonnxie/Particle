@@ -469,9 +469,9 @@ void GUI::updateUI() {
     io.MouseDown[0] = checkMouse(GLFW_MOUSE_BUTTON_LEFT);
     io.MouseDown[1] = checkMouse(GLFW_MOUSE_BUTTON_RIGHT);
     io.MouseDown[2] = checkMouse(GLFW_MOUSE_BUTTON_MIDDLE);
-    if(ImGui::IsAnyItemActive() != anyItemActive){
-        std::cout << "IsAnyItemActive:" << anyItemActive <<std::endl;
-    };
+//    if(ImGui::IsAnyItemActive() != anyItemActive) {
+//        std::cout << "IsAnyItemActive:" << anyItemActive <<std::endl;
+//    };
     anyItemActive = ImGui::IsAnyItemActive();
 }
 

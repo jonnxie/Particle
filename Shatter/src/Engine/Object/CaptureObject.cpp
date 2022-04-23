@@ -108,5 +108,15 @@ CaptureObject::~CaptureObject() {
 }
 
 void CaptureObject::drawBox() {
-    line = std::make_unique<AABBLine>(boxId, captureId, color);
+    if (!line) {
+        line = std::make_unique<AABBLine>(boxId, captureId, color);
+    }else {
+        line->show();
+    }
+}
+
+void CaptureObject::hide() {
+    if (line) {
+        line->hide();
+    }
 }

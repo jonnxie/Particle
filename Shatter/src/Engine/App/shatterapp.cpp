@@ -339,6 +339,26 @@ namespace Shatter::app{
         return m_work_plane;
     }
 
+    void ShatterApp::capturedPush(const std::shared_ptr<CaptureObject> &_id) {
+        std::lock_guard<std::mutex> guardLock(m_captured_lock);
+        m_captured.push_back(_id);
+    }
+
+    void ShatterApp::capturedRelease(const std::shared_ptr<CaptureObject> &_id) {
+        auto index = std::find(m_captured.begin(), m_captured.end(), _id);
+        if (index != m_captured.end()) { m_captured.erase(index); }
+    }
+
+    std::shared_ptr<CaptureObject> ShatterApp::getCaptureById(uint32_t _id) {
+        auto iterator = std::find_if(m_captured.begin(), m_captured.end(), [_id](std::shared_ptr<CaptureObject>& _object) {
+            return _object->getCaptureId() == _id;
+        });
+        if (iterator != m_captured.end()){
+            return *iterator;
+        }
+        throw std::runtime_error("No Object with such capture id.");
+    }
+
 }
 
 
