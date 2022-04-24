@@ -32,7 +32,7 @@ ABasic::ABasic(const std::string& _files,
 //        m_draw_type(_type)
 {
     setDrawType(_type);
-    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
+    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
     m_scale = glm::scale(glm::mat4(1.0f),_scale);
     m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);

@@ -547,9 +547,9 @@ vkglTF::Skin::~Skin() {
 	glTF node
 */
 void vkglTF::Node::resetMatrix(){
-    new ((glm::vec3*)&translation) glm::vec3{};
-    new ((glm::quat*)&rotation) glm::quat{};
-    new ((glm::vec3*)&scale) glm::vec3{1.0f};
+    translation = initialTranslation;
+    rotation = initialRotation;
+    scale = initialScale;
 }
 
 glm::mat4 vkglTF::Node::localMatrix() {
@@ -844,12 +844,15 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 	// Generate local node matrix
 	if (node.translation.size() == 3) {
         new ((glm::vec3*)&newNode->translation) glm::vec3(glm::make_vec3(node.translation.data()));
+        new ((glm::vec3*)&newNode->initialTranslation) glm::vec3(glm::make_vec3(node.translation.data()));
 	}
 	if (node.rotation.size() == 4) {
         new ((glm::quat*)&newNode->rotation) glm::quat(glm::make_quat(node.rotation.data()));
+        new ((glm::quat*)&newNode->initialRotation) glm::quat(glm::make_quat(node.rotation.data()));
 	}
 	if (node.scale.size() == 3) {
         new ((glm::vec3*)&newNode->scale) glm::vec3(glm::make_vec3(node.scale.data()));
+        new ((glm::vec3*)&newNode->initialScale) glm::vec3(glm::make_vec3(node.scale.data()));
 	}
 	if (node.matrix.size() == 16) {
         new ((glm::mat4*)&newNode->matrix) glm::mat4(glm::make_mat4x4(node.matrix.data()));
@@ -1871,12 +1874,12 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			}
 			// Initial pose
 			if (node->mesh) {
-                if (node->skin)
-                {
-                    node->updateSkin(world_matrix);
-                } else {
-                    node->update(world_matrix);
-                }
+//                if (node->skin)
+//                {
+//                    node->updateSkin(world_matrix);
+//                } else {
+//                    node->update(world_matrix);
+//                }
 			}
 		}
 	}
@@ -2422,16 +2425,6 @@ void vkglTF::Model::updateAnimation(uint32_t index, float time, const glm::mat4&
 		}
 	}
 	if (updated) {
-        std::vector<std::string> meshNames;
-        std::vector<std::string> skinNames;
-        for (auto &node : linearNodes) {
-            if (node->mesh) {
-                meshNames.emplace_back(node->mesh->name);
-            }
-            if (node->skin) {
-                skinNames.emplace_back(node->skin->name);
-            }
-        }
 		for (auto &node : nodes) {
             if (ifSkin)
             {

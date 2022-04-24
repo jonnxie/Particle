@@ -173,9 +173,9 @@ namespace vkglTF
 		Mesh* mesh {nullptr};
 		Skin* skin {nullptr};
 		int32_t skinIndex = -1;
-		glm::vec3 translation{};
-		glm::vec3 scale{ 1.0f };
-		glm::quat rotation{};
+		glm::vec3 translation{}, initialTranslation{};
+		glm::vec3 scale{ 1.0f }, initialScale{1.0f};
+		glm::quat rotation{}, initialRotation{};
         void resetMatrix();
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
