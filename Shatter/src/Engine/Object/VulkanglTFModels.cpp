@@ -857,7 +857,7 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 	if (node.matrix.size() == 16) {
         new ((glm::mat4*)&newNode->matrix) glm::mat4(glm::make_mat4x4(node.matrix.data()));
 		if (globalscale != 1.0f) {
-			//newNode->matrix = glm::scale(newNode->matrix, glm::vec3(globalscale));
+			newNode->matrix = glm::scale(newNode->matrix, glm::vec3(globalscale));
 		}
 	};
 
@@ -2286,6 +2286,16 @@ void vkglTF::Model::drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, 
             if (!skip) {
                 if (renderFlags & RenderFlags::BindImages) {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
+                }
+                if (node->skin) {
+                    vkCmdBindDescriptorSets(commandBuffer,
+                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                            pipelineLayout,
+                                            2,
+                                            1,
+                                            &node->skin->skinBuffer.descriptorSet,
+                                            0,
+                                            nullptr);
                 }
                 if(VK_NULL_HANDLE != pipelineLayout)
                 {

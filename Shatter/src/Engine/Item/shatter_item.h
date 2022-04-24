@@ -558,7 +558,7 @@ struct NPlane {
     struct Point {
         glm::vec3 pos;
         glm::vec2 uv;
-    }points[4]{};
+    } points[4]{};
 };
 
 #define NPlaneSize 100
@@ -595,12 +595,12 @@ struct TargetPlane
 
 #define TargetPlaneDoubleCoordinateSize 144
 
-struct Target{
+struct Target {
     TargetPlane plane;
     glm::vec3   center;
 };
 
-static struct Material{
+static struct Material {
     float roughness;
     float metallic;
     float r;

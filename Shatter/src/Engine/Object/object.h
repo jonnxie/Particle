@@ -158,10 +158,10 @@ public:
     ClassProtectedReferenceElement(m_plane, TargetPlane, TargetPlane);
     ClassProtectedReferenceElement(m_center, glm::vec3, WorkCenter);
     ClassElement(m_draw_type, DrawObjectType, DrawType);
+    ClassProtectedReferenceElement(m_rotate, glm::mat4, Rotate);
+    ClassProtectedReferenceElement(m_scale, glm::mat4, Scale);
 protected:
     glm::mat4           m_world{};
-    glm::mat4           m_scale{};
-    glm::mat4           m_rotate{};
     glm::mat4           m_translation{};
     uint32_t            m_capture_id{};
     bool                m_memReleased = false;

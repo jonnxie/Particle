@@ -130,6 +130,9 @@ void ShaderPool::init() {
     createShaderStage("gskin_vs", tool::combineShader("gskin/vert.spv"), VertexShader);
     createShaderStage("gskin_fs", tool::combineShader("gskin/frag.spv"), FragmentShader);
 
+    createShaderStage("gskinInstance_vs", tool::combineShader("gskinInstance/vert.spv"), VertexShader);
+    createShaderStage("gskinInstance_fs", tool::combineShader("gskinInstance/frag.spv"), FragmentShader);
+
     createShaderStage("aabb_vs", tool::combineShader("aabb/vert.spv"), VertexShader);
     createShaderStage("aabb_fs", tool::combineShader("aabb/frag.spv"), FragmentShader);
     /*

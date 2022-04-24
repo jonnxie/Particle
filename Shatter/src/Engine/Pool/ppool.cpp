@@ -206,6 +206,19 @@ void PPool::init() {
                  SubpassG
         );
 
+        createGP("GSkinInstance",
+                 std::vector<Input_Type>{Input_Type::GLTFInstance, Input_Type::GLTF},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gskinInstance_vs"),
+                                                              ShaderPool::getPool().Get("gskinInstance_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
+                 std::vector<Sl_id> {"Default","Camera", "Skin", "BaseTexture"},
+                 RenderPassType::Default,
+                 SubpassG);
+
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("composition_vs"),
@@ -400,7 +413,7 @@ void PPool::createCP(const P_id &_id, const VkPipelineShaderStageCreateInfo &_sh
                      const std::vector<Sl_id> &_descriptorSetLayoutBinding) {
     std::lock_guard<std::mutex> g_mutex(m_mutex);
     checkMap(m_map);
-    m_map[_id] = Pipeline::createCP(_shader,_descriptorSetLayoutBinding);
+    m_map[_id] = Pipeline::createCP(_shader, _descriptorSetLayoutBinding);
 }
 
 void PPool::createRP(const P_id &_id, const std::vector<VkPipelineShaderStageCreateInfo> &_shader,
