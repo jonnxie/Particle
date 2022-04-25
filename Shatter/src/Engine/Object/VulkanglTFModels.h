@@ -135,13 +135,39 @@ namespace vkglTF
 			glm::mat4 matrix;
 		} uniformBlock;
 
-//        std::vector<glm::mat4> jointMatrices{};
-//        float jointcount{ 0 };
 		Mesh(Device* device, glm::mat4 matrix);
 		~Mesh();
 	};
 
-	/*
+    /*
+    instance glTF mesh
+    */
+    struct InstanceMesh {
+        Device* device;
+        int instanceCount;
+        std::string name;
+
+        glm::mat4& operator[](size_t _index) {
+            return instanceMatrix[_index];
+        }
+
+        void flush() {
+            memcpy(vertexBuffer.mapped, instanceMatrix.data(), sizeof(glm::mat4) * instanceCount);
+        }
+
+        struct VertexBuffer {
+            VkBuffer buffer = VK_NULL_HANDLE;
+            VkDeviceMemory memory = VK_NULL_HANDLE;
+            void* mapped;
+        } vertexBuffer;
+
+        std::vector<glm::mat4> instanceMatrix{};
+
+        InstanceMesh(Device* device, int instanceCount);
+        ~InstanceMesh();
+    };
+
+    /*
 		glTF skin
 	*/
 	struct Skin {
@@ -171,6 +197,7 @@ namespace vkglTF
 		glm::mat4 matrix;
 		std::string name;
 		Mesh* mesh {nullptr};
+        InstanceMesh* instanceMesh {nullptr};
 		Skin* skin {nullptr};
 		int32_t skinIndex = -1;
 		glm::vec3 translation{}, initialTranslation{};
@@ -180,8 +207,10 @@ namespace vkglTF
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
         glm::mat4 getSkinMatrix();
+        void initInstanceMesh(Device* device, size_t _count);
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
         void updateSkin(const glm::mat4& world_matrix = glm::mat4(1.0f));
+        void updateInstance(float _detaTime);
 		~Node();
 	};
 
@@ -308,7 +337,7 @@ namespace vkglTF
 		void loadImages(tinygltf::Model& gltfModel, Device* device, VkQueue transferQueue);
 		void loadMaterials(tinygltf::Model& gltfModel);
 		void loadAnimations(tinygltf::Model& gltfModel);
-//        const char *str, const unsigned int length
+        void initInstanceMesh(Device* device, size_t _count);
         void loadFromBinary(const std::vector<unsigned char>& str,
                             const std::string& _filename,
                             Device* pDevice,
@@ -343,7 +372,7 @@ namespace vkglTF
 
 
         void bindBuffers(VkCommandBuffer commandBuffer);
-		void drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
+        void drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
 		void drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
 		void draw(VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
 		void drawInstance(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);

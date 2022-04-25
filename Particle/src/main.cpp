@@ -194,6 +194,17 @@ int main() {
     auto& offScreen = SingleOffScreen;
     auto& texPool = SingleTexturePool;
 
+//    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
+//    auto model = new vkglTF::Model;
+//    model->loadFromFile(tool::combineModel("Box.gltf"),
+//                        &SingleDevice,
+//                        VkQueue{},
+//                        glTFLoadingFlags,
+//                        glm::mat4(1.0f),
+//                        1.0f,
+//                        false);
+//
+//    delete model;
     texPool.addTexture("test", tool::combineTexture("Skybox_top3.png"), TextureType::Texture2DDefault);
 
     auto line_pool = MPool<Line3d>::getPool();

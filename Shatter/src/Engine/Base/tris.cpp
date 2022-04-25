@@ -108,10 +108,10 @@ void DPlane::releaseMem() {
 }
 
 void DPlane::constructG() {
-    SingleBPool.createVertexHostBuffer(tool::combine("DPlane",id), NPlaneSize, &plane);
-    SingleBPool.getBuffer(tool::combine("DPlane",id),Buffer_Type::Vertex_Host_Buffer)->map();
+    SingleBPool.createVertexHostBuffer(tool::combine("DPlane", id), NPlaneSize, &plane);
+    SingleBPool.getBuffer(tool::combine("DPlane", id),Buffer_Type::Vertex_Host_Buffer)->map();
     uint32_t indices[6]{0, 2, 1, 0, 3, 2};
-    SingleBPool.createIndexBuffer(tool::combine("DPlane",id), 24, indices);
+    SingleBPool.createIndexBuffer(tool::combine("DPlane", id), 24, indices);
 };
 
 void DPlane::constructD(){

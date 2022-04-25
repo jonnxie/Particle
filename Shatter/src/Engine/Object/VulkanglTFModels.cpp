@@ -23,6 +23,7 @@
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Renderer/shatter_render_include.h"
+#include <execution>
 
 VkDescriptorSetLayout vkglTF::descriptorSetLayoutImage = VK_NULL_HANDLE;
 VkDescriptorSetLayout vkglTF::descriptorSetLayoutUbo = VK_NULL_HANDLE;
@@ -576,6 +577,10 @@ glm::mat4 vkglTF::Node::getSkinMatrix() {
     return m;
 }
 
+void vkglTF::Node::initInstanceMesh(Device* _device, size_t _count) {
+    instanceMesh = new InstanceMesh(_device, _count);
+}
+
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
         glm::mat4 m = getMatrix();
@@ -615,8 +620,24 @@ void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
     }
 }
 
+void vkglTF::Node::updateInstance(float _detaTime) {
+    if (mesh) {
+        std::for_each(std::execution::par, instanceMesh->instanceMatrix.begin(), instanceMesh->instanceMatrix.end(),
+                      [&](glm::mat4& mat){
+            glm::mat4 nodeMatrix = mat;
+            Node *currentParent = parent;
+            while (currentParent) {
+                nodeMatrix = currentParent->matrix * nodeMatrix;
+                currentParent = currentParent->parent;
+            }
+            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
+        });
+    }
+}
+
 vkglTF::Node::~Node() {
     delete mesh;
+    delete instanceMesh;
 	for (auto& child : children) {
 		delete child;
 	}
@@ -1537,6 +1558,13 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 	}
 }
 
+void vkglTF::Model::initInstanceMesh(Device* _device, size_t _count)
+{
+    for (auto& node : linearNodes) {
+        node->initInstanceMesh(_device, _count);
+    }
+}
+
 void vkglTF::Model::loadFromBinary(const std::vector<unsigned char>& str,
                                    const std::string& _filename,
                                    Device *pDevice,
@@ -2223,6 +2251,27 @@ void vkglTF::Model::bindBuffers(VkCommandBuffer commandBuffer)
 void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
 {
 	if (node->mesh) {
+        if (node->skin) {
+            vkCmdBindDescriptorSets(commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout,
+                                    2,
+                                    1,
+                                    &node->skin->skinBuffer.descriptorSet,
+                                    0,
+                                    nullptr);
+        }
+        if (VK_NULL_HANDLE != pipelineLayout)
+        {
+            vkCmdBindDescriptorSets(commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout,
+                                    0,
+                                    1,
+                                    &node->mesh->uniformBuffer.descriptorSet,
+                                    0,
+                                    nullptr);
+        }
 		for (Primitive* primitive : node->mesh->primitives) {
 			bool skip = false;
 			const vkglTF::Material& material = primitive->material;
@@ -2239,27 +2288,6 @@ void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t
 				if (renderFlags & RenderFlags::BindImages) {
 					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
 				}
-                if (node->skin) {
-                    vkCmdBindDescriptorSets(commandBuffer,
-                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            pipelineLayout,
-                                            2,
-                                            1,
-                                            &node->skin->skinBuffer.descriptorSet,
-                                            0,
-                                            nullptr);
-                }
-                if (VK_NULL_HANDLE != pipelineLayout)
-                {
-                    vkCmdBindDescriptorSets(commandBuffer,
-                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            pipelineLayout,
-                                            0,
-                                            1,
-                                            &node->mesh->uniformBuffer.descriptorSet,
-                                            0,
-                                            nullptr);
-                }
 				vkCmdDrawIndexed(commandBuffer, primitive->indexCount, 1, primitive->firstIndex, 0, 0);
 			}
 		}
@@ -2271,6 +2299,27 @@ void vkglTF::Model::drawNode(Node *node, VkCommandBuffer commandBuffer, uint32_t
 
 void vkglTF::Model::drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet){
     if (node->mesh) {
+        if (node->skin) {
+            vkCmdBindDescriptorSets(commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout,
+                                    2,
+                                    1,
+                                    &node->skin->skinBuffer.descriptorSet,
+                                    0,
+                                    nullptr);
+        }
+        if(VK_NULL_HANDLE != pipelineLayout)
+        {
+            vkCmdBindDescriptorSets(commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout,
+                                    0,
+                                    1,
+                                    &node->mesh->uniformBuffer.descriptorSet,
+                                    0,
+                                    nullptr);
+        }
         for (Primitive* primitive : node->mesh->primitives) {
             bool skip = false;
             const vkglTF::Material& material = primitive->material;
@@ -2286,27 +2335,6 @@ void vkglTF::Model::drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, 
             if (!skip) {
                 if (renderFlags & RenderFlags::BindImages) {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
-                }
-                if (node->skin) {
-                    vkCmdBindDescriptorSets(commandBuffer,
-                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            pipelineLayout,
-                                            2,
-                                            1,
-                                            &node->skin->skinBuffer.descriptorSet,
-                                            0,
-                                            nullptr);
-                }
-                if(VK_NULL_HANDLE != pipelineLayout)
-                {
-                    vkCmdBindDescriptorSets(commandBuffer,
-                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            pipelineLayout,
-                                            0,
-                                            1,
-                                            &node->mesh->uniformBuffer.descriptorSet,
-                                            0,
-                                            nullptr);
                 }
                 vkCmdDrawIndexed(commandBuffer, primitive->indexCount, instanceCount, primitive->firstIndex, 0, 0);
             }
@@ -3016,4 +3044,29 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
                               true, // embedBuffers
                               true, // pretty print
                               false); // write binary
+}
+
+vkglTF::InstanceMesh::InstanceMesh(Device *device, int instanceCount) {
+    this->device = device;
+    this->instanceCount = instanceCount;
+    this->instanceMatrix.resize(instanceCount);
+    VK_CHECK_RESULT(device->createBuffer(
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            sizeof(glm::mat4) * instanceCount,
+            &vertexBuffer.buffer,
+            &vertexBuffer.memory,
+            nullptr));
+    VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, vertexBuffer.memory, 0, sizeof(glm::mat4) * instanceCount, 0, &vertexBuffer.mapped));
+}
+
+vkglTF::InstanceMesh::~InstanceMesh() {
+    if(vertexBuffer.buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device->logicalDevice, vertexBuffer.buffer, nullptr);
+    }
+    if(vertexBuffer.memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device->logicalDevice, vertexBuffer.memory, nullptr);
+    }
 }
