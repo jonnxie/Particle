@@ -179,14 +179,17 @@ void DPointPool::reallocated() {
 }
 
 PointsHandle::PointsHandle() {
-    m_pipeline = "Point";
-    m_sets = {"Camera", "ViewPort"};
-    m_size = 2;
-    m_listener = new DrawPointHandle(this);
-    m_points = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, m_pipeline, m_sets);
-    m_sets.emplace_back("test");
-    m_pointsTex = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, "PointTex", m_sets);
-    pushUI();
+    TaskPool::pushTask([&](){
+        m_pipeline = "Point";
+        m_sets = {"Camera", "ViewPort"};
+        m_size = 2;
+        m_listener = new DrawPointHandle(this);
+        m_points = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, m_pipeline, m_sets);
+        m_sets.emplace_back("test");
+        m_pointsTex = std::make_unique<DPointPool>(std::vector<Point3dColorSize>(), m_localCoordiante, true, "PointTex", m_sets);
+        SingleRender.normalChanged = true;
+        pushUI();
+    });
 }
 
 PointsHandle::~PointsHandle() {

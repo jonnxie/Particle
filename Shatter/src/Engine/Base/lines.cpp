@@ -240,11 +240,13 @@ void DLinePool::reallocated(){
 }
 
 LineHandle::LineHandle() {
-    m_pipeline = "Polyline";
-    m_sets = {"Camera"};
-    m_listener = new DrawLineHandle(this);
-    m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
-    pushUI();
+    TaskPool::pushTask([&](){
+        m_pipeline = "Polyline";
+        m_sets = {"Camera"};
+        m_listener = new DrawLineHandle(this);
+        m_lines = std::make_unique<DLinePool>(std::vector<Line>(), m_localCoordiante, true, m_pipeline, m_sets);
+        pushUI();
+    });
 }
 
 LineHandle::~LineHandle() {

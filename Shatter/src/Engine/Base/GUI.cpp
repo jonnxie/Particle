@@ -5,6 +5,8 @@
 
 #include "GUI.h"
 #include <mutex>
+#include <Engine/Mesh/line.h>
+#include <Engine/Particle/particle.h>
 #include "Engine/Object/inputaction.h"
 #include "Engine/Event/delayevent.h"
 #include "Engine/Item/configs.h"
@@ -17,6 +19,9 @@
 #include ListenerCatalog
 #include AppCatalog
 #include DLineCatalog
+#include "points.h"
+#include "tris.h"
+#include "WorkPlane.h"
 
 GUI *GUI::gui = new GUI;
 
@@ -548,6 +553,122 @@ void GUI::init(float width, float height) {
             } else {
                 SingleAPP.deleteListener("CaptureObject");
                 captureObject = true;
+            }
+        }
+
+
+        if (ImGui::Button("DrawLine"))
+        {
+            static bool drawLine = true;
+            if(drawLine)
+            {
+                drawLine = false;
+                SingleAPP.appendListener("DrawLine",new DrawLine);
+            } else {
+                SingleAPP.deleteListener("DrawLine");
+                drawLine = true;
+            }
+        }
+
+        if (ImGui::Button("DrawPlane"))
+        {
+            static bool drawPlane = true;
+            if(drawPlane)
+            {
+                drawPlane = false;
+                SingleAPP.appendListener("DrawPlane",new DrawPlane);
+            } else {
+                SingleAPP.deleteListener("DrawPlane");
+                drawPlane = true;
+            }
+        }
+
+        if (ImGui::Button("DrawPoint"))
+        {
+            static bool drawPoint = true;
+            if(drawPoint)
+            {
+                drawPoint = false;
+                if (Config::getConfig("enableScreenGui"))
+                {
+                    auto pointHandle = new PointsHandle();
+                    SingleRender.normalChanged = true;
+                } else {
+                    SingleAPP.appendListener("DrawPoint",new DrawPoint);
+                }
+            } else {
+                SingleAPP.deleteListener("DrawPoint");
+                drawPoint = true;
+            }
+        }
+
+        if (ImGui::Button("DrawLinePool"))
+        {
+            static bool drawLinePool = true;
+            if(drawLinePool)
+            {
+                drawLinePool = false;
+                if (Config::getConfig("enableScreenGui"))
+                {
+                    auto lineHandle = new LineHandle();
+                    SingleRender.normalChanged = true;
+                } else {
+                    SingleAPP.appendListener("drawLinePool", new DrawLinePool);
+                }
+            } else {
+                SingleAPP.deleteListener("drawLinePool");
+                drawLinePool = true;
+            }
+        }
+
+        if (ImGui::Button("DrawNPlane"))
+        {
+            static bool drawNPlane = true;
+            if(drawNPlane)
+            {
+                drawNPlane = false;
+                if (Config::getConfig("enableScreenGui"))
+                {
+                    auto planeHandle = new DPlaneHandle();
+                    SingleRender.normalChanged = true;
+                } else {
+                    SingleAPP.appendListener("drawNPlane", new DrawNPlane);
+                }
+            } else {
+                SingleAPP.deleteListener("drawNPlane");
+                drawNPlane = true;
+            }
+        }
+
+        if (ImGui::Button("DrawCube"))
+        {
+            static bool drawCube = true;
+            if(drawCube)
+            {
+                drawCube = false;
+                if (Config::getConfig("enableScreenGui"))
+                {
+                    auto cubeHandle = new DCubeHandle();
+                    SingleRender.normalChanged = true;
+                } else {
+                    SingleAPP.appendListener("drawCube",new DrawCube);
+                }
+            } else {
+                SingleAPP.deleteListener("drawCube");
+                drawCube = true;
+            }
+        }
+
+        if (ImGui::Button("ChooseWorkPlane"))
+        {
+            static bool chooseWorkPlane = true;
+            if(chooseWorkPlane)
+            {
+                chooseWorkPlane = false;
+                SingleAPP.appendListener("chooseWorkPlane",new ChooseWorkPlane);
+            } else {
+                SingleAPP.deleteListener("chooseWorkPlane");
+                chooseWorkPlane = true;
             }
         }
 

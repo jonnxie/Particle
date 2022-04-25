@@ -194,7 +194,7 @@ void SkinBasicInstance::constructD() {
     if(getDrawType() == DrawObjectType::Default)
     {
         (*dpool)[d]->m_gGraphics = func;
-    }else{
+    } else {
         (*dpool)[d]->m_newDraw = func;
     }
     insertDObject(d);

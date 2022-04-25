@@ -351,11 +351,13 @@ DrawCube::DrawCube() {
 }
 
 DPlaneHandle::DPlaneHandle() {
-    m_pipeline = "GPlane";
-    m_sets = {"Camera", "Planet"};
-    m_color = RED_COLOR;
-    m_listener = new DrawNPlaneHandle(this);
-    pushUI();
+    TaskPool::pushTask([&](){
+        m_pipeline = "GPlane";
+        m_sets = {"Camera", "Planet"};
+        m_color = RED_COLOR;
+        m_listener = new DrawNPlaneHandle(this);
+        pushUI();
+    });
 }
 
 DPlaneHandle::~DPlaneHandle() {
@@ -660,11 +662,13 @@ DrawNPlaneHandle::~DrawNPlaneHandle() {
 }
 
 DCubeHandle::DCubeHandle() {
-    m_pipeline = "GCube";
-    m_sets = {"Camera", "Planet"};
-    m_color = RED_COLOR;
-    m_listener = new DrawCubeHandle(this);
-    pushUI();
+    TaskPool::pushTask([&](){
+        m_pipeline = "GCube";
+        m_sets = {"Camera", "Planet"};
+        m_color = RED_COLOR;
+        m_listener = new DrawCubeHandle(this);
+        pushUI();
+    });
 }
 
 DCubeHandle::~DCubeHandle() {
