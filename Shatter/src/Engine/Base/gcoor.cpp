@@ -76,7 +76,7 @@ void GCoor::constructD() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
     m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
     SingleAPP.capturedPush(m_captureObject);
 }

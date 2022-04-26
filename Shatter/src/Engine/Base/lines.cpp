@@ -39,19 +39,21 @@ capture(_capture)
 {
     lines = _lines;
     id = mallocId();
-    m_boxIndex = MPool<AABB>::getPool()->malloc();
-    for(auto& line : lines)
-    {
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
+    if (_capture) {
+        m_boxIndex = MPool<AABB>::getPool()->malloc();
+        for(auto& line : lines)
+        {
+            (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+            (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
+        }
     }
 }
 
-DLines::~DLines(){
+DLines::~DLines() {
     TaskPool::popUpdateTask(tool::combine("LinesBasic",id));
 }
 
-void DLines::destroy(){
+void DLines::destroy() {
     SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
     Object::release();
     if(updateFunc)
@@ -60,19 +62,18 @@ void DLines::destroy(){
     }
     vkQueueWaitIdle(SingleRender.graphics_queue);
     SingleBPool.freeBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer);
-    SingleRender.releaseObject(int(m_capture_id),DrawObjectType::AABB);
     SingleRender.normalChanged = true;
 }
 
-void DLines::constructG(){
-    SingleBPool.createVertexHostBuffer(tool::combine("DLines",id),LineSize * lines.size(),lines.data());
-    SingleBPool.getBuffer(tool::combine("DLines",id),Buffer_Type::Vertex_Host_Buffer)->map();
+void DLines::constructG() {
+    SingleBPool.createVertexHostBuffer(tool::combine("DLines",id), LineSize * lines.size(), lines.data());
+    SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
-void DLines::constructD(){
+void DLines::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int model_index ;
+    int model_index;
     if (m_modelIndex == -1) {
         model_index = ModelSetPool::getPool().malloc();
     } else {
@@ -101,7 +102,7 @@ void DLines::constructD(){
             memcpy(ptr + model_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
         });
     }
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
     if (capture) {
         m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
         SingleAPP.capturedPush(m_captureObject);
@@ -133,7 +134,7 @@ void DLines::hide() {
 
 void DLines::show() {
     if (!showed) {
-        SingleRender.getNObjects()->push_back(m_dobjs[0]);
+        SingleRender.pushNObjects(m_dobjs[0]);
         SingleRender.normalChanged = true;
         showed = true;
     }
@@ -145,7 +146,7 @@ DLinePool::DLinePool(const std::vector<Line>& _lines,
                      std::vector<std::string> _sets):
                      updateFunc(_updateFunc),
                      m_pipeline(std::move(_pipeline)),
-                     m_sets(std::move(_sets)){
+                     m_sets(std::move(_sets)) {
     m_localCoordiante = _coordinate;
     m_lines = _lines;
     id = mallocId();
@@ -155,12 +156,12 @@ DLinePool::DLinePool(const std::vector<Line>& _lines,
     init();
 }
 
-void DLinePool::constructG(){
+void DLinePool::constructG() {
     SingleBPool.createVertexHostBuffer(tool::combine("DLinePool",id), LineSize * lineResolveCount, m_lines.data());
     SingleBPool.getBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
-void DLinePool::constructD(){
+void DLinePool::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
     int ms_index = ModelSetPool::getPool().malloc();
@@ -199,10 +200,10 @@ void DLinePool::constructD(){
             memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
         });
     }
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
 }
 
-DLinePool::~DLinePool(){
+DLinePool::~DLinePool() {
     TaskPool::popUpdateTask(tool::combine("LinePoolBasic", id));
 }
 
@@ -225,7 +226,7 @@ void DLinePool::pushLines(const std::vector<Line>& _lines) {
     }
 }
 
-void DLinePool::reallocated(){
+void DLinePool::reallocated() {
     SingleRender.releaseObject(m_dobjs[0], DrawObjectType::Normal);
     Object::release();
     if(updateFunc)
@@ -487,6 +488,7 @@ CaptureObjectListener::CaptureObjectListener() {
 }
 
 CaptureObjectListener::~CaptureObjectListener() {
+    if (captureObject) captureObject->hide();
     GUI::popUI("CapturedObject");
 }
 

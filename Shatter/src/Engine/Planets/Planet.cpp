@@ -126,7 +126,7 @@ void Planet::constructD() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
-//    SingleRender.getNObjects()->push_back(d);
+//    SingleRender.pushNObjects(d);
     insertRenderObject(d);
 }
 

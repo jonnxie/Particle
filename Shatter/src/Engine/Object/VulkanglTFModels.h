@@ -144,7 +144,7 @@ namespace vkglTF
     */
     struct InstanceMesh {
         Device* device;
-        int instanceCount;
+        size_t instanceCount;
         std::string name;
 
         glm::mat4& operator[](size_t _index) {
@@ -163,7 +163,7 @@ namespace vkglTF
 
         std::vector<glm::mat4> instanceMatrix{};
 
-        InstanceMesh(Device* device, int instanceCount);
+        InstanceMesh(Device* device, size_t instanceCount);
         ~InstanceMesh();
     };
 
@@ -197,7 +197,6 @@ namespace vkglTF
 		glm::mat4 matrix;
 		std::string name;
 		Mesh* mesh {nullptr};
-        InstanceMesh* instanceMesh {nullptr};
 		Skin* skin {nullptr};
 		int32_t skinIndex = -1;
 		glm::vec3 translation{}, initialTranslation{};
@@ -207,14 +206,47 @@ namespace vkglTF
 		glm::mat4 localMatrix();
 		glm::mat4 getMatrix();
         glm::mat4 getSkinMatrix();
-        void initInstanceMesh(Device* device, size_t _count);
 		void update(const glm::mat4& world_matrix = glm::mat4(1.0f));
         void updateSkin(const glm::mat4& world_matrix = glm::mat4(1.0f));
-        void updateInstance(float _detaTime);
 		~Node();
 	};
 
-	/*
+    /*
+     * instance gltf node
+     */
+    struct InstanceNode {
+        InstanceNode* parent;
+        uint32_t index;
+        size_t instanceCount;
+        std::vector<InstanceNode*> children;
+        glm::mat4 matrix;
+        std::string name;
+        InstanceMesh* instanceMesh {nullptr};
+
+        glm::vec3 initialTranslation{};
+        std::vector<glm::vec3> translation{};
+
+        glm::vec3 initialScale{1.0f};
+        std::vector<glm::vec3> scale{};
+
+        glm::quat initialRotation{};
+        std::vector<glm::quat> rotation{};
+
+        std::vector<size_t> instanceIndex{};
+
+        void initInstanceMesh(Device* _device, size_t _count);
+        void resetMatrix();
+        void resetMatrix(size_t _index);
+        glm::mat4 localMatrix(size_t _index);
+        glm::mat4 getMatrix(size_t _index);
+        void update();
+        void updateSkin();
+        ~InstanceNode();
+    };
+
+
+
+    /*
 		glTF animation channel
 	*/
 	struct AnimationChannel {

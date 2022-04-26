@@ -210,7 +210,7 @@ void I3DMBasic::constructD() {
         m_model->draw(_cb);
     };
     insertDObject(d);
-    SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    for (int i : m_dobjs){SingleRender.pushDObjects(i);}
     TaskPool::pushUpdateTask(tool::combine("I3DMBasic", m_id),[&, modelIndex, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
@@ -292,7 +292,7 @@ void I3DMBasicInstance::constructD() {
         m_model->drawInstance(_cb, m_loader->getInstanceLength());
     };
     insertDObject(d);
-    SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    for (int i : m_dobjs){SingleRender.pushDObjects(i);}
     TaskPool::pushUpdateTask(tool::combine("I3DMInstanceBasic", m_id),[&, modelIndex, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);

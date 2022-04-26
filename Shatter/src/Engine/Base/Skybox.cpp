@@ -110,6 +110,6 @@ void Skybox::constructD(){
 //        memcpy(ptr + mc_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
 //    });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
     insertDObject(d);
 }

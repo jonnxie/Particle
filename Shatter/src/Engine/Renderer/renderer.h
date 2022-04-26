@@ -34,8 +34,9 @@ static const bool enableValidationLayers = true;
 #include "FrameBuffer.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <memory>
+#include "Engine/Base/ExchangeVector.h"
 
-namespace Shatter::buffer{
+namespace Shatter::buffer {
     class ShatterTexture;
 }
 
@@ -228,13 +229,13 @@ namespace Shatter{
             static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
             static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
             static void keyTypeCallback(GLFWwindow* window,unsigned int code);
-            std::vector<int>* getDObjects();
             void releaseObject(int _id, DrawObjectType _type);
             void releaseComputeObject(int _id);
-            std::vector<int>* getCObjects();
-            std::vector<int>* getTObjects();
-            std::vector<int>* getNObjects();
-            std::vector<int>* getOffDObjects();
+            void pushDObjects(int _element);
+            void pushCObjects(int _element);
+            void pushTObjects(int _element);
+            void pushNObjects(int _element);
+            void pushOObjects(int _element);
             std::unordered_map<int, int>* getAABBMap();
         public:
             GUI *imGui = nullptr;

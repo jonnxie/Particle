@@ -2522,29 +2522,29 @@ namespace Shatter::render{
         createGraphicsCommandBuffersMultiple();
     }
 
-    std::vector<int>* ShatterRender::getDObjects()
+    void ShatterRender::pushDObjects(int _element)
     {
-        return &drawid_vec;
+        drawid_vec.push_back(_element);
     }
 
-    std::vector<int>* ShatterRender::getCObjects()
+    void ShatterRender::pushCObjects(int _element)
     {
-        return &computeid_vec;
+        computeid_vec.push_back(_element);
+    }
+    void ShatterRender::pushTObjects(int _element)
+    {
+        transparency_vec.push_back(_element);
     }
 
-    std::vector<int>* ShatterRender::getTObjects()
+
+    void ShatterRender::pushNObjects(int _element)
     {
-        return &transparency_vec;
+        normal_vec.push_back(_element);
     }
 
-    std::vector<int>* ShatterRender::getNObjects()
+    void ShatterRender::pushOObjects(int _element)
     {
-        return &normal_vec;
-    }
-
-    std::vector<int>* ShatterRender::getOffDObjects()
-    {
-        return &offdrawid_vec;
+        offdrawid_vec.push_back(_element);
     }
 
     void ShatterRender::releaseObject(int _id, DrawObjectType _type)

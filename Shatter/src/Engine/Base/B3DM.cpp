@@ -165,7 +165,10 @@ void B3DMBasic::constructD() {
         m_model->draw(_cb);
     };
     insertDObject(d);
-    SingleRender.getDObjects()->insert(SingleRender.getDObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    for (int i : m_dobjs)
+    {
+        SingleRender.pushDObjects(i);
+    }
     TaskPool::pushUpdateTask(tool::combine("B3DMBasic", m_id),[&, modelIndex, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);

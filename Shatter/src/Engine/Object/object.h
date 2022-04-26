@@ -51,22 +51,22 @@ public:
         switch (m_draw_type) {
             case DrawObjectType::Default:
             {
-                SingleRender.getDObjects()->push_back(_id);
+                SingleRender.pushDObjects(_id);
                 break;
             }
             case DrawObjectType::OffScreen:
             {
-                SingleRender.getOffDObjects()->push_back(_id);
+                SingleRender.pushOObjects(_id);
                 break;
             }
             case DrawObjectType::Transparency:
             {
-                SingleRender.getTObjects()->push_back(_id);
+                SingleRender.pushTObjects(_id);
                 break;
             }
             case DrawObjectType::Normal:
             {
-                SingleRender.getNObjects()->push_back(_id);
+                SingleRender.pushNObjects(_id);
                 break;
             }
         }
@@ -77,22 +77,22 @@ public:
         switch (_type) {
             case DrawObjectType::Default:
             {
-                SingleRender.getDObjects()->push_back(_id);
+                SingleRender.pushDObjects(_id);
                 break;
             }
             case DrawObjectType::OffScreen:
             {
-                SingleRender.getOffDObjects()->push_back(_id);
+                SingleRender.pushOObjects(_id);
                 break;
             }
             case DrawObjectType::Transparency:
             {
-                SingleRender.getTObjects()->push_back(_id);
+                SingleRender.pushTObjects(_id);
                 break;
             }
             case DrawObjectType::Normal:
             {
-                SingleRender.getNObjects()->push_back(_id);
+                SingleRender.pushNObjects(_id);
                 break;
             }
         }

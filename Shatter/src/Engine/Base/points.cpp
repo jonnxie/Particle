@@ -59,7 +59,7 @@ void DPoints::constructD() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
 }
 
 void DPoints::pushPoint(const Point3dColorSize &_point) {
@@ -142,7 +142,7 @@ void DPointPool::constructD() {
             memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
         });
     }
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
 }
 
 void DPointPool::pushPoint(const Point3dColorSize &_point) {

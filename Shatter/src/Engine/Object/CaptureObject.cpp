@@ -80,6 +80,8 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId):
                                                                         &descriptorBufferInfos);
 
     vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
+    line = std::make_unique<AABBLine>(boxId, captureId, color);
+    line->hide();
 }
 
 CaptureObject::CaptureObject(Object *_parent, uint32_t _captureId, int _boxId):
@@ -87,6 +89,8 @@ CaptureObject::CaptureObject(Object *_parent, uint32_t _captureId, int _boxId):
         captureId(_captureId),
         boxId(_boxId) {
     bufferId = tool::combine("Capture", captureId);
+    line = std::make_unique<AABBLine>(boxId, captureId, color);
+    line->hide();
 }
 
 CaptureObject::~CaptureObject() {

@@ -56,7 +56,7 @@ void WorkPlane::constructD() {
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
         memcpy(SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->mapped, m_axis.data(), TargetPlaneDoubleCoordinateSize);
     });
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
     m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
     SingleAPP.capturedPush(m_captureObject);
 }

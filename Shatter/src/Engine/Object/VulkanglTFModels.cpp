@@ -577,9 +577,6 @@ glm::mat4 vkglTF::Node::getSkinMatrix() {
     return m;
 }
 
-void vkglTF::Node::initInstanceMesh(Device* _device, size_t _count) {
-    instanceMesh = new InstanceMesh(_device, _count);
-}
 
 void vkglTF::Node::update(const glm::mat4& world_matrix) {
 	if (mesh) {
@@ -620,24 +617,9 @@ void vkglTF::Node::updateSkin(const glm::mat4& world_matrix) {
     }
 }
 
-void vkglTF::Node::updateInstance(float _detaTime) {
-    if (mesh) {
-        std::for_each(std::execution::par, instanceMesh->instanceMatrix.begin(), instanceMesh->instanceMatrix.end(),
-                      [&](glm::mat4& mat){
-            glm::mat4 nodeMatrix = mat;
-            Node *currentParent = parent;
-            while (currentParent) {
-                nodeMatrix = currentParent->matrix * nodeMatrix;
-                currentParent = currentParent->parent;
-            }
-            memcpy(mesh->uniformBuffer.mapped, &nodeMatrix, sizeof(glm::mat4));
-        });
-    }
-}
 
 vkglTF::Node::~Node() {
     delete mesh;
-    delete instanceMesh;
 	for (auto& child : children) {
 		delete child;
 	}
@@ -1561,7 +1543,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 void vkglTF::Model::initInstanceMesh(Device* _device, size_t _count)
 {
     for (auto& node : linearNodes) {
-        node->initInstanceMesh(_device, _count);
+//        node->initInstanceMesh(_device, _count);
     }
 }
 
@@ -3046,7 +3028,7 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
                               false); // write binary
 }
 
-vkglTF::InstanceMesh::InstanceMesh(Device *device, int instanceCount) {
+vkglTF::InstanceMesh::InstanceMesh(Device *device, size_t instanceCount) {
     this->device = device;
     this->instanceCount = instanceCount;
     this->instanceMatrix.resize(instanceCount);
@@ -3069,4 +3051,67 @@ vkglTF::InstanceMesh::~InstanceMesh() {
     {
         vkFreeMemory(device->logicalDevice, vertexBuffer.memory, nullptr);
     }
+}
+
+void vkglTF::InstanceNode::initInstanceMesh(Device* _device, size_t _count) {
+    instanceIndex.resize(_count);
+    for (size_t i = 0; i < _count; i++) {
+        instanceIndex[i] = i;
+    }
+    instanceMesh = new InstanceMesh(_device, _count);
+}
+
+void vkglTF::InstanceNode::resetMatrix() {
+    translation.assign(instanceCount, initialTranslation);
+    scale.assign(instanceCount, initialScale);
+    rotation.assign(instanceCount, initialRotation);
+}
+
+void vkglTF::InstanceNode::resetMatrix(size_t _index) {
+    translation[_index] = initialTranslation;
+    scale[_index] = initialScale;
+    rotation[_index] = initialRotation;
+}
+
+glm::mat4 vkglTF::InstanceNode::localMatrix(size_t _index) {
+    return glm::translate(glm::mat4(1.0f), translation[_index]) * glm::mat4(rotation[_index]) * glm::scale(glm::mat4(1.0f), scale[_index]) * matrix;
+}
+
+glm::mat4 vkglTF::InstanceNode::getMatrix(size_t _index) {
+    glm::mat4 m = localMatrix(_index);
+    vkglTF::InstanceNode *p = parent;
+    while (p) {
+        m = p->localMatrix(_index) * m;
+        p = p->parent;
+    }
+    return m;
+}
+
+vkglTF::InstanceNode::~InstanceNode() {
+    delete instanceMesh;
+    for (auto& child : children) {
+        delete child;
+    }
+}
+
+void vkglTF::InstanceNode::update() {
+    if (instanceMesh) {
+        std::for_each(std::execution::par, instanceIndex.begin(), instanceIndex.end(),
+            [&](size_t& _index){
+                    glm::mat4 m = localMatrix(_index);
+                    vkglTF::InstanceNode *p = parent;
+                    while (p) {
+                        m = p->localMatrix(_index) * m;
+                        p = p->parent;
+                    }
+                    memcpy(&instanceMesh->instanceMatrix[_index], &m, sizeof(glm::mat4));
+            });
+        for (auto& child : children) {
+            child->update();
+        }
+    }
+}
+
+void vkglTF::InstanceNode::updateSkin() {
+
 }

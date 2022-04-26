@@ -116,7 +116,10 @@ void TBasic::constructD()
         m_model->draw(_cb);
     };
     insertDObject(d);
-    SingleRender.getTObjects()->insert(SingleRender.getTObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+    for (int i : m_dobjs)
+    {
+        SingleRender.pushTObjects(i);
+    }
     TaskPool::pushUpdateTask(tool::combine("TBasic",m_id),[&,modelIndex,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);

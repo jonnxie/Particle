@@ -60,7 +60,7 @@ void DTris::constructD() {
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
-    SingleRender.getNObjects()->push_back(d);
+    SingleRender.pushNObjects(d);
 }
 
 void DTris::pushTri(const Tri &_tri) {
@@ -159,7 +159,7 @@ void DPlane::constructD(){
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
 //    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
-    SingleRender.getDObjects()->push_back(d);
+    SingleRender.pushDObjects(d);
 };
 
 DrawNPlane::~DrawNPlane() {
@@ -297,7 +297,7 @@ void DCube::constructD() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
-    SingleRender.getDObjects()->push_back(d);
+    SingleRender.pushDObjects(d);
 }
 
 DrawCube::~DrawCube() {
@@ -552,7 +552,7 @@ void DPlaneHandle::batch() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelId, &(*SingleDPool)[drawId]->m_matrix, one_matrix);
     });
-    SingleRender.getDObjects()->push_back(drawId);
+    SingleRender.pushDObjects(drawId);
     SingleRender.drawChanged = true;
 }
 
@@ -860,7 +860,7 @@ void DCubeHandle::batch() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + modelId, &(*SingleDPool)[drawId]->m_matrix, one_matrix);
     });
-    SingleRender.getDObjects()->push_back(drawId);
+    SingleRender.pushDObjects(drawId);
     SingleRender.drawChanged = true;
 }
 

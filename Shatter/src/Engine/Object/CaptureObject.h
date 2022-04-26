@@ -25,7 +25,7 @@ public:
     ~CaptureObject();
     DefineUnCopy(CaptureObject);
 public:
-    ClassElement(color, glm::vec3, Color);
+    ClassElementInitial(color, glm::vec3, Color, RED_COLOR);
     ClassPointerElement(captureId, uint32_t, CaptureId);
     ClassPointerElement(parent, Object* , Parent);
     void drawBox();

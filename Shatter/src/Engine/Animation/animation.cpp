@@ -423,7 +423,7 @@ namespace animation {
         };
         m_localCoordinate = new DLines(lines,false, -1, true);
         m_localCoordinate->init();
-//        SingleRender.getNObjects()->push_back(d);
+//        SingleRender.pushNObjects(d);
         TaskPool::pushUpdateTask(tool::combine("Animation",m_id),[&](float _abs_time){
             animate(_abs_time);
             auto& camera = SingleCamera;
@@ -569,7 +569,9 @@ namespace animation {
             };
             insertDObject(d);
         }
-        SingleRender.getNObjects()->insert(SingleRender.getNObjects()->end(), m_dobjs.begin(), m_dobjs.end());
+        for (auto i : m_dobjs) {
+            SingleRender.pushNObjects(i);
+        }
     }
 
     void Animation::initAnimation(){
