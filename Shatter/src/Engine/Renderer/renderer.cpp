@@ -1213,19 +1213,19 @@ namespace Shatter::render{
             SingleCascade.beginRenderPass(_cb, index,true);
 
             draw_index = 0;
-            std::vector<VkCommandBuffer> depthBuffer(drawid_vec.size());
+            std::vector<VkCommandBuffer> depthBuffer(drawIdVec.size());
             for (int t = 0; t < std::thread::hardware_concurrency(); t++)
             {
                 for (int j = 0; j < numObjectsPerThread; j++)
                 {
-                    if(draw_index >= drawid_vec.size()) break;
+                    if(draw_index >= drawIdVec.size()) break;
                     (*threadPool).threads[t]->addTask([&,draw_index] {
                         VkCommandBuffer *cb = &depthBuffer[draw_index];
-                        ObjectTask::shadowDepthTask(t,drawid_vec[draw_index],SingleCascade.inheritInfo,cb);
+                        ObjectTask::shadowDepthTask(t,drawIdVec[draw_index],SingleCascade.inheritInfo,cb);
                     });
                     draw_index++;
                 }
-                if(draw_index >= drawid_vec.size()) break;
+                if(draw_index >= drawIdVec.size()) break;
             }
             (*threadPool).wait();
             vkCmdExecuteCommands(_cb, depthBuffer.size(), depthBuffer.data());
@@ -1243,14 +1243,14 @@ namespace Shatter::render{
         auto dPool = SingleDPool;
         auto begin = pre_shadow_buffer[_imageIndex].begin();
         auto end = pre_shadow_buffer[_imageIndex].begin();
-        std::advance(end,drawid_vec.size());
+        std::advance(end,drawIdVec.size());
         for(size_t index = 0; index < SHADOW_MAP_CASCADE_COUNT; index++)
         {
             SingleCascade.beginRenderPass(_cb, index,true);
             std::vector<VkCommandBuffer> depthBuffer(begin,end);
             vkCmdExecuteCommands(_cb, depthBuffer.size(), depthBuffer.data());
-            std::advance(begin , drawid_vec.size());
-            std::advance(end , drawid_vec.size());
+            std::advance(begin , drawIdVec.size());
+            std::advance(end , drawIdVec.size());
             SingleCascade.endRenderPass(_cb);
         }
     }
@@ -1288,8 +1288,8 @@ namespace Shatter::render{
 
         SingleDPool->free(offdrawid_vec);
         offdrawid_vec.clear();
-        SingleDPool->free(drawid_vec);
-        drawid_vec.clear();
+        SingleDPool->free(drawIdVec());
+        drawIdVec.clear();
         SingleCPool->free(computeid_vec);
         computeid_vec.clear();
     }
@@ -1323,7 +1323,7 @@ namespace Shatter::render{
 
         int draw_index = 0;
 
-        for(size_t compute_index = 0; compute_index < normal_vec.size(); compute_index++)
+        for(size_t compute_index = 0; compute_index < computeid_vec.size(); compute_index++)
         {
             threadPool->addTask([&,compute_index] {
                 VkCommandBuffer* cb = &commandBuffers[compute_index];
@@ -1488,6 +1488,7 @@ namespace Shatter::render{
 
     void ShatterRender::createGraphicsCommandBuffersMultiple(){
         // Contains the list of secondary command buffers to be submitted
+        exchangeObjects();
         vkQueueWaitIdle(graphics_queue);
         for (size_t i = 0; i < graphics_buffers.size(); i++) {
             std::vector<VkCommandBuffer> commandBuffers;
@@ -1559,14 +1560,14 @@ namespace Shatter::render{
              */
             {
                 draw_index = 0;
-                std::vector<VkCommandBuffer> gBuffers(drawid_vec.size());
+                std::vector<VkCommandBuffer> gBuffers(drawIdVec.size());
                 inheritanceInfo.subpass = SubpassG;
                 threadIndex = 0;
-                for(size_t d_index = 0; d_index < drawid_vec.size(); d_index++)
+                for(size_t d_index = 0; d_index < drawIdVec.size(); d_index++)
                 {
                     (*threadPool)[threadIndex]->addTask([&, d_index, threadIndex](){
                         VkCommandBuffer* cb = &gBuffers[d_index];
-                        ObjectTask::gTask(threadIndex, drawid_vec[d_index], inheritanceInfo, cb);
+                        ObjectTask::gTask(threadIndex, drawIdVec[d_index], inheritanceInfo, cb);
                     });
                     if( ++threadIndex >= threadPool->m_thread_count){
                         threadIndex -= threadPool->m_thread_count;
@@ -1616,15 +1617,15 @@ namespace Shatter::render{
              * normal object pass
              */
             {
-                if(!normal_vec.empty())
+                if(!normalIdVec.empty())
                 {
-                    std::vector<VkCommandBuffer> normalBuffers(normal_vec.size());
+                    std::vector<VkCommandBuffer> normalBuffers(normalIdVec.size());
                     threadIndex = 0;
-                    for(size_t normal_index = 0; normal_index < normal_vec.size(); normal_index++)
+                    for(size_t normal_index = 0; normal_index < normalIdVec.size(); normal_index++)
                     {
                         (*threadPool)[threadIndex]->addTask([&, normal_index, threadIndex](){
                             VkCommandBuffer* cb = &normalBuffers[normal_index];
-                            ObjectTask::newGraphicsTask(threadIndex, normal_vec[normal_index], inheritanceInfo, cb);
+                            ObjectTask::newGraphicsTask(threadIndex, normalIdVec[normal_index], inheritanceInfo, cb);
                         });
                         if( ++threadIndex >= threadPool->m_thread_count){
                             threadIndex -= threadPool->m_thread_count;
@@ -1807,9 +1808,9 @@ namespace Shatter::render{
         /*
          * G
          */
-        if(!drawid_vec.empty())
+        if(!drawIdVec.empty())
         {
-            vkCmdExecuteCommands(graphics_buffers[_index], drawid_vec.size(), pre_g_buffer[_index].data());
+            vkCmdExecuteCommands(graphics_buffers[_index], drawIdVec.size(), pre_g_buffer[_index].data());
         }
         vkCmdNextSubpass(graphics_buffers[_index], VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1823,9 +1824,9 @@ namespace Shatter::render{
         /*
          * normal object pass
          */
-        if(!normal_vec.empty())
+        if(!normalIdVec.empty())
         {
-            vkCmdExecuteCommands(graphics_buffers[_index], normal_vec.size(), pre_norm_buffer[_index].data());
+            vkCmdExecuteCommands(graphics_buffers[_index], normalIdVec.size(), pre_norm_buffer[_index].data());
         }
 
         /*
@@ -2499,7 +2500,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
-                                               VkDescriptorSet* set){
+                                               VkDescriptorSet* set) {
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = descriptorPool;
@@ -2512,34 +2513,40 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createCommandBuffer(){
-        if(Config::getConfig("enableMultipleComputeQueue"))
+        if (Config::getConfig("enableMultipleComputeQueue"))
         {
             createComputeCommandBuffersMultiple();
-        }else{
+        } else {
             createComputeCommandBuffer();
         }
         createSecondaryCommandBuffers();
         createGraphicsCommandBuffersMultiple();
     }
 
+    void ShatterRender::exchangeObjects()
+    {
+        drawIdVec.flush();
+        normalIdVec.flush();
+    }
+
     void ShatterRender::pushDObjects(int _element)
     {
-        drawid_vec.push_back(_element);
+        drawIdVec.push_back(_element);
     }
 
     void ShatterRender::pushCObjects(int _element)
     {
         computeid_vec.push_back(_element);
     }
+
     void ShatterRender::pushTObjects(int _element)
     {
         transparency_vec.push_back(_element);
     }
 
-
     void ShatterRender::pushNObjects(int _element)
     {
-        normal_vec.push_back(_element);
+        normalIdVec.push_back(_element);
     }
 
     void ShatterRender::pushOObjects(int _element)
@@ -2552,11 +2559,7 @@ namespace Shatter::render{
         switch (_type) {
             case DrawObjectType::Default:
             {
-                auto iterator = std::find(drawid_vec.begin(), drawid_vec.end(), _id);
-                if(iterator != drawid_vec.end())
-                {
-                    drawid_vec.erase(iterator);
-                }
+                drawIdVec.erase(_id);
                 break;
             }
             case DrawObjectType::OffScreen:
@@ -2579,11 +2582,7 @@ namespace Shatter::render{
             }
             case DrawObjectType::Normal:
             {
-                auto iterator = std::find(normal_vec.begin(), normal_vec.end(), _id);
-                if(iterator != normal_vec.end())
-                {
-                    normal_vec.erase(iterator);
-                }
+                normalIdVec.erase(_id);
                 break;
             }
             case DrawObjectType::AABB:{
@@ -2611,15 +2610,6 @@ namespace Shatter::render{
     {
         return &aabb_map;
     }
-
-    [[maybe_unused]] void ShatterRender::addDObject(int _drawid) {
-        drawid_vec.push_back(_drawid);
-    }
-
-    void ShatterRender::addCObject(int _computeId) {
-        computeid_vec.push_back(_computeId);
-    }
-
     void ShatterRender::prepareImGui() {
         imGui = GUI::getGUI();
 

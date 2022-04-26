@@ -34,21 +34,35 @@ public:
     }
 
     void push_back(T& _element) {
-        nowVec.push_back(_element);
+        nowVec->push_back(_element);
         changed = true;
     }
 
     void erase(T& _element) {
-        auto it = std::find(nowVec.begin(), nowVec.end(), _element);
-        if (it != nowVec.end()) {
-            nowVec.erase(it);
+        auto it = std::find(nowVec->begin(), nowVec->end(), _element);
+        if (it != nowVec->end()) {
+            nowVec->erase(it);
             changed = true;
         }
+    }
+
+    size_t size() {
+        return preVec->size();
+    }
+
+    bool empty() {
+        return preVec->empty();
+    }
+
+    void clear() {
+        nowVec->clear();
     }
 public:
     void flush() {
         if (changed) {
             std::swap(preVec, nowVec);
+            nowVec->resize(preVec->size());
+            memcpy(nowVec->data(), preVec->data(), sizeof(T) * nowVec->size());
             changed = false;
         }
     }

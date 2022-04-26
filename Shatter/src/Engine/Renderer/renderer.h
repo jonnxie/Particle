@@ -201,8 +201,6 @@ namespace Shatter{
                                         VkDescriptorSet* set);
             VkDevice* getDevice(){return &device;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
-            [[maybe_unused]] void addDObject(int _drawId);
-            void addCObject(int _computeId);
             void createCommandBuffer();
             [[nodiscard]] GLFWwindow* getWindow() const{return window;};
         public:
@@ -231,6 +229,7 @@ namespace Shatter{
             static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             void releaseObject(int _id, DrawObjectType _type);
             void releaseComputeObject(int _id);
+            void exchangeObjects();
             void pushDObjects(int _element);
             void pushCObjects(int _element);
             void pushTObjects(int _element);
@@ -239,10 +238,11 @@ namespace Shatter{
             std::unordered_map<int, int>* getAABBMap();
         public:
             GUI *imGui = nullptr;
+            ExchangeVector<int> drawIdVec;
             std::vector<int> offdrawid_vec;
             std::vector<int> drawid_vec;
             std::vector<int> transparency_vec;
-            std::vector<int> normal_vec;
+            ExchangeVector<int> normalIdVec;
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
             std::vector<buffer::ShatterTexture*> tex_vec;
