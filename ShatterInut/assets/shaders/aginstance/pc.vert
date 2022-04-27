@@ -12,19 +12,12 @@ layout(set = 1,binding = 0) uniform UniformCameraObject{
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inCoordiante;
-layout(location = 3) in vec4 inColor;
-layout(location = 4) in vec4 inJoint0;
-layout(location = 5) in vec4 inWeight0;
-layout(location = 6) in vec4 inTangent;
 
 //Instanced attributes
 layout(location = 7) in vec3 instancePos;
 
 layout (location = 0) out vec3 outNormal;
-layout (location = 1) out vec3 outColor;
-layout (location = 2) out vec3 outWorldPos;
-layout (location = 3) out vec3 outTangent;
+layout (location = 1) out vec3 outWorldPos;
 
 out gl_PerVertex{
     vec4 gl_Position;
@@ -44,6 +37,4 @@ void main() {
     mat3 mNormal = transpose(inverse(mat3(m.model)));
     outNormal = mNormal * normalize(inNormal);
 
-    // Currently just vertex color
-    outColor = inColor.rgb;
 }

@@ -66,7 +66,7 @@ void DLines::destroy() {
 }
 
 void DLines::constructG() {
-    SingleBPool.createVertexHostBuffer(tool::combine("DLines",id), LineSize * lines.size(), lines.data());
+    SingleBPool.createVertexHostBuffer(tool::combine("DLines",id), GeoLineSize * lines.size(), lines.data());
     SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
@@ -78,6 +78,7 @@ void DLines::constructD() {
         model_index = ModelSetPool::getPool().malloc();
     } else {
         model_index = m_modelIndex;
+        std::cout << SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->getBuffer() << std::endl;
     }
 
     std::vector<std::string> s_vec(1);
@@ -152,12 +153,12 @@ DLinePool::DLinePool(const std::vector<Line>& _lines,
     id = mallocId();
     lineResolveCount = Config::getConfig("LinePoolInitialCount");
     lineCount = _lines.size();
-    poolSize = lineCount * LineSize;
+    poolSize = lineCount * GeoLineSize;
     init();
 }
 
 void DLinePool::constructG() {
-    SingleBPool.createVertexHostBuffer(tool::combine("DLinePool",id), LineSize * lineResolveCount, m_lines.data());
+    SingleBPool.createVertexHostBuffer(tool::combine("DLinePool",id), GeoLineSize * lineResolveCount, m_lines.data());
     SingleBPool.getBuffer(tool::combine("DLinePool",id), Buffer_Type::Vertex_Host_Buffer)->map();
 }
 
@@ -209,7 +210,7 @@ DLinePool::~DLinePool() {
 
 void DLinePool::pushLine(const Line &_line) {
     m_lines.push_back(_line);
-    poolSize += LineSize;
+    poolSize += GeoLineSize;
     if(++lineCount >= lineResolveCount)
     {
         reallocated();
@@ -219,7 +220,7 @@ void DLinePool::pushLine(const Line &_line) {
 void DLinePool::pushLines(const std::vector<Line>& _lines) {
     m_lines.insert(m_lines.end(),_lines.begin(),_lines.end());
     lineCount += _lines.size();
-    poolSize += _lines.size() * LineSize;
+    poolSize += _lines.size() * GeoLineSize;
     if(lineCount >= lineResolveCount)
     {
         reallocated();

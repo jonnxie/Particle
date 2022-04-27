@@ -213,7 +213,6 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             {
                 return;
             }
-            std::cout<< "VertexBuffer: " << _id << " released" << std::endl;
             delete m_vertex_map[_id];
             m_vertex_map.erase(_id);
             break;
@@ -223,7 +222,6 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             {
                 return;
             }
-            std::cout<< "IndexBuffer: " << _id << " released" << std::endl;
             delete m_index_map[_id];
             m_index_map.erase(_id);
             break;
@@ -233,7 +231,6 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             {
                 return;
             }
-            std::cout<< "UniformBuffer: " << _id << " released" << std::endl;
             delete m_uniform_map[_id];
             m_uniform_map.erase(_id);
             break;
@@ -245,7 +242,6 @@ void BPool::freeBuffer(const B_id& _id,Buffer_Type _type)
             {
                 return;
             }
-            std::cout<< "StorageBuffer: " << _id << " released" << std::endl;
             delete m_storage_map[_id];
             m_storage_map.erase(_id);
             break;

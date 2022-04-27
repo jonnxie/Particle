@@ -99,5 +99,9 @@ void ABasic::constructD()
         }
     });
     insertRenderObject(d);
-    m_captureObject = CaptureObject::mallocCapture(this, m_model->dimensions.min, m_model->dimensions.max, d);
+    m_captureObject = CaptureObject::mallocCapture(this,
+                                                   m_model->dimensions.min,
+                                                   m_model->dimensions.max,
+                                                   d,
+                                                   "ABasic");
 }

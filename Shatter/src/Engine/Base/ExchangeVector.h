@@ -56,6 +56,7 @@ public:
 
     void clear() {
         nowVec->clear();
+        changed = true;
     }
 public:
     void flush() {

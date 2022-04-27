@@ -1,7 +1,5 @@
 #version 450
 
-layout (location = 0) in vec3 inColor;
-
 layout(set = 3,binding = 0) uniform sampler2D Texture;
 
 layout (location = 0) out vec4 outFragColor;

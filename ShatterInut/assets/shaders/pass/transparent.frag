@@ -3,8 +3,7 @@
 layout (input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput samplerPositionDepth;
 layout (set = 2, binding = 1) uniform sampler2D samplerTexture;
 
-layout (location = 0) in vec3 inColor;
-layout (location = 1) in vec2 inUV;
+layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outColor;
 

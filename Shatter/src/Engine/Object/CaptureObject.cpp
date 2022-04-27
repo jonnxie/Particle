@@ -11,7 +11,11 @@
 #include ConfigCatalog
 
 std::shared_ptr<CaptureObject>
-CaptureObject::mallocCapture(Object *_parent, const glm::vec3 &_min, const glm::vec3 &_max, int _drawId) {
+CaptureObject::mallocCapture(Object *_parent,
+                             const glm::vec3 &_min,
+                             const glm::vec3 &_max,
+                             int _drawId,
+                             const std::string& _name) {
     auto pool = MPool<AABB>::getPool();
     int boxIndex = pool->malloc();
     uint32_t captureId = boxIndex + 1;
@@ -35,6 +39,9 @@ CaptureObject::mallocCapture(Object *_parent, const glm::vec3 &_min, const glm::
     memcpy(buffer->mapped, &captureId, 4);
     buffer->unmap();
     SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*pool)[boxIndex]->m_capture_set);
+
+    std::cout << _name + "`s VertexBuffer: " << buffer->getBuffer() << std::endl;
+    std::cout << _name + "`s DescriptorSet: " << (*pool)[boxIndex]->m_capture_set << std::endl;
 
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
     VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*pool)[boxIndex]->m_capture_set,

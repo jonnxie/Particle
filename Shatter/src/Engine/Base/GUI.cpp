@@ -37,16 +37,19 @@ void GUI::pushUI(Task_id _id, std::function<void()> _func) {
     if(gui->m_tasks.count(_id) == 0)
     {
         gui->m_tasks[std::move(_id)] = std::move(_func);
-    }else{
-        WARNING(gui task is already existed!);
     }
+//#ifdef NDEBUG
+    else {
+//        WARNING(gui task is already existed!);
+    }
+//#endif
 }
 
 void GUI::popUI(const Task_id& _id) {
     std::lock_guard<std::mutex> guard_lock(lock);
     if(gui->m_tasks.count(_id) == 0)
     {
-        WARNING(gui task is already erased!);
+//        WARNING(gui task is already erased!);
     }else{
         gui->m_tasks.erase(_id);
     }

@@ -98,7 +98,11 @@ void SkinBasic::constructD() {
         }
     });
     insertRenderObject(d);
-    m_captureObject = CaptureObject::mallocCapture(this, m_model->dimensions.min, m_model->dimensions.max, d);
+    m_captureObject = CaptureObject::mallocCapture(this,
+                                                   m_model->dimensions.min,
+                                                   m_model->dimensions.max,
+                                                   d,
+                                                   "SkinBasic");
 }
 
 SkinBasicInstance::SkinBasicInstance(const std::string &_files, const std::vector<glm::vec3> &_instances,
@@ -207,5 +211,9 @@ void SkinBasicInstance::constructD() {
         }
     });
     insertRenderObject(d);
-//    m_captureObject = CaptureObject::mallocCapture(this, m_model->dimensions.min, m_model->dimensions.max, d);
+    m_captureObject = CaptureObject::mallocCapture(this,
+                                                   m_model->dimensions.min,
+                                                   m_model->dimensions.max,
+                                                   d,
+                                                   "SkinBasicInstance");
 }

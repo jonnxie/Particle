@@ -30,11 +30,6 @@ static struct UISettings {
     float lightTimer = 0.0f;
 } uiSettings;
 
-static struct ShatterBase {
-    bool multiThread = true;
-} shatterBase;
-
-
 class GUI{
 private:
     VkSampler sampler = VK_NULL_HANDLE;

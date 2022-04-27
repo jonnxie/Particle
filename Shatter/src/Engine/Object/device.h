@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 #include "Engine/Base/GUI.h"
-
+#include "Engine/Item/shatter_item.h"
 
 namespace Shatter::buffer{
     class ShatterBuffer;
@@ -28,8 +28,8 @@ public:
     }
 
     uint32_t getMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties){
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+        VkPhysicalDeviceMemoryProperties memProperties = getVkPhysicalDeviceMemoryProperties();
+//        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
             if ((typeFilter & (1 << i)) &&

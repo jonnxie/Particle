@@ -537,7 +537,8 @@ struct Line{
     Point begin;
     Point end;
 };
-#define LineSize 48
+
+#define GeoLineSize 48
 
 Line makeLine(glm::vec3 _initialPosition);
 
