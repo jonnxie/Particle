@@ -78,7 +78,7 @@ void DLines::constructD() {
         model_index = ModelSetPool::getPool().malloc();
     } else {
         model_index = m_modelIndex;
-        std::cout << SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->getBuffer() << std::endl;
+        std::cout << "DLine VertexBuffer: " <<  SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->getBuffer() << std::endl;
     }
 
     std::vector<std::string> s_vec(1);

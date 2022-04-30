@@ -1729,6 +1729,8 @@ namespace Shatter::render{
                 vkCmdExecuteCommands(graphics_buffers[i], commandBuffers.size(), commandBuffers.data());
             }
 
+            std::cout << "CommandBuffer: " << graphics_buffers[i] << std::endl;
+
             vkCmdEndRenderPass(graphics_buffers[i]);
 
             /*

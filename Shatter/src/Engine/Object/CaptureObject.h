@@ -24,7 +24,7 @@ public:
                                                         const std::string& _name = "default");
 
 
-    CaptureObject(Object* _parent, int _boxId, int _drawId);
+    CaptureObject(Object* _parent, int _boxId, int _drawId, const std::string& _name = "default");
 
     CaptureObject(Object* _parent, uint32_t _captureId, int _boxId);
     ~CaptureObject();
