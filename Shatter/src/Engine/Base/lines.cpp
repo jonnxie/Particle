@@ -485,6 +485,7 @@ CaptureObjectListener::CaptureObjectListener() {
             SingleRender.normalChanged = true;
         } else if (object_id == 0) {
             if (captureObject) captureObject->hide();
+            preCaptureId = object_id;
             GUI::popUI("CapturedObject");
             SingleRender.guiChanged = true;
         }

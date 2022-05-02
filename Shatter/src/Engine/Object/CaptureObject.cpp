@@ -124,7 +124,7 @@ CaptureObject::~CaptureObject() {
 void CaptureObject::drawBox() {
     if (!line) {
         line = std::make_unique<AABBLine>(boxId, captureId, color);
-    }else {
+    } else {
         line->show();
     }
 }
