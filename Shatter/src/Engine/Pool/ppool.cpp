@@ -315,6 +315,7 @@ void PPool::init() {
                  SubpassTransparency
         );
 
+#ifdef SHATTER_GPU_CAPTURE
         createGP("AABBCapture",
                  std::vector<Input_Type>{Input_Type::Point3d},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aabb_vs"),
@@ -328,6 +329,7 @@ void PPool::init() {
                  RenderPassType::Capture,
                  0
         );
+#endif
 
         createGP("Polyline",
                  std::vector<Input_Type>{Input_Type::Point3dColor},

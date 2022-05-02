@@ -234,6 +234,6 @@ private:
 #define SingleDPool MPool<DObject>::getPool()
 #define SingleCPool MPool<CObject>::getPool()
 #define SingleGPool MPool<GObject>::getPool()
-#define SingleAABBPool MPool<AABB>::getPool()
+#define SingleBoxPool MPool<AABB>::getPool()
 
 #endif //SHATTER_ENGINE_MPOOL_H

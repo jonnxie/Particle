@@ -546,6 +546,7 @@ void GUI::init(float width, float height) {
             });
         }
 
+#ifdef SHATTER_GPU_CAPTURE
         if (ImGui::Button("CaptureObject"))
         {
             static bool captureObject = true;
@@ -558,7 +559,7 @@ void GUI::init(float width, float height) {
                 captureObject = true;
             }
         }
-
+#endif
 
         if (ImGui::Button("DrawLine"))
         {

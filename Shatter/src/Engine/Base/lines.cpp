@@ -43,8 +43,8 @@ capture(_capture)
         m_boxIndex = MPool<AABB>::getPool()->malloc();
         for(auto& line : lines)
         {
-            (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
-            (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
+            (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+            (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.end.pos);
         }
     }
 }
@@ -72,13 +72,12 @@ void DLines::constructG() {
 
 void DLines::constructD() {
     auto dpool = MPool<DObject>::getPool();
-    auto d = dpool->malloc();
+    int d = dpool->malloc();
     int model_index;
     if (m_modelIndex == -1) {
         model_index = ModelSetPool::getPool().malloc();
     } else {
         model_index = m_modelIndex;
-        std::cout << "DLine VertexBuffer: " <<  SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->getBuffer() << std::endl;
     }
 
     std::vector<std::string> s_vec(1);
@@ -105,23 +104,26 @@ void DLines::constructD() {
     }
     SingleRender.pushNObjects(d);
     if (capture) {
-        m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
+        m_captureObject = std::make_shared<CaptureObject>(this,
+                                                          m_boxIndex,
+                                                          d,
+                                                          "DLines");
         SingleAPP.capturedPush(m_captureObject);
     }
 }
 
 void DLines::pushLine(const Line &_line) {
     lines.push_back(_line);
-    (*SingleAABBPool)[m_boxIndex]->addInternalPoint(_line.begin.pos);
-    (*SingleAABBPool)[m_boxIndex]->addInternalPoint(_line.end.pos);
+    (*SingleBoxPool)[m_boxIndex]->addInternalPoint(_line.begin.pos);
+    (*SingleBoxPool)[m_boxIndex]->addInternalPoint(_line.end.pos);
 }
 
 void DLines::pushLines(const std::vector<Line>& _lines) {
     lines.insert(lines.end(),_lines.begin(),_lines.end());
     for(auto& line : _lines)
     {
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
+        (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+        (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.end.pos);
     }
 }
 
@@ -443,13 +445,13 @@ DrawLineHandle::~DrawLineHandle() {
 
 AABBLine::AABBLine(int _aabbIndex, int _captureIndex, glm::vec3 _color) : aabbIndex(_aabbIndex), captureIndex(_captureIndex){
     std::vector<glm::vec3> points;
-    genLineVertexBufferFromAABB(*(*SingleAABBPool)[_aabbIndex], points);
+    genLineVertexBufferFromAABB(*(*SingleBoxPool)[_aabbIndex], points);
     std::vector<Line> lines(points.size() / 2);
     for (size_t i = 0, size = lines.size(); i < size; i++) {
         new ((Point*)&lines[i].begin) Point{points[i * 2], _color};
         new ((Point*)&lines[i].end) Point{points[i * 2 + 1], _color};
     }
-    line = std::make_unique<DLines>(lines, false, (*SingleAABBPool)[_aabbIndex]->m_model_index, false);
+    line = std::make_unique<DLines>(lines, false, (*SingleBoxPool)[_aabbIndex]->m_model_index, false);
     line->init();
 }
 
@@ -475,14 +477,16 @@ CaptureObjectListener::CaptureObjectListener() {
         uint32_t object_id = ((VulkanFrameBuffer*)SingleRender.getCaptureFrameBuffer())->capture(coordinate.x, coordinate.y, 0);
         input::captureObject(object_id, STATE_IN);
         if (object_id != 0 && object_id != preCaptureId) {
+            if (preCaptureId != 0) captureObject->hide();
             preCaptureId = object_id;
-            if (captureObject) captureObject->hide();
             captureObject = SingleAPP.getCaptureById(object_id);
             captureObject->drawBox();
             pushUI();
             SingleRender.normalChanged = true;
-        } else {
+        } else if (object_id == 0) {
+            if (captureObject) captureObject->hide();
             GUI::popUI("CapturedObject");
+            SingleRender.guiChanged = true;
         }
         std::cout << "Capture Object Id: " << object_id << std::endl;
     };

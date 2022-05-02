@@ -26,8 +26,8 @@ void WorkPlane::constructG() {
     SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->map();
     for(auto& line : m_axis)
     {
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
-        (*SingleAABBPool)[m_boxIndex]->addInternalPoint(line.end.pos);
+        (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.begin.pos);
+        (*SingleBoxPool)[m_boxIndex]->addInternalPoint(line.end.pos);
     }
 }
 

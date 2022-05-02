@@ -801,7 +801,7 @@ struct UnionViewPort{
     VkViewport  view;
     float       inverseWidth;
     float       inverseHeight;
-    VkViewport operator()(){
+    VkViewport& operator()(){
         return view;
     };
     UnionViewPort() = default;

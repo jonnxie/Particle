@@ -30,7 +30,7 @@ CaptureObject::mallocCapture(Object *_parent,
     (*pool)[boxIndex]->m_model_index = modelIndex;
     SingleRender.aabb_map[captureId] = boxIndex;
     std::vector<glm::vec3> vertexBuffer{};
-    genFaceVertexBufferFromAABB(*(*SingleAABBPool)[boxIndex], vertexBuffer);
+    genFaceVertexBufferFromAABB(*(*SingleBoxPool)[boxIndex], vertexBuffer);
     SingleBPool.createVertexBuffer(bufferId, vertexBuffer.size() * one_vec3, vertexBuffer.data());
 
     SingleBPool.createUniformBuffer(bufferId, 4);
@@ -42,8 +42,6 @@ CaptureObject::mallocCapture(Object *_parent,
 
     std::cout << _name + "`s UniformBuffer: " << buffer->getBuffer() << std::endl;
     std::cout << _name + "`s DescriptorSet: " << (*pool)[boxIndex]->m_capture_set << std::endl;
-
-    std::cout << _name + "`s Capture VertexBuffer: " << SingleBPool.getBuffer(bufferId, Buffer_Type::Vertex_Buffer)->getBuffer() << std::endl;
 
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
     VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*pool)[boxIndex]->m_capture_set,
@@ -71,7 +69,7 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, const std
     (*pool)[boxId]->m_model_index = modelIndex;
     SingleRender.aabb_map[captureId] = boxId;
     std::vector<glm::vec3> vertexBuffer{};
-    genFaceVertexBufferFromAABB(*(*SingleAABBPool)[boxId], vertexBuffer);
+    genFaceVertexBufferFromAABB(*(*SingleBoxPool)[boxId], vertexBuffer);
     SingleBPool.createVertexBuffer(bufferId, vertexBuffer.size() * one_vec3, vertexBuffer.data());
 
     auto vertex_buffer = SingleBPool.getBuffer(bufferId, Buffer_Type::Vertex_Buffer);
@@ -82,10 +80,8 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, const std
     buffer->unmap();
     SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*pool)[boxId]->m_capture_set);
 
-    std::cout << _name + "`s UniformBuffer: " << buffer->getBuffer() << std::endl;
-    std::cout << _name + "`s DescriptorSet: " << (*pool)[boxId]->m_capture_set << std::endl;
-
-    std::cout << _name + "`s Capture VertexBuffer: " << SingleBPool.getBuffer(bufferId, Buffer_Type::Vertex_Buffer)->getBuffer() << std::endl;
+//    std::cout << _name + "`s UniformBuffer: " << buffer->getBuffer() << std::endl;
+//    std::cout << _name + "`s DescriptorSet: " << (*pool)[boxId]->m_capture_set << std::endl;
 
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
     VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*pool)[boxId]->m_capture_set,
@@ -94,8 +90,8 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, const std
                                                                         &descriptorBufferInfos);
 
     vkUpdateDescriptorSets(SingleDevice(), 1, &writeDescriptorSets, 0, nullptr);
-//    line = std::make_unique<AABBLine>(boxId, captureId, color);
-//    line->hide();
+    line = std::make_unique<AABBLine>(boxId, captureId, color);
+    line->hide();
 }
 
 CaptureObject::CaptureObject(Object *_parent, uint32_t _captureId, int _boxId):
@@ -103,8 +99,8 @@ CaptureObject::CaptureObject(Object *_parent, uint32_t _captureId, int _boxId):
         captureId(_captureId),
         boxId(_boxId) {
     bufferId = tool::combine("Capture", captureId);
-//    line = std::make_unique<AABBLine>(boxId, captureId, color);
-//    line->hide();
+    line = std::make_unique<AABBLine>(boxId, captureId, color);
+    line->hide();
 }
 
 CaptureObject::~CaptureObject() {

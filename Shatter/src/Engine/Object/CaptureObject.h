@@ -24,13 +24,13 @@ public:
                                                         const std::string& _name = "default");
 
 
-    CaptureObject(Object* _parent, int _boxId, int _drawId, const std::string& _name = "default");
+    CaptureObject(Object* _parent, int _boxId, int _drawId, const std::string& _name);
 
     CaptureObject(Object* _parent, uint32_t _captureId, int _boxId);
     ~CaptureObject();
     DefineUnCopy(CaptureObject);
 public:
-    ClassElementInitial(color, glm::vec3, Color, RED_COLOR);
+    ClassElementInitial(color, glm::vec3, Color, CYAN_COLOR);
     ClassPointerElement(captureId, uint32_t, CaptureId);
     ClassPointerElement(parent, Object* , Parent);
     void drawBox();

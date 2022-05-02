@@ -13,7 +13,6 @@
 #include "Engine/Renderer/shatter_render_include.h"
 #include <string>
 
-
 GCoor* GCoor::createGCoor(const std::vector<glm::vec3>& _in)
 {
 	return new GCoor(_in);
@@ -77,7 +76,7 @@ void GCoor::constructD() {
         memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
     });
     SingleRender.pushNObjects(d);
-    m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d);
+    m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d, "Coordinate");
     SingleAPP.capturedPush(m_captureObject);
 }
 

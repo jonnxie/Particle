@@ -1407,15 +1407,15 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
         }
-        VkViewport tmp = getViewPort().view;
+        VkViewport& viewport = getViewPort().view;
         VkRect2D& scissor = getScissor();
 
         int threadIndex = 0;
         for(auto& pair: aabb_map)
         {
-            int aabbIndex =  pair.second;
+            int boxId =  pair.second;
             int captureIndex =  pair.first;
-            (*SingleThreadPool)[threadIndex]->addTask([&, aabbIndex, threadIndex, captureIndex, index](){
+            (*SingleThreadPool)[threadIndex]->addTask([&, boxId, threadIndex, captureIndex, index](){
                 VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool, threadIndex);
                 VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
                 commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1426,16 +1426,16 @@ namespace Shatter::render{
                 vkAllocateCommandBuffers(SingleDevice.logicalDevice, &commandBufferAllocateInfo, &captureBuffers[index]);
 
                 vkBeginCommandBuffer(captureBuffers[index], &commandBufferBeginInfo);
-                vkCmdSetViewport(captureBuffers[index], 0, 1, &tmp);
+                vkCmdSetViewport(captureBuffers[index], 0, 1, &viewport);
                 vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
                 vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
-                int model_index = (*SingleAABBPool)[aabbIndex]->m_model_index;
+                int model_index = (*SingleBoxPool)[boxId]->m_model_index;
                 ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", captureIndex), Buffer_Type::Vertex_Buffer);
                 vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
                 std::array<VkDescriptorSet, 3> set_array{};
                 set_array[0] = *(*set_pool)[model_index];
                 set_array[1] = SingleSetPool["Camera"];
-                set_array[2] = (*SingleAABBPool)[aabbIndex]->m_capture_set;
+                set_array[2] = (*SingleBoxPool)[boxId]->m_capture_set;
                 vkCmdBindDescriptorSets(captureBuffers[index],
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
                                         (*SinglePPool["AABBCapture"]).getPipelineLayout(),
@@ -1494,6 +1494,11 @@ namespace Shatter::render{
         // Contains the list of secondary command buffers to be submitted
         exchangeObjects();
         vkQueueWaitIdle(graphics_queue);
+        if(Config::getConfig("enableScreenGui"))
+        {
+            imGui->newFrame(false);
+            imGui->updateBuffers();
+        }
         for (size_t i = 0; i < graphics_buffers.size(); i++) {
             std::vector<VkCommandBuffer> commandBuffers;
             commandBuffers.reserve(3);
@@ -1518,11 +1523,7 @@ namespace Shatter::render{
                 renderPassBeginInfo.pClearValues = clearValues.data();
             }
 
-            if(Config::getConfig("enableScreenGui"))
-            {
-                imGui->newFrame(false);
-                imGui->updateBuffers();
-            }
+
 
             vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo);
             auto threadPool = ThreadPool::pool();
@@ -1729,7 +1730,7 @@ namespace Shatter::render{
                 vkCmdExecuteCommands(graphics_buffers[i], commandBuffers.size(), commandBuffers.data());
             }
 
-            std::cout << "CommandBuffer: " << graphics_buffers[i] << std::endl;
+//            std::cout << "CommandBuffer: " << graphics_buffers[i] << std::endl;
 
             vkCmdEndRenderPass(graphics_buffers[i]);
 
@@ -2094,11 +2095,11 @@ namespace Shatter::render{
             }
             setSwapChainIndex(int(imageIndex));
 
-            if(guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged)
+            if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged)
             {
                 createGraphicsCommandBuffersMultiple();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
-            }else{
+            } else {
                 if(Config::getConfig("enableScreenGui"))
                 {
                     updateGraphicsCommandBuffersMultiple(imageIndex);
