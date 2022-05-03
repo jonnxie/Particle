@@ -211,9 +211,9 @@ void SkinBasicInstance::constructD() {
         }
     });
     insertRenderObject(d);
-    m_captureObject = CaptureObject::mallocCapture(this,
-                                                   m_model->dimensions.min,
-                                                   m_model->dimensions.max,
-                                                   d,
-                                                   "SkinBasicInstance");
+//    m_captureObject = CaptureObject::mallocCapture(this,
+//                                                   m_model->dimensions.min,
+//                                                   m_model->dimensions.max,
+//                                                   d,
+//                                                   "SkinBasicInstance");
 }

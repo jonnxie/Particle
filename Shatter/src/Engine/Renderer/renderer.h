@@ -95,6 +95,29 @@ namespace Shatter{
              */
             void createRenderPass();
 
+            FrameBufferAttachment
+            *newColorAttachment{nullptr},
+            *newPositionAttachment{nullptr},
+            *newNormalAttachment{nullptr},
+            *newAlbedoAttachment{nullptr},
+            *newDepthAttachment{nullptr};
+            VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
+            VkFramebuffer m_colorFrameBuffer{VK_NULL_HANDLE};
+            FrameBuffer* m_colorFrameBuffers{nullptr};
+            void createColorRenderPass();
+            void createColorFramebuffers();
+
+            VkRenderPass m_presentRenderPass{VK_NULL_HANDLE};
+            struct VkPresent {
+                VkImage image;
+                VkImageView imageView;
+                VkSampler sampler;
+                VkFramebuffer framebuffer;
+            };
+            std::vector<VkPresent> m_presents{};
+            void createPresentRenderPass();
+            void createPresentFramebuffers();
+
             void createMSAARenderPass();
 
             VkCommandBuffer m_capture_buffer = VK_NULL_HANDLE;
@@ -196,7 +219,7 @@ namespace Shatter{
             FrameBuffer* getCaptureFrameBuffer(){
                 return m_frameBuffers;
             };
-            [[nodiscard]] VkExtent2D getExtent2D() const {return swapchain_extent;};
+            [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
                                         VkDescriptorSet* set);
             VkDevice* getDevice(){return &device;};
@@ -239,10 +262,10 @@ namespace Shatter{
         public:
             GUI *imGui = nullptr;
             ExchangeVector<int> drawIdVec;
-            std::vector<int> offdrawid_vec;
-            std::vector<int> drawid_vec;
-            std::vector<int> transparency_vec;
             ExchangeVector<int> normalIdVec;
+            std::vector<int> offdrawid_vec;
+//            std::vector<int> drawid_vec;
+            std::vector<int> transparency_vec;
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
             std::vector<buffer::ShatterTexture*> tex_vec;
@@ -258,23 +281,17 @@ namespace Shatter{
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device{};
 
-            VkQueue graphics_queue{};
-            VkQueue present_queue{};
-            VkQueue compute_queue{};
-            VkQueue transfer_queue{};
+            VkQueue graphics_queue{}, present_queue{}, compute_queue{}, transfer_queue{};
 
             VkSwapchainKHR swapchain{};
             /*
             * 图像代表交换链中的项
             */
-            VkFormat swapchain_image_format;
-            std::vector<VkImage> swapchain_images;
-            VkExtent2D swapchain_extent{};
+            VkFormat m_presentFormat;
+            std::vector<VkImage> m_presentImages;
+            VkExtent2D presentExtent{};
 
-            FrameBufferAttachment* positionAttachment{nullptr};
-            FrameBufferAttachment* normalAttachment{nullptr};
-            FrameBufferAttachment* albedoAttachment{nullptr};
-            FrameBufferAttachment* depthAttachment{nullptr};
+            FrameBufferAttachment* positionAttachment{nullptr}, *normalAttachment{nullptr}, *albedoAttachment{nullptr}, *depthAttachment{nullptr};
 
             VkRenderPass m_renderPass = VK_NULL_HANDLE;
             std::vector<VkImage> m_swapchainImages;
@@ -284,9 +301,7 @@ namespace Shatter{
             std::vector<VkDescriptorSet> m_swapChainSets;
             std::vector<VkCommandBuffer> composite_buffers;
 
-            VkCommandPool graphic_commandPool{};
-            VkCommandPool compute_commandPool{};
-            VkCommandPool transfer_commandPool{};
+            VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
 
             VkFormat m_depthFormat;
             VkImage m_depthImage{};
@@ -295,33 +310,18 @@ namespace Shatter{
 
             VkDescriptorPool descriptorPool{};
 
-            std::vector<VkCommandBuffer> graphics_buffers;
-            std::vector<VkCommandBuffer> gui_buffer{};
+            std::vector<VkCommandBuffer> graphics_buffers, gui_buffer{}, offscreen_buffers;
             VkCommandBuffer compute_buffer{};
-            std::vector<VkCommandBuffer> offscreen_buffers;
 
-            bool guiChanged = false;
-            bool offChanged = false;
-            bool drawChanged = false;
-            bool normalChanged = false;
-            bool transChanged = false;
-            bool aabbChanged = false;
-            bool windowStill = true;
+            bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
+
             std::vector<VkCommandBuffer> pre_compute_buffers;
+            std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
 
-            std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{};
-            std::vector<std::vector<VkCommandBuffer>> pre_shadow_buffer{};
-            std::vector<std::vector<VkCommandBuffer>> pre_g_buffer{};
-            std::vector<std::vector<VkCommandBuffer>> pre_norm_buffer{};
-            std::vector<std::vector<VkCommandBuffer>> pre_trans_buffer{};
+            VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
 
-            VkSemaphore imageAvailableSemaphore{};
-            VkSemaphore renderFinishedSemaphore{};
-            VkSemaphore computeFinishedSemaphore{};
-            VkSemaphore computeReadySemaphore{};
             std::vector<VkClearValue> clearValues{};
-            VkSubmitInfo computeSubmitInfo{};
-            VkSubmitInfo graphicsSubmitInfo{};
+            VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
             VkPresentInfoKHR presentInfo{};
         };
     };

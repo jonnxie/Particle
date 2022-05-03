@@ -1468,7 +1468,7 @@ namespace tool {
         }
 
         // Source for the copy is the last rendered swapchain image
-        VkImage srcImage = ShatterRender::getRender().swapchain_images[currentSwapChainIndex];
+        VkImage srcImage = ShatterRender::getRender().m_presentImages[currentSwapChainIndex];
 
         // Create the linear tiled destination image to copy to and to read the memory from
         VkImageCreateInfo imageCreateCI(tool::imageCreateInfo());

@@ -132,6 +132,18 @@ namespace Shatter::render{
             vkDestroyRenderPass(device, m_renderPass, nullptr);
         }
 
+        if (m_colorRenderPass != VK_NULL_HANDLE)
+        {
+            vkDestroyRenderPass(device, m_colorRenderPass, nullptr);
+            m_colorFrameBuffers->release();
+            delete m_colorFrameBuffers;
+        }
+
+        if (m_presentRenderPass != VK_NULL_HANDLE)
+        {
+            vkDestroyRenderPass(device, m_presentRenderPass, nullptr);
+        }
+
 #ifdef SHATTER_GPU_CAPTURE
         if(m_captureRenderPass != VK_NULL_HANDLE)
         {
@@ -147,6 +159,16 @@ namespace Shatter::render{
         delete normalAttachment;
         delete albedoAttachment;
         delete depthAttachment;
+
+        if (m_colorFrameBuffer != VK_NULL_HANDLE) {
+            vkDestroyFramebuffer(device, m_colorFrameBuffer, nullptr);
+        }
+
+        delete newColorAttachment;
+        delete newPositionAttachment;
+        delete newNormalAttachment;
+        delete newAlbedoAttachment;
+        delete newDepthAttachment;
 
         delete imGui;
 
@@ -227,6 +249,9 @@ namespace Shatter::render{
         }else{
             createRenderPass();
         }
+        createColorRenderPass();
+        createColorFramebuffers();
+        createPresentRenderPass();
 #ifdef SHATTER_GPU_CAPTURE
         createCaptureRenderPass();
         createCaptureFramebuffers();
@@ -478,8 +503,8 @@ namespace Shatter::render{
         min_image_count = createInfo.minImageCount;
 
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
-        swapchain_images.resize(imageCount);
-        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchain_images.data());
+        m_presentImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, m_presentImages.data());
 
         pre_offscreen_buffer.resize(imageCount);
         pre_shadow_buffer.resize(imageCount);
@@ -488,8 +513,8 @@ namespace Shatter::render{
         pre_trans_buffer.resize(imageCount);
         pre_capture_buffers.resize(imageCount);
 
-        swapchain_image_format = surfaceFormat.format;
-        swapchain_extent = extent;
+        m_presentFormat = surfaceFormat.format;
+        presentExtent = extent;
         m_depthFormat = findDepthFormat();
     }
 
@@ -503,13 +528,13 @@ namespace Shatter::render{
             vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
             m_swapchainImages.resize(imageCount);
             vkGetSwapchainImagesKHR(device, swapchain, &imageCount, m_swapchainImages.data());
-            m_swapChainImageviews.resize(swapchain_images.size());
-            m_swapChainSamplers.resize(swapchain_images.size());
+            m_swapChainImageviews.resize(m_presentImages.size());
+            m_swapChainSamplers.resize(m_presentImages.size());
             VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
-            m_swapChainSets.resize(swapchain_images.size());
+            m_swapChainSets.resize(m_presentImages.size());
 
             for (size_t i = 0; i < m_swapchainImages.size(); i++) {
-                m_swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, m_swapchainImages[i], swapchain_image_format,
+                m_swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, m_swapchainImages[i], m_presentFormat,
                                                                                     VK_IMAGE_ASPECT_COLOR_BIT);
                 vkCreateSampler(device, &samplerInfo, nullptr, &m_swapChainSamplers[i]);
             }
@@ -566,8 +591,8 @@ namespace Shatter::render{
             framebufferInfo.renderPass = m_renderPass;
             framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapchain_extent.width;
-            framebufferInfo.height = swapchain_extent.height;
+            framebufferInfo.width = presentExtent.width;
+            framebufferInfo.height = presentExtent.height;
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_swapChainFramebuffers[i]) != VK_SUCCESS) {
@@ -704,8 +729,8 @@ namespace Shatter::render{
         setDepthFormat(m_depthFormat);
 
         buffer::ShatterTexture::Create_Image(&device,
-                                             swapchain_extent.width,
-                                             swapchain_extent.height,
+                                             presentExtent.width,
+                                             presentExtent.height,
                                              m_depthFormat,
                                              VK_IMAGE_TILING_OPTIMAL,
                                              VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -766,11 +791,11 @@ namespace Shatter::render{
         throw std::runtime_error("failed to find suitable memory type!");
     }
 
-    void ShatterRender::createRenderPass(){
+    void ShatterRender::createRenderPass() {
         std::array<VkAttachmentDescription,AttachmentCount> attachments{};
         {
             //Color attachment
-            attachments[AttachmentBack].format = swapchain_image_format;
+            attachments[AttachmentBack].format = m_presentFormat;
             attachments[AttachmentBack].samples = VK_SAMPLE_COUNT_1_BIT;
             attachments[AttachmentBack].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachments[AttachmentBack].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -834,14 +859,12 @@ namespace Shatter::render{
         // Second subpass: Final composition (using G-Buffer components)
         // ----------------------------------------------------------------------------------------
 
-        VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        VkAttachmentReference colorReference = { AttachmentBack, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
 
         VkAttachmentReference inputReferences[3];
         inputReferences[0] = { AttachmentPosition, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
         inputReferences[1] = { AttachmentNormal, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
         inputReferences[2] = { AttachmentAlbedo, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-
-        uint32_t preserveAttachmentIndex = 1;
 
         subpassDescriptions[SubpassLight].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDescriptions[SubpassLight].colorAttachmentCount = 1;
@@ -850,8 +873,6 @@ namespace Shatter::render{
         subpassDescriptions[SubpassLight].inputAttachmentCount = 3;
         subpassDescriptions[SubpassLight].pInputAttachments = inputReferences;
 
-        colorReference = { AttachmentBack, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-        inputReferences[0] = { AttachmentPosition, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
         subpassDescriptions[SubpassTransparency].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDescriptions[SubpassTransparency].colorAttachmentCount = 1;
         subpassDescriptions[SubpassTransparency].pColorAttachments = &colorReference;
@@ -908,11 +929,259 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass));
     }
 
-    void ShatterRender::createMSAARenderPass(){
+    void ShatterRender::createColorRenderPass() {
+        std::array<VkAttachmentDescription,AttachmentCount> attachments{};
+        {
+            //Color attachment
+            attachments[AttachmentBack].format = m_presentFormat;
+            attachments[AttachmentBack].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[AttachmentBack].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[AttachmentBack].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachments[AttachmentBack].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[AttachmentBack].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentBack].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[AttachmentBack].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            // Position
+            attachments[AttachmentPosition].format = positionAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachments[AttachmentPosition].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[AttachmentPosition].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[AttachmentPosition].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentPosition].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[AttachmentPosition].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentPosition].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[AttachmentPosition].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            // Normals
+            attachments[AttachmentNormal].format = normalAttachment->format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachments[AttachmentNormal].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[AttachmentNormal].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[AttachmentNormal].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentNormal].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[AttachmentNormal].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentNormal].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[AttachmentNormal].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            // Albedo
+            attachments[AttachmentAlbedo].format = albedoAttachment->format = VK_FORMAT_R8G8B8A8_UNORM;
+            attachments[AttachmentAlbedo].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[AttachmentAlbedo].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[AttachmentAlbedo].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentAlbedo].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[AttachmentAlbedo].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentAlbedo].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[AttachmentAlbedo].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            //Depth attachment
+            attachments[AttachmentDepth].format = m_depthFormat;
+            attachments[AttachmentDepth].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachments[AttachmentDepth].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[AttachmentDepth].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentDepth].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[AttachmentDepth].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[AttachmentDepth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachments[AttachmentDepth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        }
+        std::array<VkSubpassDescription,3> subpassDescriptions{};
+
+        // First subpass: Fill G-Buffer components
+        // ----------------------------------------------------------------------------------------
+
+        VkAttachmentReference colorReferences[4];
+        colorReferences[0] = { AttachmentBack, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        colorReferences[1] = { AttachmentPosition, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        colorReferences[2] = { AttachmentNormal, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        colorReferences[3] = { AttachmentAlbedo, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        VkAttachmentReference depthReference = { 4, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
+        subpassDescriptions[SubpassG].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescriptions[SubpassG].colorAttachmentCount = 4;
+        subpassDescriptions[SubpassG].pColorAttachments = colorReferences;
+        subpassDescriptions[SubpassG].pDepthStencilAttachment = &depthReference;
+        // Second subpass: Final composition (using G-Buffer components)
+        // ----------------------------------------------------------------------------------------
+
+        VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+        VkAttachmentReference inputReferences[3];
+        inputReferences[0] = { AttachmentPosition, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+        inputReferences[1] = { AttachmentNormal, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+        inputReferences[2] = { AttachmentAlbedo, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+        subpassDescriptions[SubpassLight].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescriptions[SubpassLight].colorAttachmentCount = 1;
+        subpassDescriptions[SubpassLight].pColorAttachments = &colorReference;
+        subpassDescriptions[SubpassLight].pDepthStencilAttachment = &depthReference;
+        subpassDescriptions[SubpassLight].inputAttachmentCount = 3;
+        subpassDescriptions[SubpassLight].pInputAttachments = inputReferences;
+
+        subpassDescriptions[SubpassTransparency].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescriptions[SubpassTransparency].colorAttachmentCount = 1;
+        subpassDescriptions[SubpassTransparency].pColorAttachments = &colorReference;
+        subpassDescriptions[SubpassTransparency].pDepthStencilAttachment = &depthReference;
+        subpassDescriptions[SubpassTransparency].inputAttachmentCount = 1;
+        subpassDescriptions[SubpassTransparency].pInputAttachments = inputReferences;
+
+        // Subpass dependencies for layout transitions
+        std::array<VkSubpassDependency, 4> dependencies;
+
+        dependencies[ExternalToG].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[ExternalToG].dstSubpass = 0;
+        dependencies[ExternalToG].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dependencies[ExternalToG].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependencies[ExternalToG].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[ExternalToG].dstAccessMask =  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependencies[ExternalToG].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        // This dependency transitions the input attachment from color attachment to shader read
+        dependencies[GtoLight].srcSubpass = 0;
+        dependencies[GtoLight].dstSubpass = 1;
+        dependencies[GtoLight].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependencies[GtoLight].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[GtoLight].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependencies[GtoLight].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[GtoLight].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[LightToTransparency].srcSubpass = 1;
+        dependencies[LightToTransparency].dstSubpass = 2;
+        dependencies[LightToTransparency].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[LightToTransparency].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[LightToTransparency].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[LightToTransparency].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[LightToTransparency].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[TransparencyToExternal].srcSubpass = 0;
+        dependencies[TransparencyToExternal].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[TransparencyToExternal].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;;
+        dependencies[TransparencyToExternal].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[TransparencyToExternal].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependencies[TransparencyToExternal].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[TransparencyToExternal].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkRenderPassCreateInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = static_cast<uint32_t>(subpassDescriptions.size());
+        renderPassInfo.pSubpasses = subpassDescriptions.data();
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+        renderPassInfo.pDependencies = dependencies.data();
+
+        VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_colorRenderPass));
+    }
+
+    void ShatterRender::createColorFramebuffers() {
+        FrameBufferSpecification spec{};
+        spec.Width = getViewPort().view.width;
+        spec.Height = getViewPort().view.height;
+        spec.formats = {
+                {m_presentFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT},
+                {VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT},
+                {VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT},
+                {VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT},
+                {m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}
+        };
+        spec.Samples = 1;
+        spec.SwapChainTarget = false;
+        spec.RenderPass = m_colorRenderPass;
+
+        m_colorFrameBuffers = FrameBuffer::createFramebuffer(spec);
+    }
+
+    void ShatterRender::createPresentRenderPass() {
+        VkAttachmentDescription colorAttachment = {};
+        colorAttachment.format = m_presentFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference colorAttachmentRef = {};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpass = {};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        std::array<VkSubpassDependency,2> dependency;
+        dependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependency[0].dstSubpass = 0;
+        dependency[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT  |
+                                     //                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT |
+                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency[0].srcAccessMask = 0;
+        dependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependency[1].srcSubpass = 0;
+        dependency[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependency[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT  |
+                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT ;
+//                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependency[1].dstAccessMask = 0;
+        dependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+//        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+        VkAttachmentDescription attachments = colorAttachment;
+        VkRenderPassCreateInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.pAttachments = &attachments;
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = 2;
+        renderPassInfo.pDependencies = dependency.data();
+
+        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_presentRenderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+    }
+
+    void ShatterRender::createPresentFramebuffers() {
+        uint32_t imageCount;
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+        m_presents.resize(imageCount);
+        std::vector<VkImage> images(imageCount);
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
+        VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
+
+        for (int i = 0; i < imageCount; i++)
+        {
+            m_presents[i].image = images[i];
+
+            m_presents[i].imageView = buffer::ShatterTexture::Create_ImageView(&device, images[i], m_presentFormat,
+                                                                                VK_IMAGE_ASPECT_COLOR_BIT);
+            vkCreateSampler(device, &samplerInfo, nullptr, &m_presents[i].sampler);
+
+            std::array<VkImageView, 2> attachments = {
+                    m_presents[i].imageView,
+                    depthAttachment->view,
+            };
+
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = m_presentRenderPass;
+            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = presentExtent.width;
+            framebufferInfo.height = presentExtent.height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_presents[i].framebuffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create framebuffer!");
+            }
+        }
+    }
+
+    void ShatterRender::createMSAARenderPass() {
         std::array<VkAttachmentDescription, MSAAAttachmentCount> attachments{};
         {
             //Color attachment
-            attachments[MSAAAttachmentBack].format = swapchain_image_format;
+            attachments[MSAAAttachmentBack].format = m_presentFormat;
             attachments[MSAAAttachmentBack].samples = VkSampleCountFlagBits(Config::getConfig("FramebufferSampleCount"));
             attachments[MSAAAttachmentBack].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachments[MSAAAttachmentBack].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -957,7 +1226,7 @@ namespace Shatter::render{
             attachments[MSAAAttachmentDepth].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachments[MSAAAttachmentDepth].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             //present attachment
-            attachments[MSAAAttachmentPresent].format = swapchain_image_format;
+            attachments[MSAAAttachmentPresent].format = m_presentFormat;
             attachments[MSAAAttachmentPresent].samples = VK_SAMPLE_COUNT_1_BIT;
             attachments[MSAAAttachmentPresent].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachments[MSAAAttachmentPresent].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1064,7 +1333,6 @@ namespace Shatter::render{
 
         VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass));
     }
-
 
     void ShatterRender::createCaptureRenderPass(){
         std::array<VkAttachmentDescription,2> attachments{};
@@ -1273,13 +1541,13 @@ namespace Shatter::render{
             throw std::runtime_error("failed to allocate gui command buffer!");
         }
 
-        allocInfo.commandBufferCount = swapchain_images.size();
-        offscreen_buffers.resize(swapchain_images.size());
+        allocInfo.commandBufferCount = m_presentImages.size();
+        offscreen_buffers.resize(m_presentImages.size());
         if (vkAllocateCommandBuffers(device, &allocInfo, offscreen_buffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate off screen command buffers!");
         }
 
-        composite_buffers.resize(swapchain_images.size());
+        composite_buffers.resize(m_presentImages.size());
         if (vkAllocateCommandBuffers(device, &allocInfo, composite_buffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate off screen command buffers!");
         }
@@ -1992,10 +2260,6 @@ namespace Shatter::render{
                 vkDestroyFramebuffer(device, swapChainFramebuffer, nullptr);
             }
 
-//            if(m_renderPass != VK_NULL_HANDLE)
-//            {
-//                vkDestroyRenderPass(device, m_renderPass, nullptr);
-//            }
             for (auto & s : m_swapChainSamplers){
                 vkDestroySampler(device, s, nullptr);
             }
@@ -2003,17 +2267,15 @@ namespace Shatter::render{
             for (auto & swapChainImageview : m_swapChainImageviews) {
                 vkDestroyImageView(device, swapChainImageview, nullptr);
             }
-
-
         }
 
-
-//        for (auto & swapChainImageview : swapChainImageviews) {
-//            vkDestroyImageView(device, swapChainImageview, nullptr);
-//        }
-
-
-
+        {
+            for (auto & present : m_presents) {
+                vkDestroyImageView(device, present.imageView, nullptr);
+                vkDestroySampler(device, present.sampler, nullptr);
+                vkDestroyFramebuffer(device, present.framebuffer, nullptr);
+            }
+        }
     }
 
     void ShatterRender::draw() {
@@ -2043,7 +2305,7 @@ namespace Shatter::render{
 
             static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
             static VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-            static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore,computeReadySemaphore};
+            static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore, computeReadySemaphore};
             graphicsSubmitInfo = {
                     VK_STRUCTURE_TYPE_SUBMIT_INFO,
                     nullptr,
@@ -2099,11 +2361,8 @@ namespace Shatter::render{
             {
                 createGraphicsCommandBuffersMultiple();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
-            } else {
-                if(Config::getConfig("enableScreenGui"))
-                {
-                    updateGraphicsCommandBuffersMultiple(imageIndex);
-                }
+            } else if (Config::getConfig("enableScreenGui")) {
+                updateGraphicsCommandBuffersMultiple(imageIndex);
             }
 
             graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
@@ -2620,7 +2879,7 @@ namespace Shatter::render{
     void ShatterRender::prepareImGui() {
         imGui = GUI::getGUI();
 
-        imGui->init((float)swapchain_extent.width,(float)swapchain_extent.height);
+        imGui->init((float)presentExtent.width, (float)presentExtent.height);
         imGui->initResources(m_renderPass, graphics_queue, "../shaders/");
 
         ImGui_ImplVulkan_InitInfo initInfo{};
