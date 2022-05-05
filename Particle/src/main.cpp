@@ -142,9 +142,9 @@ void initSet()
 void initTransparentSet()
 {
     std::array<VkDescriptorImageInfo, 3> descriptorImageInfos = {
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.positionAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.normalAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.albedoAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[1].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[2].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[3].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
     };
     std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
     for (size_t i = 0; i < descriptorImageInfos.size(); i++) {

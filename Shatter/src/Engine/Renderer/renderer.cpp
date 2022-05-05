@@ -243,7 +243,7 @@ namespace Shatter::render{
         {
             createMSAARenderPass();
         }else{
-            createRenderPass();
+//            createRenderPass();
         }
         createColorRenderPass();
         createColorFramebuffers();
@@ -257,7 +257,7 @@ namespace Shatter::render{
         createTransferCommandPool();
         createDescriptorPool();
         createDepthResources();
-        createFramebuffers();
+//        createFramebuffers();
         createPresentFramebuffers();
         prepareImGui();
         createPrimaryCommandBuffers();
@@ -1143,6 +1143,7 @@ namespace Shatter::render{
         uint32_t imageCount;
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
         m_presents.resize(imageCount);
+        m_swapChainImageCount = imageCount;
         std::vector<VkImage> images(imageCount);
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
         VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
@@ -1155,16 +1156,11 @@ namespace Shatter::render{
                                                                                 VK_IMAGE_ASPECT_COLOR_BIT);
             vkCreateSampler(device, &samplerInfo, nullptr, &m_presents[i].sampler);
 
-            std::array<VkImageView, 2> attachments = {
-                    m_presents[i].imageView,
-                    depthAttachment->view,
-            };
-
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_presentRenderPass;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments = &m_presents[i].imageView;
             framebufferInfo.width = presentExtent.width;
             framebufferInfo.height = presentExtent.height;
             framebufferInfo.layers = 1;
@@ -1407,8 +1403,7 @@ namespace Shatter::render{
 
         commandBufferAllocateInfo.commandBufferCount = 1;
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_colorCommandBuffer));
-
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_presentCommandBuffer));
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &now_capture_buffer));
 
         commandBufferAllocateInfo.commandPool = compute_commandPool;
 
@@ -1872,8 +1867,8 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createColorGraphicsCommandBuffersMultiple() {
-        std::vector<VkCommandBuffer> commandBuffers;
-        commandBuffers.reserve(3);
+        exchangeObjects();
+        vkQueueWaitIdle(graphics_queue);
 
         VkCommandBufferBeginInfo cmdBufInfo{};
         {
@@ -1902,7 +1897,7 @@ namespace Shatter::render{
         {
             inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
             inheritanceInfo.pNext = VK_NULL_HANDLE;
-            inheritanceInfo.renderPass = m_renderPass;
+            inheritanceInfo.renderPass = m_colorRenderPass;
             inheritanceInfo.subpass = 0;
             inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_colorFrameBuffers)->get();
             inheritanceInfo.occlusionQueryEnable = false;
@@ -2059,12 +2054,6 @@ namespace Shatter::render{
 //            commandBuffers.push_back(offscreen_buffers[i]);
 //        }
 
-        // Execute render commands from the secondary command buffer
-        if(!commandBuffers.empty())
-        {
-            vkCmdExecuteCommands(m_colorCommandBuffer, commandBuffers.size(), commandBuffers.data());
-        }
-
 //            std::cout << "CommandBuffer: " << m_colorCommandBuffer << std::endl;
 
         vkCmdEndRenderPass(m_colorCommandBuffer);
@@ -2078,6 +2067,11 @@ namespace Shatter::render{
         std::array<VkClearValue,2> clearPresentValue{};
         clearPresentValue[0].color = { { 0.92f, 0.92f, 0.92f, 1.0f }  };
         clearPresentValue[1].depthStencil = { 1.0f, 0 };
+        if(Config::getConfig("enableScreenGui"))
+        {
+            imGui->newFrame(false);
+            imGui->updateBuffers();
+        }
         for (size_t i = 0; i < new_graphics_buffer.size(); i++) {
             VkCommandBufferBeginInfo cmdBufInfo{};
             {
@@ -2102,21 +2096,46 @@ namespace Shatter::render{
 
             vkBeginCommandBuffer(new_graphics_buffer[i], &cmdBufInfo);
             auto threadPool = ThreadPool::pool();
-            /*
-             * Use barrier to changed offscreen and shadow image layout to shader resource
-             */
-            TaskPool::barrierRequire(new_graphics_buffer[i]);
+
+            VkImageSubresourceRange subresourceRange = {};
+            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresourceRange.baseMipLevel = 0;
+            subresourceRange.levelCount = 1;
+            subresourceRange.baseArrayLayer = 0;
+            subresourceRange.layerCount = 1;
+
+            {
+                VkImageMemoryBarrier imageMemoryBarrier {};
+                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageMemoryBarrier.image = ((VulkanFrameBuffer*)m_colorFrameBuffers)->m_attachments[0].image;
+                imageMemoryBarrier.subresourceRange = subresourceRange;
+                imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                // Put barrier inside setup command buffer
+                vkCmdPipelineBarrier(
+                        new_graphics_buffer[i],
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &imageMemoryBarrier);
+            }
 
             vkCmdBeginRenderPass(new_graphics_buffer[i], &renderPassBeginInfo,
-                                 VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
+                                 VK_SUBPASS_CONTENTS_INLINE);
 
             UnionViewPort& tmp = getViewPort();
             vkCmdSetViewport(new_graphics_buffer[i], 0, 1, &tmp.view);
             VkRect2D& scissor = getScissor();
-            vkCmdSetScissor(new_graphics_buffer[i],0,1,&scissor);
+            vkCmdSetScissor(new_graphics_buffer[i],0,1, &scissor);
 
-            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, sets.data(), 0, nullptr);
+            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
             vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
             vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
 
@@ -2126,7 +2145,28 @@ namespace Shatter::render{
 
             vkCmdEndRenderPass(new_graphics_buffer[i]);
 
-            TaskPool::barrierRelease(new_graphics_buffer[i]);
+            {
+                VkImageMemoryBarrier imageMemoryBarrier {};
+                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                imageMemoryBarrier.image = ((VulkanFrameBuffer*)m_colorFrameBuffers)->m_attachments[0].image;
+                imageMemoryBarrier.subresourceRange = subresourceRange;
+                imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+                // Put barrier inside setup command buffer
+                vkCmdPipelineBarrier(
+                        new_graphics_buffer[i],
+                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                        0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &imageMemoryBarrier);
+            }
 
             vkEndCommandBuffer(new_graphics_buffer[i]);
         }
@@ -2159,27 +2199,48 @@ namespace Shatter::render{
 
         vkBeginCommandBuffer(new_graphics_buffer[_index], &cmdBufInfo);
         auto threadPool = ThreadPool::pool();
-        /*
-         * Use barrier to changed offscreen and shadow image layout to shader resource
-         */
-        TaskPool::barrierRequire(new_graphics_buffer[_index]);
+
+        VkImageSubresourceRange subresourceRange = {};
+        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        subresourceRange.baseMipLevel = 0;
+        subresourceRange.levelCount = 1;
+        subresourceRange.baseArrayLayer = 0;
+        subresourceRange.layerCount = 1;
+
+        {
+            VkImageMemoryBarrier imageMemoryBarrier {};
+            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageMemoryBarrier.image = ((VulkanFrameBuffer*)m_colorFrameBuffers)->m_attachments[0].image;
+            imageMemoryBarrier.subresourceRange = subresourceRange;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            // Put barrier inside setup command buffer
+            vkCmdPipelineBarrier(
+                    new_graphics_buffer[_index],
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &imageMemoryBarrier);
+        }
 
         vkCmdBeginRenderPass(new_graphics_buffer[_index], &renderPassBeginInfo,
-                             VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+                             VK_SUBPASS_CONTENTS_INLINE);
 
 
         UnionViewPort& tmp = getViewPort();
         vkCmdSetViewport(new_graphics_buffer[_index], 0, 1, &tmp.view);
         VkRect2D& scissor = getScissor();
-        vkCmdSetScissor(new_graphics_buffer[_index],0,1,&scissor);
+        vkCmdSetScissor(new_graphics_buffer[_index],0,1, &scissor);
 
-        std::array<VkDescriptorSet,2> sets{};
-        {
-            sets[0] = SingleSetPool["gBuffer"];
-            sets[1] = SingleSetPool["MultiLight"];
-        }
-        vkCmdBindDescriptorSets(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-        vkCmdBindPipeline(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+        vkCmdBindDescriptorSets(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
+        vkCmdBindPipeline(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
         vkCmdDraw(new_graphics_buffer[_index], 3, 1, 0, 0);
 
         if (Config::getConfig("enableScreenGui")) {
@@ -2188,7 +2249,28 @@ namespace Shatter::render{
 
         vkCmdEndRenderPass(new_graphics_buffer[_index]);
 
-        TaskPool::barrierRelease(new_graphics_buffer[_index]);
+        {
+            VkImageMemoryBarrier imageMemoryBarrier {};
+            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            imageMemoryBarrier.image = ((VulkanFrameBuffer*)m_colorFrameBuffers)->m_attachments[0].image;
+            imageMemoryBarrier.subresourceRange = subresourceRange;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+            // Put barrier inside setup command buffer
+            vkCmdPipelineBarrier(
+                    new_graphics_buffer[_index],
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &imageMemoryBarrier);
+        }
 
         vkEndCommandBuffer(new_graphics_buffer[_index]);
     }
@@ -2636,7 +2718,8 @@ namespace Shatter::render{
         createPrimaryCommandBuffers();
         createComputeCommandBuffer();
         createSecondaryCommandBuffers();
-        createGraphicsCommandBuffersMultiple();
+        createGraphicsCommandBuffers();
+//        createGraphicsCommandBuffersMultiple();
         vkDeviceWaitIdle(device);
     }
 
@@ -2722,6 +2805,7 @@ namespace Shatter::render{
     void ShatterRender::draw() {
         static bool firstDraw = true;
         static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        static std::array<VkCommandBuffer, 3> commands{SingleRender.m_colorCommandBuffer, SingleRender.now_capture_buffer, VK_NULL_HANDLE};
         if(firstDraw)
         {
             computeSubmitInfo = {
@@ -2747,14 +2831,15 @@ namespace Shatter::render{
             static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
             static VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
             static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore, computeReadySemaphore};
+            commands[2] = SingleRender.new_graphics_buffer[imageIndex];
             graphicsSubmitInfo = {
                     VK_STRUCTURE_TYPE_SUBMIT_INFO,
                     nullptr,
                     2,
                     waitSemaphores,
                     waitStages,
-                    1,
-                    &graphics_buffers[imageIndex],
+                    3,
+                    commands.data(),
                     2,
                     signalSemaphores
             };
@@ -2797,16 +2882,19 @@ namespace Shatter::render{
                 windowStill = false;
             }
             setSwapChainIndex(int(imageIndex));
+            commands[2] = SingleRender.new_graphics_buffer[imageIndex];
 
             if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged)
             {
-                createGraphicsCommandBuffersMultiple();
+//                createGraphicsCommandBuffersMultiple();
+                createGraphicsCommandBuffers();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
             } else if (Config::getConfig("enableScreenGui")) {
-                updateGraphicsCommandBuffersMultiple(imageIndex);
+//                updateGraphicsCommandBuffersMultiple(imageIndex);
+                updatePresentCommandBuffers(imageIndex);
             }
 
-            graphicsSubmitInfo.pCommandBuffers = &graphics_buffers[imageIndex];
+            graphicsSubmitInfo.pCommandBuffers = commands.data();
             assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
 
             presentInfo.pImageIndices = &imageIndex;
@@ -3227,7 +3315,8 @@ namespace Shatter::render{
             createComputeCommandBuffer();
         }
         createSecondaryCommandBuffers();
-        createGraphicsCommandBuffersMultiple();
+        createGraphicsCommandBuffers();
+//        createGraphicsCommandBuffersMultiple();
     }
 
     void ShatterRender::exchangeObjects()
@@ -3321,7 +3410,7 @@ namespace Shatter::render{
         imGui = GUI::getGUI();
 
         imGui->init((float)presentExtent.width, (float)presentExtent.height);
-        imGui->initResources(m_renderPass, graphics_queue, "../shaders/");
+        imGui->initResources(m_presentRenderPass, graphics_queue, "../shaders/");
 
         ImGui_ImplVulkan_InitInfo initInfo{};
         initInfo.Instance = instance;

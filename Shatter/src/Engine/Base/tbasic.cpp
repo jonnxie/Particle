@@ -48,7 +48,7 @@ void TBasic::constructD()
     std::array<VkWriteDescriptorSet,2> writes = {};
     VkDescriptorImageInfo attachImgInfo{};
     attachImgInfo.sampler = VK_NULL_HANDLE;
-    attachImgInfo.imageView = SingleRender.positionAttachment->view;
+    attachImgInfo.imageView = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[1].imageView;
     attachImgInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

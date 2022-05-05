@@ -269,7 +269,7 @@ void GUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::s
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
-    pipelineCreateInfo.subpass = SubpassTransparency;
+    pipelineCreateInfo.subpass = 0;
 
     // Vertex bindings an attributes based on ImGui vertex definition
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {

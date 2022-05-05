@@ -101,7 +101,6 @@ namespace Shatter{
             *newNormalAttachment{nullptr},
             *newAlbedoAttachment{nullptr},
             *newDepthAttachment{nullptr};
-            VkCommandBuffer m_colorCommandBuffer{};
             VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
             void createColorRenderPass();
@@ -115,7 +114,6 @@ namespace Shatter{
                 VkFramebuffer framebuffer;
             };
             std::vector<VkPresent> m_presents{};
-            VkCommandBuffer m_presentCommandBuffer{};
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
@@ -126,7 +124,6 @@ namespace Shatter{
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
             FrameBuffer* m_frameBuffers{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
-            VkCommandBuffer now_capture_buffer{};
             std::vector<VkCommandBuffer> pre_new_capture_buffers{};
 
             void createCaptureRenderPass();
@@ -330,6 +327,9 @@ namespace Shatter{
 
             std::vector<VkCommandBuffer> graphics_buffers, gui_buffer{}, offscreen_buffers;
             VkCommandBuffer compute_buffer{};
+
+            VkCommandBuffer m_colorCommandBuffer{};
+            VkCommandBuffer now_capture_buffer{};
 
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
 
