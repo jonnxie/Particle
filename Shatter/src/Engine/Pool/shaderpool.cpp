@@ -160,6 +160,9 @@ void ShaderPool::init() {
     createShaderStage("animation_vs",tool::combineShader("animation/vert.spv"),VertexShader);
     createShaderStage("animation_fs",tool::combineShader("animation/frag.spv"),FragmentShader);
 
+    createShaderStage("present_vs",tool::combineShader("present/vert.spv"),VertexShader);
+    createShaderStage("present_fs",tool::combineShader("present/frag.spv"),FragmentShader);
+
 }
 
 void ShaderPool::release() {

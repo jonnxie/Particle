@@ -232,6 +232,19 @@ void PPool::init() {
                  RenderPassType::Default,
                  SubpassLight);
 
+        createGP("Present",
+                 std::vector<Input_Type>{Input_Type::NONE},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("present_vs"),
+                                                              ShaderPool::getPool().Get("present_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 std::vector<Sl_id> {"BaseTexture"},
+                 RenderPassType::Present,
+                 SubpassG);
+
         createGP("Transparent",
                  std::vector<Input_Type>{Input_Type::TransparentGlass},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("transparent_vs"),

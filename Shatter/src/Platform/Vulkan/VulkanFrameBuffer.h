@@ -98,6 +98,9 @@ public:
             }
         }
     };
+    [[nodiscard]] VkFramebuffer get() const {
+        return m_frame_buffer;
+    }
 public:
     std::vector<VkBuffer>           m_buffers{};
     std::vector<VkDeviceMemory>     m_deviceMemories{};

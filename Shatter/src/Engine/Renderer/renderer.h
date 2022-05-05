@@ -101,8 +101,9 @@ namespace Shatter{
             *newNormalAttachment{nullptr},
             *newAlbedoAttachment{nullptr},
             *newDepthAttachment{nullptr};
+            VkCommandBuffer m_colorCommandBuffer{};
+            VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
-            VkFramebuffer m_colorFrameBuffer{VK_NULL_HANDLE};
             FrameBuffer* m_colorFrameBuffers{nullptr};
             void createColorRenderPass();
             void createColorFramebuffers();
@@ -115,6 +116,7 @@ namespace Shatter{
                 VkFramebuffer framebuffer;
             };
             std::vector<VkPresent> m_presents{};
+            VkCommandBuffer m_presentCommandBuffer{};
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
@@ -125,10 +127,14 @@ namespace Shatter{
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
             FrameBuffer* m_frameBuffers{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
+            VkCommandBuffer now_capture_buffer{};
+            std::vector<VkCommandBuffer> pre_new_capture_buffers{};
 
             void createCaptureRenderPass();
 
             void createCaptureFramebuffers();
+
+            void createNewCaptureCommandBuffers();
 
             void createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex);
 
@@ -157,6 +163,12 @@ namespace Shatter{
             void createSecondaryCommandBuffers();
 
             void prepareMultipleThreadDate();
+
+            void createColorGraphicsCommandBuffersMultiple();
+
+            void createPresentGraphicsCommandBuffers();
+
+            void updatePresentCommandBuffers(int _index);
 
             void createGraphicsCommandBuffersMultiple();
 
@@ -213,7 +225,9 @@ namespace Shatter{
 
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
             [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
-            VkRenderPass getCaptureRenderPass(){
+            [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
+            [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
+            VkRenderPass getCaptureRenderPass() {
                 return m_captureRenderPass;
             };
             FrameBuffer* getCaptureFrameBuffer(){
@@ -294,6 +308,7 @@ namespace Shatter{
             FrameBufferAttachment* positionAttachment{nullptr}, *normalAttachment{nullptr}, *albedoAttachment{nullptr}, *depthAttachment{nullptr};
 
             VkRenderPass m_renderPass = VK_NULL_HANDLE;
+            uint32_t m_swapChainImageCount;
             std::vector<VkImage> m_swapchainImages;
             std::vector<VkImageView> m_swapChainImageviews;
             std::vector<VkSampler> m_swapChainSamplers;
@@ -315,7 +330,7 @@ namespace Shatter{
 
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
 
-            std::vector<VkCommandBuffer> pre_compute_buffers;
+            std::vector<VkCommandBuffer> pre_compute_buffers, pre_new_g_buffer{}, pre_new_norm_buffer{}, pre_new_trans_buffer{}, new_graphics_buffer{};
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
 
             VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};

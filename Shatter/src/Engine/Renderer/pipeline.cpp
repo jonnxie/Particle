@@ -615,6 +615,14 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
             setRenderPass(Shatter::render::ShatterRender::getRender().getCaptureRenderPass());
             break;
         }
+        case RenderPassType::Present:{
+            setRenderPass(Shatter::render::ShatterRender::getRender().getPresentRenderPass());
+            break;
+        }
+        case RenderPassType::Color:{
+            setRenderPass(Shatter::render::ShatterRender::getRender().getColorRenderPass());
+            break;
+        }
         default:
         {
             WARNING(RenderPass Type error!)

@@ -171,6 +171,8 @@ enum class RenderPassType{
     CascadeShadow,
     OffScreen,
     Capture,
+    Present,
+    Color,
 };
 
 enum class RasterState{

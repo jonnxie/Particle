@@ -160,10 +160,6 @@ namespace Shatter::render{
         delete albedoAttachment;
         delete depthAttachment;
 
-        if (m_colorFrameBuffer != VK_NULL_HANDLE) {
-            vkDestroyFramebuffer(device, m_colorFrameBuffer, nullptr);
-        }
-
         delete newColorAttachment;
         delete newPositionAttachment;
         delete newNormalAttachment;
@@ -262,6 +258,7 @@ namespace Shatter::render{
         createDescriptorPool();
         createDepthResources();
         createFramebuffers();
+        createPresentFramebuffers();
         prepareImGui();
         createPrimaryCommandBuffers();
         prepareMultipleThreadDate();
@@ -527,6 +524,7 @@ namespace Shatter::render{
             uint32_t imageCount;
             vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
             m_swapchainImages.resize(imageCount);
+            m_swapChainImageCount = imageCount;
             vkGetSwapchainImagesKHR(device, swapchain, &imageCount, m_swapchainImages.data());
             m_swapChainImageviews.resize(m_presentImages.size());
             m_swapChainSamplers.resize(m_presentImages.size());
@@ -1401,12 +1399,18 @@ namespace Shatter::render{
         commandBufferAllocateInfo.commandPool = graphic_commandPool;
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-        graphics_buffers.resize(m_swapChainFramebuffers.size());
-        commandBufferAllocateInfo.commandBufferCount = m_swapChainFramebuffers.size();
+        graphics_buffers.resize(m_swapChainImageCount);
+        commandBufferAllocateInfo.commandBufferCount = m_swapChainImageCount;
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device,&commandBufferAllocateInfo,graphics_buffers.data()));
+        new_graphics_buffer.resize(m_swapChainImageCount);
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device,&commandBufferAllocateInfo,new_graphics_buffer.data()));
+
+        commandBufferAllocateInfo.commandBufferCount = 1;
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_colorCommandBuffer));
+
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_presentCommandBuffer));
 
         commandBufferAllocateInfo.commandPool = compute_commandPool;
-        commandBufferAllocateInfo.commandBufferCount = 1;
 
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &compute_buffer));
     }
@@ -1534,24 +1538,27 @@ namespace Shatter::render{
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = graphic_commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        allocInfo.commandBufferCount = m_swapChainFramebuffers.size();
-        gui_buffer.resize(m_swapChainFramebuffers.size());
+        allocInfo.commandBufferCount = m_swapChainImageCount;
+        gui_buffer.resize(m_swapChainImageCount);
 
         if (vkAllocateCommandBuffers(device, &allocInfo, gui_buffer.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate gui command buffer!");
         }
 
-        allocInfo.commandBufferCount = m_presentImages.size();
-        offscreen_buffers.resize(m_presentImages.size());
+        offscreen_buffers.resize(m_swapChainImageCount);
         if (vkAllocateCommandBuffers(device, &allocInfo, offscreen_buffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate off screen command buffers!");
         }
 
-        composite_buffers.resize(m_presentImages.size());
+        composite_buffers.resize(m_swapChainImageCount);
         if (vkAllocateCommandBuffers(device, &allocInfo, composite_buffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate off screen command buffers!");
         }
 
+        allocInfo.commandBufferCount = 1;
+        if (vkAllocateCommandBuffers(device, &allocInfo, &m_compositeCommandBuffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate off screen command buffers!");
+        }
     }
 
     void ShatterRender::cleanupObject()
@@ -1634,6 +1641,112 @@ namespace Shatter::render{
         }
 
         VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
+    }
+
+    void ShatterRender::createNewCaptureCommandBuffers() {
+        VkCommandBufferBeginInfo cmdBufInfo{};
+        {
+            cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cmdBufInfo.pNext = VK_NULL_HANDLE;
+            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
+        }
+
+        vkBeginCommandBuffer(now_capture_buffer, &cmdBufInfo);
+
+        std::array<VkClearValue,2> clearCaptureValue{};
+        clearCaptureValue[0].color = { { uint32_t(0) } };
+        clearCaptureValue[1].depthStencil = { 1.0f, 0 };
+
+        VkRenderPassBeginInfo renderPassBeginInfo{};
+        {
+            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+            renderPassBeginInfo.renderPass = m_captureRenderPass;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            renderPassBeginInfo.renderArea.offset = {0, 0};
+            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.clearValueCount = 2;
+            renderPassBeginInfo.pClearValues = clearCaptureValue.data();
+        }
+//        TaskPool::captureBarrierRequire(m_capture_buffer);
+        vkCmdBeginRenderPass(now_capture_buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        VkDeviceSize offsets = 0;
+        auto set_pool = MPool<VkDescriptorSet>::getPool();
+        std::vector<VkCommandBuffer> captureBuffers(aabb_map.size());
+        int index = 0;
+        VkCommandBufferInheritanceInfo inheritanceInfo{};
+        {
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = VK_NULL_HANDLE;
+            inheritanceInfo.renderPass = m_captureRenderPass;
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            inheritanceInfo.occlusionQueryEnable = false;
+        }
+
+        VkCommandBufferBeginInfo commandBufferBeginInfo {};
+        {
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+        }
+        VkViewport& viewport = getViewPort().view;
+        VkRect2D& scissor = getScissor();
+
+        int threadIndex = 0;
+        for(auto& pair: aabb_map)
+        {
+            int boxId =  pair.second;
+            int captureIndex =  pair.first;
+            (*SingleThreadPool)[threadIndex]->addTask([&, boxId, threadIndex, captureIndex, index](){
+                VkCommandPool pool = getCommandPool(CommandPoolType::GraphicsPool, threadIndex);
+                VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
+                commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
+                commandBufferAllocateInfo.commandPool = pool;
+                commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                commandBufferAllocateInfo.commandBufferCount = 1;
+                vkAllocateCommandBuffers(SingleDevice.logicalDevice, &commandBufferAllocateInfo, &captureBuffers[index]);
+
+                vkBeginCommandBuffer(captureBuffers[index], &commandBufferBeginInfo);
+                vkCmdSetViewport(captureBuffers[index], 0, 1, &viewport);
+                vkCmdSetScissor(captureBuffers[index], 0, 1, &scissor);
+                vkCmdBindPipeline(captureBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, (*SinglePPool["AABBCapture"])());
+                int model_index = (*SingleBoxPool)[boxId]->m_model_index;
+                ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine("Capture", captureIndex), Buffer_Type::Vertex_Buffer);
+                vkCmdBindVertexBuffers(captureBuffers[index], 0, 1, &buffer->m_buffer, &offsets);
+                std::array<VkDescriptorSet, 3> set_array{};
+                set_array[0] = *(*set_pool)[model_index];
+                set_array[1] = SingleSetPool["Camera"];
+                set_array[2] = (*SingleBoxPool)[boxId]->m_capture_set;
+                vkCmdBindDescriptorSets(captureBuffers[index],
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        (*SinglePPool["AABBCapture"]).getPipelineLayout(),
+                                        0,
+                                        3,
+                                        set_array.data(),
+                                        0,
+                                        nullptr
+                );
+                vkCmdDraw(captureBuffers[index], CaptureBoxVertexCount, 1, 0, 0);
+                vkEndCommandBuffer(captureBuffers[index]);
+            });
+            if(threadIndex >= SingleThreadPool->m_thread_count){
+                threadIndex -= SingleThreadPool->m_thread_count;
+            }
+            index++;
+        }
+        SingleThreadPool->wait();
+        if(!captureBuffers.empty()) {
+            vkCmdExecuteCommands(now_capture_buffer, captureBuffers.size(), captureBuffers.data());
+        }
+        pre_new_capture_buffers.clear();
+        pre_new_capture_buffers.insert(pre_new_capture_buffers.end(), captureBuffers.begin(), captureBuffers.end());
+        vkCmdEndRenderPass(now_capture_buffer);
+
+        vkEndCommandBuffer(now_capture_buffer);
     }
 
     void ShatterRender::createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex){
@@ -1758,7 +1871,334 @@ namespace Shatter::render{
         vkCmdEndRenderPass(_cb);
     }
 
-    void ShatterRender::createGraphicsCommandBuffersMultiple(){
+    void ShatterRender::createColorGraphicsCommandBuffersMultiple() {
+        std::vector<VkCommandBuffer> commandBuffers;
+        commandBuffers.reserve(3);
+
+        VkCommandBufferBeginInfo cmdBufInfo{};
+        {
+            cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cmdBufInfo.pNext = VK_NULL_HANDLE;
+            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
+        }
+
+        VkRenderPassBeginInfo renderPassBeginInfo{};
+        {
+            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+            renderPassBeginInfo.renderPass = m_colorRenderPass;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_colorFrameBuffers)->get();
+            renderPassBeginInfo.renderArea.offset = {0, 0};
+            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.clearValueCount = AttachmentCount;
+            renderPassBeginInfo.pClearValues = clearValues.data();
+        }
+
+        vkBeginCommandBuffer(m_colorCommandBuffer, &cmdBufInfo);
+        auto threadPool = ThreadPool::pool();
+        // Inheritance info for the secondary command buffers
+        VkCommandBufferInheritanceInfo inheritanceInfo {};
+        {
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = VK_NULL_HANDLE;
+            inheritanceInfo.renderPass = m_renderPass;
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_colorFrameBuffers)->get();
+            inheritanceInfo.occlusionQueryEnable = false;
+        }
+
+        auto dPool = SingleDPool;
+        /*
+         * Use barrier to changed offscreen and shadow image layout to shader resource
+         */
+        TaskPool::barrierRequire(m_colorCommandBuffer);
+
+        vkCmdBeginRenderPass(m_colorCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        int draw_index = 0;
+        int threadIndex = 0;
+
+        /*
+         * G
+         */
+        {
+            draw_index = 0;
+            std::vector<VkCommandBuffer> gBuffers(drawIdVec.size());
+            inheritanceInfo.subpass = SubpassG;
+            threadIndex = 0;
+            for(size_t d_index = 0; d_index < drawIdVec.size(); d_index++)
+            {
+                (*threadPool)[threadIndex]->addTask([&, d_index, threadIndex](){
+                    VkCommandBuffer* cb = &gBuffers[d_index];
+                    ObjectTask::gTask(threadIndex, drawIdVec[d_index], inheritanceInfo, cb);
+                });
+                if( ++threadIndex >= threadPool->m_thread_count){
+                    threadIndex -= threadPool->m_thread_count;
+                }
+            }
+            (*threadPool).wait();
+            vkCmdExecuteCommands(m_colorCommandBuffer, gBuffers.size(), gBuffers.data());
+            pre_new_g_buffer.clear();
+            pre_new_g_buffer.insert(pre_new_g_buffer.end(), gBuffers.begin(), gBuffers.end());
+        }
+        vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+        /*
+         * Light
+         */
+        {
+            inheritanceInfo.subpass = SubpassLight;
+
+            VkCommandBufferBeginInfo commandBufferBeginInfo {};
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+
+            vkBeginCommandBuffer(m_compositeCommandBuffer, &commandBufferBeginInfo);
+            UnionViewPort& tmp = getViewPort();
+            vkCmdSetViewport(m_compositeCommandBuffer, 0, 1, &tmp.view);
+            VkRect2D& scissor = getScissor();
+            vkCmdSetScissor(m_compositeCommandBuffer,0,1,&scissor);
+
+            std::array<VkDescriptorSet,2> sets{};
+            {
+                sets[0] = SingleSetPool["gBuffer"];
+                sets[1] = SingleSetPool["MultiLight"];
+            }
+            vkCmdBindDescriptorSets(m_compositeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+            vkCmdBindPipeline(m_compositeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+            vkCmdDraw(m_compositeCommandBuffer, 3, 1, 0, 0);
+            vkEndCommandBuffer(m_compositeCommandBuffer);
+
+            vkCmdExecuteCommands(m_colorCommandBuffer, 1, &m_compositeCommandBuffer);
+        }
+        vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        inheritanceInfo.subpass = SubpassTransparency;
+
+        /*
+         * normal object pass
+         */
+        {
+            if(!normalIdVec.empty())
+            {
+                std::vector<VkCommandBuffer> normalBuffers(normalIdVec.size());
+                threadIndex = 0;
+                for(size_t normal_index = 0; normal_index < normalIdVec.size(); normal_index++)
+                {
+                    (*threadPool)[threadIndex]->addTask([&, normal_index, threadIndex](){
+                        VkCommandBuffer* cb = &normalBuffers[normal_index];
+                        ObjectTask::newGraphicsTask(threadIndex, normalIdVec[normal_index], inheritanceInfo, cb);
+                    });
+                    if( ++threadIndex >= threadPool->m_thread_count){
+                        threadIndex -= threadPool->m_thread_count;
+                    }
+                }
+                (*threadPool).wait();
+                vkCmdExecuteCommands(m_colorCommandBuffer, normalBuffers.size(), normalBuffers.data());
+                pre_new_norm_buffer.clear();
+                pre_new_norm_buffer.insert(pre_new_norm_buffer.end(), normalBuffers.begin(), normalBuffers.end());
+            }
+        }
+
+        /*
+         * transparency pass
+         */
+        {
+            if(!transparency_vec.empty())
+            {
+                draw_index = 0;
+                std::vector<VkCommandBuffer> transparencyBuffers(transparency_vec.size());
+                inheritanceInfo.subpass = SubpassTransparency;
+                threadIndex = 0;
+
+                for(size_t transparent_index = 0; transparent_index < transparency_vec.size(); transparent_index++)
+                {
+                    (*threadPool)[threadIndex]->addTask([&, transparent_index, threadIndex](){
+                        VkCommandBuffer* cb = &transparencyBuffers[transparent_index];
+                        ObjectTask::newGraphicsTask(threadIndex, transparency_vec[transparent_index], inheritanceInfo, cb);
+                    });
+                    if( ++threadIndex >= threadPool->m_thread_count){
+                        threadIndex -= threadPool->m_thread_count;
+                    }
+                }
+                (*threadPool).wait();
+                vkCmdExecuteCommands(m_colorCommandBuffer, transparencyBuffers.size(), transparencyBuffers.data());
+                pre_new_trans_buffer.clear();
+                pre_new_trans_buffer.insert(pre_new_trans_buffer.end(), transparencyBuffers.begin(), transparencyBuffers.end());
+            }
+        }
+
+//        std::thread offscreen([&](bool config){
+//            if(config)
+//            {
+//                VkCommandBufferBeginInfo commandBufferBeginInfo {};
+//                commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+//                commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
+//                commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+//                commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+//
+//                vkBeginCommandBuffer(offscreen_buffers[i], &commandBufferBeginInfo);
+//                UnionViewPort& tmp = getViewPort();
+//                vkCmdSetViewport(offscreen_buffers[i], 0, 1, &tmp.view);
+//
+//                VkRect2D& scissor = getScissor();
+//                vkCmdSetScissor(offscreen_buffers[i],0,1,&scissor);
+//                VkDescriptorSet tmp_set = SingleSetPool["OffScreen"];
+//                vkCmdBindDescriptorSets(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipelineLayout(), 0, 1, &tmp_set, 0, nullptr);
+//                vkCmdBindPipeline(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipeline());
+//                vkCmdDraw(offscreen_buffers[i], 4, 1, 0, 0);
+//                vkEndCommandBuffer(offscreen_buffers[i]);
+//            }
+//        },Config::getConfig("enableOffscreenDebug"));
+
+
+//        offscreen.join();
+//        if(Config::getConfig("enableOffscreenDebug"))
+//        {
+//            commandBuffers.push_back(offscreen_buffers[i]);
+//        }
+
+        // Execute render commands from the secondary command buffer
+        if(!commandBuffers.empty())
+        {
+            vkCmdExecuteCommands(m_colorCommandBuffer, commandBuffers.size(), commandBuffers.data());
+        }
+
+//            std::cout << "CommandBuffer: " << m_colorCommandBuffer << std::endl;
+
+        vkCmdEndRenderPass(m_colorCommandBuffer);
+
+        TaskPool::barrierRelease(m_colorCommandBuffer);
+
+        vkEndCommandBuffer(m_colorCommandBuffer);
+    }
+
+    void ShatterRender::createPresentGraphicsCommandBuffers() {
+        std::array<VkClearValue,2> clearPresentValue{};
+        clearPresentValue[0].color = { { 0.92f, 0.92f, 0.92f, 1.0f }  };
+        clearPresentValue[1].depthStencil = { 1.0f, 0 };
+        for (size_t i = 0; i < new_graphics_buffer.size(); i++) {
+            VkCommandBufferBeginInfo cmdBufInfo{};
+            {
+                cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                cmdBufInfo.pNext = VK_NULL_HANDLE;
+                cmdBufInfo.flags =
+                        VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+                cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
+            }
+
+            VkRenderPassBeginInfo renderPassBeginInfo{};
+            {
+                renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+                renderPassBeginInfo.renderPass = m_presentRenderPass;
+                renderPassBeginInfo.framebuffer = m_presents[i].framebuffer;
+                renderPassBeginInfo.renderArea.offset = {0, 0};
+                renderPassBeginInfo.renderArea.extent = presentExtent;
+                renderPassBeginInfo.clearValueCount = 2;
+                renderPassBeginInfo.pClearValues = clearPresentValue.data();
+            }
+
+            vkBeginCommandBuffer(new_graphics_buffer[i], &cmdBufInfo);
+            auto threadPool = ThreadPool::pool();
+            /*
+             * Use barrier to changed offscreen and shadow image layout to shader resource
+             */
+            TaskPool::barrierRequire(new_graphics_buffer[i]);
+
+            vkCmdBeginRenderPass(new_graphics_buffer[i], &renderPassBeginInfo,
+                                 VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+
+            UnionViewPort& tmp = getViewPort();
+            vkCmdSetViewport(new_graphics_buffer[i], 0, 1, &tmp.view);
+            VkRect2D& scissor = getScissor();
+            vkCmdSetScissor(new_graphics_buffer[i],0,1,&scissor);
+
+            std::array<VkDescriptorSet,2> sets{};
+            {
+                sets[0] = SingleSetPool["gBuffer"];
+                sets[1] = SingleSetPool["MultiLight"];
+            }
+            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+            vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+            vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
+
+            if (Config::getConfig("enableScreenGui")) {
+                imGui->drawFrame(new_graphics_buffer[i]);
+            }
+
+            vkCmdEndRenderPass(new_graphics_buffer[i]);
+
+            TaskPool::barrierRelease(new_graphics_buffer[i]);
+
+            vkEndCommandBuffer(new_graphics_buffer[i]);
+        }
+    }
+
+    void ShatterRender::updatePresentCommandBuffers(int _index) {
+        std::array<VkClearValue,2> clearPresentValue{};
+        clearPresentValue[0].color = { { 0.92f, 0.92f, 0.92f, 1.0f }  };
+        clearPresentValue[1].depthStencil = { 1.0f, 0 };
+        VkCommandBufferBeginInfo cmdBufInfo{};
+        {
+            cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cmdBufInfo.pNext = VK_NULL_HANDLE;
+            cmdBufInfo.flags =
+                    VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
+        }
+
+        VkRenderPassBeginInfo renderPassBeginInfo{};
+        {
+            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassBeginInfo.pNext = VK_NULL_HANDLE;
+            renderPassBeginInfo.renderPass = m_presentRenderPass;
+            renderPassBeginInfo.framebuffer = m_presents[_index].framebuffer;
+            renderPassBeginInfo.renderArea.offset = {0, 0};
+            renderPassBeginInfo.renderArea.extent = presentExtent;
+            renderPassBeginInfo.clearValueCount = 2;
+            renderPassBeginInfo.pClearValues = clearPresentValue.data();
+        }
+
+        vkBeginCommandBuffer(new_graphics_buffer[_index], &cmdBufInfo);
+        auto threadPool = ThreadPool::pool();
+        /*
+         * Use barrier to changed offscreen and shadow image layout to shader resource
+         */
+        TaskPool::barrierRequire(new_graphics_buffer[_index]);
+
+        vkCmdBeginRenderPass(new_graphics_buffer[_index], &renderPassBeginInfo,
+                             VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+
+        UnionViewPort& tmp = getViewPort();
+        vkCmdSetViewport(new_graphics_buffer[_index], 0, 1, &tmp.view);
+        VkRect2D& scissor = getScissor();
+        vkCmdSetScissor(new_graphics_buffer[_index],0,1,&scissor);
+
+        std::array<VkDescriptorSet,2> sets{};
+        {
+            sets[0] = SingleSetPool["gBuffer"];
+            sets[1] = SingleSetPool["MultiLight"];
+        }
+        vkCmdBindDescriptorSets(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+        vkCmdBindPipeline(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+        vkCmdDraw(new_graphics_buffer[_index], 3, 1, 0, 0);
+
+        if (Config::getConfig("enableScreenGui")) {
+            imGui->drawFrame(new_graphics_buffer[_index]);
+        }
+
+        vkCmdEndRenderPass(new_graphics_buffer[_index]);
+
+        TaskPool::barrierRelease(new_graphics_buffer[_index]);
+
+        vkEndCommandBuffer(new_graphics_buffer[_index]);
+    }
+
+    void ShatterRender::createGraphicsCommandBuffersMultiple() {
         // Contains the list of secondary command buffers to be submitted
         exchangeObjects();
         vkQueueWaitIdle(graphics_queue);
