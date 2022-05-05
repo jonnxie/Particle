@@ -2116,13 +2116,8 @@ namespace Shatter::render{
             VkRect2D& scissor = getScissor();
             vkCmdSetScissor(new_graphics_buffer[i],0,1,&scissor);
 
-            std::array<VkDescriptorSet,2> sets{};
-            {
-                sets[0] = SingleSetPool["gBuffer"];
-                sets[1] = SingleSetPool["MultiLight"];
-            }
-            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-            vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, sets.data(), 0, nullptr);
+            vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
             vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
 
             if (Config::getConfig("enableScreenGui")) {
@@ -2196,6 +2191,12 @@ namespace Shatter::render{
         TaskPool::barrierRelease(new_graphics_buffer[_index]);
 
         vkEndCommandBuffer(new_graphics_buffer[_index]);
+    }
+
+    void ShatterRender::createGraphicsCommandBuffers() {
+        createNewCaptureCommandBuffers();
+        createColorGraphicsCommandBuffersMultiple();
+        createPresentGraphicsCommandBuffers();
     }
 
     void ShatterRender::createGraphicsCommandBuffersMultiple() {

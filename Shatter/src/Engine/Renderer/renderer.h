@@ -104,7 +104,6 @@ namespace Shatter{
             VkCommandBuffer m_colorCommandBuffer{};
             VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
-            FrameBuffer* m_colorFrameBuffers{nullptr};
             void createColorRenderPass();
             void createColorFramebuffers();
 
@@ -169,6 +168,8 @@ namespace Shatter{
             void createPresentGraphicsCommandBuffers();
 
             void updatePresentCommandBuffers(int _index);
+
+            void createGraphicsCommandBuffers();
 
             void createGraphicsCommandBuffersMultiple();
 
@@ -278,7 +279,6 @@ namespace Shatter{
             ExchangeVector<int> drawIdVec;
             ExchangeVector<int> normalIdVec;
             std::vector<int> offdrawid_vec;
-//            std::vector<int> drawid_vec;
             std::vector<int> transparency_vec;
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
@@ -315,6 +315,9 @@ namespace Shatter{
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
             std::vector<VkDescriptorSet> m_swapChainSets;
             std::vector<VkCommandBuffer> composite_buffers;
+
+            VkDescriptorSet m_colorSet;
+            FrameBuffer* m_colorFrameBuffers{nullptr};
 
             VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
 

@@ -160,6 +160,17 @@ void initTransparentSet()
     VkWriteDescriptorSet writeSet = tool::writeDescriptorSet(SingleSetPool["ViewPort"], VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
 
     vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
+
+
+    SingleSetPool.AllocateDescriptorSets({"BaseTexture"}, &SingleRender.m_colorSet);
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageView = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].imageView;
+    imageInfo.sampler = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].sampler;
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    writeSet = tool::writeDescriptorSet(SingleRender.m_colorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
+
+    vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
 }
 
 void test()
