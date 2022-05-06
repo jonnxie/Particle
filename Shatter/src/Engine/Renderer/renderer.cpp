@@ -160,12 +160,6 @@ namespace Shatter::render{
         delete albedoAttachment;
         delete depthAttachment;
 
-        delete newColorAttachment;
-        delete newPositionAttachment;
-        delete newNormalAttachment;
-        delete newAlbedoAttachment;
-        delete newDepthAttachment;
-
         delete imGui;
 
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -215,10 +209,8 @@ namespace Shatter::render{
             VkExtent2D{uint32_t(SingleAPP.getScreenWidth()), uint32_t(SingleAPP.getScreenHeight())}
         });
 
-        //在此处设置了将当前对象指针存放在窗体对象中，在回调函数中取出
         glfwSetWindowUserPointer(window, this);
 
-        //注册回调函数
         glfwSetWindowSizeCallback(window, onWindowResized);
 
         glfwSetKeyCallback(window, keyCallback);
@@ -1868,8 +1860,6 @@ namespace Shatter::render{
 
     void ShatterRender::createColorGraphicsCommandBuffersMultiple() {
         exchangeObjects();
-        vkQueueWaitIdle(graphics_queue);
-
         VkCommandBufferBeginInfo cmdBufInfo{};
         {
             cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -2197,6 +2187,14 @@ namespace Shatter::render{
             renderPassBeginInfo.pClearValues = clearPresentValue.data();
         }
 
+        vkQueueWaitIdle(graphics_queue);
+
+        if(Config::getConfig("enableScreenGui"))
+        {
+            imGui->newFrame(false);
+            imGui->updateBuffers();
+        }
+
         vkBeginCommandBuffer(new_graphics_buffer[_index], &cmdBufInfo);
         auto threadPool = ThreadPool::pool();
 
@@ -2276,6 +2274,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createGraphicsCommandBuffers() {
+        vkQueueWaitIdle(graphics_queue);
         createNewCaptureCommandBuffers();
         createColorGraphicsCommandBuffersMultiple();
         createPresentGraphicsCommandBuffers();

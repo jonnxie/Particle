@@ -95,12 +95,6 @@ namespace Shatter{
              */
             void createRenderPass();
 
-            FrameBufferAttachment
-            *newColorAttachment{nullptr},
-            *newPositionAttachment{nullptr},
-            *newNormalAttachment{nullptr},
-            *newAlbedoAttachment{nullptr},
-            *newDepthAttachment{nullptr};
             VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
             void createColorRenderPass();

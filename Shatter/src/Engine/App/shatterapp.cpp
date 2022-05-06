@@ -32,8 +32,7 @@ namespace Shatter::app{
     }
 
     ShatterApp::ShatterApp():
-    lastTime(0.0),
-    showFPS(false)
+    lastTime(0.0)
     {
         m_listener = new Shatter::Listener;
         m_width = Config::getConfig("width");

@@ -6,7 +6,6 @@
 #define VULKAN_TOTURIOL_SHATTER_APP_H
 
 #include "Engine/Renderer/shatter_render_include.h"
-//#include "../Shatter_Asset/shatterasset.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
@@ -20,10 +19,6 @@
 #include <unordered_map>
 #include "Engine/Object/CaptureObject.h"
 
-//namespace Shatter::camera{
-//    class ShatterCamera;
-//}
-
 class Camera;
 
 class WorkPlane;
@@ -34,7 +29,7 @@ namespace Shatter{
 
     namespace app{
 
-        class ShatterApp : public std::enable_shared_from_this<ShatterApp>{
+        class ShatterApp {
         public:
             static ShatterApp& getApp();
             ~ShatterApp();
@@ -58,6 +53,7 @@ namespace Shatter{
             ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
             ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
 
+        public:
             void capturedPush(const std::shared_ptr<CaptureObject>& _id);
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
             std::shared_ptr<CaptureObject> getCaptureById(uint32_t _id);
@@ -73,7 +69,6 @@ namespace Shatter{
             bool cameraChanged = true;
         private:
             float lastTime;
-            bool showFPS;
             time_point m_start_time;
             time_point m_pre_time;
             Listener* m_listener;
