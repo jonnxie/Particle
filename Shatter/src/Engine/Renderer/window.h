@@ -20,6 +20,9 @@ public:
         height = Config::getConfig("height");
     }
     Window(int _width, int _height, std::string  _title):width(_width), height(_height), title(std::move(_title)) {}
+
+    virtual ~Window() {
+    };
 public:
     std::pair<int, int> operator()() {
         return std::make_pair(width, height);
@@ -46,7 +49,10 @@ public:
     GLFWWindow(int _width, int _height, std::string  _title) : Window(_width, _height, std::move(_title)){
         init();
     }
-    ~GLFWWindow();
+    ~GLFWWindow() override {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    };
 public:
     void keyCallback(int _key, int _action) override;
     void windowResized(int _width, int _height) override ;
@@ -54,10 +60,12 @@ public:
     void cursorPositionCallback( double _xPos, double _yPos) override ;
     void scrollCallback( double _xOffset, double _yOffset) override ;
     void keyTypeCallback( unsigned int _code) override ;
+public:
+    GLFWwindow* get(){
+        return window;
+    }
 private:
     void init();
-private:
-
 private:
     GLFWwindow *window{};
 };

@@ -23,11 +23,13 @@ class Camera;
 
 class WorkPlane;
 
+class Window;
+
 namespace Shatter{
     class Listener;
 
 
-    namespace app{
+    namespace App{
 
         class ShatterApp {
         public:
@@ -58,6 +60,12 @@ namespace Shatter{
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
             std::shared_ptr<CaptureObject> getCaptureById(uint32_t _id);
             std::vector<std::shared_ptr<CaptureObject>> m_captured;
+        public:
+            void setMainWindow();
+            void setMainWindow(int _width, int _height, std::string _title);
+            Window* getMainWindow();
+        private:
+            Window* m_mainWindow {nullptr};
         private:
             std::mutex m_captured_lock;
             ShatterApp();
@@ -80,6 +88,6 @@ namespace Shatter{
     }
 }
 
-#define SingleAPP Shatter::app::ShatterApp::getApp()
+#define SingleAPP Shatter::App::ShatterApp::getApp()
 
 #endif //VULKAN_TOTURIOL_SHATTER_APP_H

@@ -53,7 +53,7 @@ src/glfw3.lib
 src/glfw3.dll
 src/glfw3dll.lib
 src/libglfw3dll.a
-examples/*.app
+examples/*.App
 examples/*.exe
 examples/boing
 examples/gears
@@ -64,7 +64,7 @@ examples/splitview
 examples/sharing
 examples/triangle-opengl
 examples/wave
-tests/*.app
+tests/*.App
 tests/*.exe
 tests/clipboard
 tests/cursor

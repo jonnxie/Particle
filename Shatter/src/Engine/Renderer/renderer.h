@@ -226,12 +226,9 @@ namespace Shatter{
                 return m_frameBuffers;
             };
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
-            void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
-                                        VkDescriptorSet* set);
             VkDevice* getDevice(){return &device;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
             void createCommandBuffer();
-            [[nodiscard]] GLFWwindow* getWindow() const{return window;};
         public:
             static VKAPI_ATTR VkBool32 VKAPI_CALL
             debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
@@ -250,12 +247,6 @@ namespace Shatter{
             }
 
         public:
-            static void onWindowResized(GLFWwindow *window, int width, int height);
-            static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-            static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
-            static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
-            static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-            static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             void releaseObject(int _id, DrawObjectType _type);
             void releaseComputeObject(int _id);
             void exchangeObjects();
@@ -274,7 +265,7 @@ namespace Shatter{
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
             std::vector<buffer::ShatterTexture*> tex_vec;
-            GLFWwindow *window{};
+//            GLFWwindow *window{};
 
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};

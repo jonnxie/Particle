@@ -30,6 +30,7 @@
 #include "pipeline.h"
 #include "Engine/Object/aabb.h"
 #include "Engine/Object/camera.h"
+#include "Engine/Renderer/window.h"
 
 namespace Shatter::render{
     bool render_created = false;
@@ -181,20 +182,10 @@ namespace Shatter::render{
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
 
-        glfwDestroyWindow(window);
-
-        glfwTerminate();
-
         Config::setConfig("RendererReleased", 1);
     }
 
     void ShatterRender::initWindow(){
-        glfwInit();
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-        window = glfwCreateWindow(SingleAPP.getScreenWidth(), SingleAPP.getScreenHeight(), "Vulkan", nullptr, nullptr);
-
         setViewPort(UnionViewPort{
                 VkViewport{0,
                            0,
@@ -208,20 +199,6 @@ namespace Shatter::render{
             VkOffset2D{0,0},
             VkExtent2D{uint32_t(SingleAPP.getScreenWidth()), uint32_t(SingleAPP.getScreenHeight())}
         });
-
-        glfwSetWindowUserPointer(window, this);
-
-        glfwSetWindowSizeCallback(window, onWindowResized);
-
-        glfwSetKeyCallback(window, keyCallback);
-
-        glfwSetMouseButtonCallback(window, mouseCallback);
-
-        glfwSetCursorPosCallback(window, cursorPositionCallback);
-
-        glfwSetScrollCallback(window, scrollCallback);
-
-        glfwSetCharCallback(window, keyTypeCallback);
     }
 
     void ShatterRender::initVulkan(){
@@ -234,8 +211,6 @@ namespace Shatter::render{
         if(Config::getConfig("EnableMSAA"))
         {
             createMSAARenderPass();
-        }else{
-//            createRenderPass();
         }
         createColorRenderPass();
         createColorFramebuffers();
@@ -304,7 +279,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createSurface(){
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(instance, ((GLFWWindow*)SingleAPP.getMainWindow())->get(), nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
     }
@@ -2734,7 +2709,7 @@ namespace Shatter::render{
             io.KeysDown[key] =  false;
             releaseKey(key);
         }
-        app::ShatterApp::getApp().key_event_callback(key, action);
+        App::ShatterApp::getApp().key_event_callback(key, action);
     }
 
     void ShatterRender::mouseEventCallback(int button, int action, int xpos, int ypos){
@@ -2757,7 +2732,7 @@ namespace Shatter::render{
         {
             releaseMouse(button);
         }
-        app::ShatterApp::getApp().mouse_event_callback(button, action, xpos, ypos);
+        App::ShatterApp::getApp().mouse_event_callback(button, action, xpos, ypos);
     }
 
     void ShatterRender::cleanupSwapChain(){
@@ -3220,92 +3195,6 @@ namespace Shatter::render{
         return true;
     }
 
-    void ShatterRender::onWindowResized(GLFWwindow *window, int width, int height) {
-        if (width == 0 || height == 0) return;
-
-        auto *app = reinterpret_cast<ShatterRender *>(glfwGetWindowUserPointer(window));
-
-        setViewPort(UnionViewPort{
-                VkViewport{0,0,float(width),float(height),0,1}
-        });
-
-        setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
-
-        app->recreateSwapChain();
-        app->windowStill = false;
-    }
-
-    void ShatterRender::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
-//        if(action == GLFW_PRESS){
-            auto *app = reinterpret_cast<ShatterRender *>(glfwGetWindowUserPointer(window));
-            app->keyEventCallback(key, action);
-//        }
-    }
-
-    void ShatterRender::mouseCallback(GLFWwindow* window, int button, int action, int mods){
-        auto *app = reinterpret_cast<ShatterRender *>(glfwGetWindowUserPointer(window));
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        app->mouseEventCallback(button, action, xpos, ypos);
-    }
-
-
-    void ShatterRender::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos){
-        static glm::vec2& cursor = input::getCursorWindow();
-        cursor.x = xpos;
-        cursor.y = ypos;
-        UnionViewPort& viewport = getViewPort();
-        glm::vec2& tmp = getCursorPos();
-        tmp.x = cursor.x * viewport.inverseWidth;
-        tmp.y = cursor.y * viewport.inverseHeight;
-        tmp *= 2.0f;
-        tmp -= 1.0f;
-
-        glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
-        float& depth = input::getTargetDepth();
-        depth = center.z / center.w;
-        {
-//        glm::mat4 p = SingleCamera.m_camera.proj;
-//        input::targetDepth(depth, STATE_IN);
-        }
-        glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(), depth, 1.0f);
-        view /= view.w;
-        glm::vec3& world = input::getCursor();
-        world = glm::inverse(SingleCamera.m_camera.view) * view;
-        SingleCamera.updateCursorRay();
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            bool handled = io.WantCaptureMouse;
-        }
-    }
-
-    void ShatterRender::scrollCallback(GLFWwindow* window, double xoffset, double yoffset){
-        updateScrollPos(glm::vec2(xoffset,yoffset));
-        app::ShatterApp::getApp().cameraChanged = true;
-    }
-
-    void ShatterRender::keyTypeCallback(GLFWwindow* window, unsigned int code)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        if(code > 0 && code < 0x10000)
-        {
-            io.AddInputCharacter((unsigned short)code);
-        }
-    }
-
-    void ShatterRender::allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
-                                               VkDescriptorSet* set) {
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = descriptorPool;
-        allocInfo.descriptorSetCount = des_set_layout.size();
-        allocInfo.pSetLayouts = des_set_layout.data();
-
-        if (vkAllocateDescriptorSets(device, &allocInfo, set) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate descriptor set!");
-        }
-    }
-
     void ShatterRender::createCommandBuffer(){
         if (Config::getConfig("enableMultipleComputeQueue"))
         {
@@ -3428,7 +3317,7 @@ namespace Shatter::render{
 
         if(Config::getConfig("enableDockSpace"))
         {
-            ImGui_ImplGlfw_InitForVulkan(window, true);
+            ImGui_ImplGlfw_InitForVulkan(((GLFWWindow*)SingleAPP.getMainWindow())->get(), true);
             ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
 
 

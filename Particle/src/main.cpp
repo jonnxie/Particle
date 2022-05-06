@@ -39,11 +39,9 @@
 #include "Engine/Base/I3DM.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
-
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
 #include "Engine/Mesh/aabbVisiter.h"
-//#include "Engine/Animation/animation.h"
 #include "Engine/Event/delayevent.h"
 #include "Engine/Planets/Planet.h"
 #include "Engine/Base/CrossTree.h"
@@ -188,7 +186,8 @@ void test()
 }
 
 int main() {
-    Shatter::app::ShatterApp& app = Shatter::app::ShatterApp::getApp();
+    Shatter::App::ShatterApp& app = Shatter::App::ShatterApp::getApp();
+    app.setMainWindow();
     /*
      * render
      */

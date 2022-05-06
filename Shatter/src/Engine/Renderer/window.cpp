@@ -133,7 +133,3 @@ void GLFWWindow::init() {
     glfwSetCharCallback(window, keyTypeCallbackStatic);
 }
 
-GLFWWindow::~GLFWWindow() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}

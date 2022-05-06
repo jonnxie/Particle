@@ -20,8 +20,9 @@
 #include "Engine/Base/WorkPlane.h"
 #include "Engine/Base/lines.h"
 #include "Engine/Base/points.h"
+#include "Engine/Renderer/window.h"
 
-namespace Shatter::app{
+namespace Shatter::App{
     bool app_created = false;
 
     static int particle_count = 1;
@@ -40,11 +41,7 @@ namespace Shatter::app{
     }
 
     ShatterApp::~ShatterApp(){
-//        delete m_listener;
-//        for(auto& [name,listener] : m_otherListener)
-//        {
-//            delete listener;
-//        }
+        delete m_mainWindow;
     }
 
     void ShatterApp::updateTimer()
@@ -61,7 +58,7 @@ namespace Shatter::app{
     void ShatterApp::update(){
         m_start_time = std::chrono::system_clock::now();
         m_pre_time = m_start_time;
-        while (!glfwWindowShouldClose(render::ShatterRender::getRender().getWindow())) {
+        while (!glfwWindowShouldClose(((GLFWWindow*)m_mainWindow)->get())) {
             updateTimer();
             glfwPollEvents();
 
@@ -356,6 +353,22 @@ namespace Shatter::app{
             return *iterator;
         }
         throw std::runtime_error("No Object with such capture id.");
+    }
+
+    void ShatterApp::setMainWindow(int _width, int _height, std::string _title) {
+        if (!m_mainWindow) {
+            m_mainWindow = new GLFWWindow(_width, _height, std::move(_title));
+        }
+    }
+
+    Window* ShatterApp::getMainWindow() {
+        return m_mainWindow;
+    }
+
+    void ShatterApp::setMainWindow() {
+        if (!m_mainWindow) {
+            m_mainWindow = new GLFWWindow();
+        }
     }
 
 }

@@ -432,19 +432,19 @@ namespace animation {
             if(checkKey(GLFW_KEY_UP)){
                 m_translation = glm::translate(m_translation, 0.01f * upright);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_DOWN)){
                 m_translation = glm::translate(m_translation, -0.01f * upright);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_LEFT)){
                 m_translation = glm::translate(m_translation, -0.01f * across);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_RIGHT)){
                 m_translation = glm::translate(m_translation, 0.01f * across);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }
 
             TargetPlane localPlane{};

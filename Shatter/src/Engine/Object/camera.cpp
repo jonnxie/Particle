@@ -13,7 +13,7 @@
 #include "device.h"
 #include <mutex>
 
-using namespace Shatter::app;
+using namespace Shatter::App;
 using namespace Shatter::render;
 
 static std::mutex static_mutex;
