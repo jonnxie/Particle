@@ -27,6 +27,7 @@ public:
 private:
     vkglTF::Model*  m_model;
     int             m_id;
+    VkDescriptorSet m_set;
 };
 
 #endif //GAME_TBASIC_H

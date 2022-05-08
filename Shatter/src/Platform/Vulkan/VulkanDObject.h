@@ -7,6 +7,7 @@
 
 #include "Engine/Object/dobject.h"
 #include <vulkan/vulkan.h>
+#include <Engine/App/shatterapp.h>
 #include "Engine/Buffer/shatterbuffer.h"
 #include "Engine/pool/ppool.h"
 #include "Engine/pool/bpool.h"
@@ -35,10 +36,9 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
@@ -77,10 +77,9 @@ public:
                     vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
                 }
             }
-            UnionViewPort& tmp = getViewPort();
+            UnionViewPort& tmp = SingleAPP.getPresentViewPort();
             vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-            VkRect2D& scissor = getScissor();
+            VkRect2D& scissor = tmp.scissor;
             vkCmdSetScissor(_cb,0,1,&scissor);
             std::vector<VkDescriptorSet> set_vec;
             set_vec.resize(0);
@@ -123,10 +122,9 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();

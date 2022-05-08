@@ -43,7 +43,6 @@ public:
     static void captureBarrierReleaseMultiple(VkCommandBuffer _cb);
     static void popCaptureBarrierReleaseTask(const Task_id& _id);
 
-
     static void computeBarrierRequire(VkCommandBuffer _cb);
     static void computeBarrierRequireMultiple(VkCommandBuffer _cb);
     static void computeBarrierRelease(VkCommandBuffer _cb);

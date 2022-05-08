@@ -13,6 +13,7 @@
 #include "Engine/Renderer/pipeline.h"
 #include <algorithm>
 #include <utility>
+#include <Engine/App/shatterapp.h>
 
 DObject::DObject(){
     m_drawDepth =[this](VkCommandBuffer _cb){
@@ -47,10 +48,9 @@ void DObject::draw(VkCommandBuffer _cb) {
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         set_vec.resize(0);
@@ -98,10 +98,9 @@ void DObject::newDraw(VkCommandBuffer _cb)
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
@@ -225,10 +224,9 @@ void DObject::drawDepth(VkCommandBuffer _cb){
             vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
         }
     }
-    UnionViewPort& tmp = getViewPort();
+    UnionViewPort& tmp = SingleAPP.getPresentViewPort();
     vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-    VkRect2D& scissor = getScissor();
+    VkRect2D& scissor = tmp.scissor;
     vkCmdSetScissor(_cb,0,1,&scissor);
     std::vector<VkDescriptorSet> set_vec;
     auto set_pool = MPool<VkDescriptorSet>::getPool();
@@ -263,10 +261,9 @@ void DObject::g(VkCommandBuffer _cb){
             vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
         }
     }
-    UnionViewPort& tmp = getViewPort();
+    UnionViewPort& tmp = SingleAPP.getPresentViewPort();
     vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-    VkRect2D& scissor = getScissor();
+    VkRect2D& scissor = tmp.scissor;
     vkCmdSetScissor(_cb,0,1,&scissor);
     std::vector<VkDescriptorSet> set_vec;
     auto set_pool = MPool<VkDescriptorSet>::getPool();

@@ -54,10 +54,9 @@ void SkinBasic::constructD() {
     (*dpool)[d]->setData(m_model);
     (*dpool)[d]->setUpdate(true);
     auto func = [&, d](VkCommandBuffer _cb){
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         std::vector<VkDescriptorSet> sets{};
@@ -164,10 +163,9 @@ void SkinBasicInstance::constructD() {
     auto instanceBuffer = SingleBPool.getBuffer(tool::combine("SkinBasicInstance", m_id),
                                                 Buffer_Type::Vertex_Buffer)->getBuffer();
     auto func = [&, d, instanceBuffer](VkCommandBuffer _cb) {
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         std::vector<VkDescriptorSet> sets{};

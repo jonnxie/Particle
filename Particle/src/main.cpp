@@ -39,11 +39,9 @@
 #include "Engine/Base/I3DM.h"
 #include "Engine/Item/shatter_macro.h"
 #include "Engine/Buffer/shatterbufferinclude.h"
-
 #include "Engine/Mesh/line.h"
 #include "Engine/Mesh/plane.h"
 #include "Engine/Mesh/aabbVisiter.h"
-//#include "Engine/Animation/animation.h"
 #include "Engine/Event/delayevent.h"
 #include "Engine/Planets/Planet.h"
 #include "Engine/Base/CrossTree.h"
@@ -142,9 +140,9 @@ void initSet()
 void initTransparentSet()
 {
     std::array<VkDescriptorImageInfo, 3> descriptorImageInfos = {
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.positionAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.normalAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-            tool::descriptorImageInfo(VK_NULL_HANDLE, SingleRender.albedoAttachment->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[1].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[2].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+            tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[3].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
     };
     std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
     for (size_t i = 0; i < descriptorImageInfos.size(); i++) {
@@ -158,6 +156,17 @@ void initTransparentSet()
     bufferInfo.range = 8;
 
     VkWriteDescriptorSet writeSet = tool::writeDescriptorSet(SingleSetPool["ViewPort"], VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+
+    vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
+
+
+    SingleSetPool.AllocateDescriptorSets({"BaseTexture"}, &SingleRender.m_colorSet);
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageView = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].imageView;
+    imageInfo.sampler = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].sampler;
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    writeSet = tool::writeDescriptorSet(SingleRender.m_colorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
 
     vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
 }
@@ -177,7 +186,18 @@ void test()
 }
 
 int main() {
-    Shatter::app::ShatterApp& app = Shatter::app::ShatterApp::getApp();
+    Shatter::App::ShatterApp& app = Shatter::App::ShatterApp::getApp();
+    app.setMainWindow();
+    UnionViewPort viewPort;
+    viewPort.view.x = 0;
+    viewPort.view.y = 0;
+    viewPort.view.width = Config::getConfig("presentWidth");
+    viewPort.view.height = Config::getConfig("presentHeight");
+    viewPort.view.minDepth = 0;
+    viewPort.view.maxDepth = 1;
+    viewPort.scissor.offset = { 0, 0};
+    viewPort.scissor.extent = { (uint32_t)Config::getConfig("presentWidth"), (uint32_t)Config::getConfig("presentHeight")};
+    SingleAPP.setPresentViewPort(viewPort);
     /*
      * render
      */

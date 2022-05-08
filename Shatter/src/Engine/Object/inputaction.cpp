@@ -1,6 +1,7 @@
 //
 // Created by AnWell on 2021/6/26.
 //
+#include <Engine/Item/shatter_item.h>
 #include "precompiledhead.h"
 
 #include "inputaction.h"
@@ -75,6 +76,7 @@ namespace input{
     genReferenceItem(CursorPress, glm::vec3);
     genReferenceItem(CursorWindow, glm::vec2);
     genReferenceItem(MousePressCoordiante, glm::uvec2);
+    genReferenceItem(CenterViewPort, UnionViewPort);
     genReferenceItem(TargetDepth, float);
     genInOut(mouseRay, glm::vec3);
     genInOut(captureObject, uint32_t);

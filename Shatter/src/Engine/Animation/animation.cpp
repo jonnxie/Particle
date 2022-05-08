@@ -432,19 +432,19 @@ namespace animation {
             if(checkKey(GLFW_KEY_UP)){
                 m_translation = glm::translate(m_translation, 0.01f * upright);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_DOWN)){
                 m_translation = glm::translate(m_translation, -0.01f * upright);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_LEFT)){
                 m_translation = glm::translate(m_translation, -0.01f * across);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }else if(checkKey(GLFW_KEY_RIGHT)){
                 m_translation = glm::translate(m_translation, 0.01f * across);
                 SingleCamera.center = m_translation * glm::vec4(m_cameraTarget, 1.0f);
-                Shatter::app::ShatterApp::getApp().cameraChanged = true;
+                Shatter::App::ShatterApp::getApp().cameraChanged = true;
             }
 
             TargetPlane localPlane{};
@@ -539,12 +539,10 @@ namespace animation {
             (*dpool)[d]->m_type = DType::Instance;
             (*dpool)[d]->m_instance_task = [&, i, mc_index, group](VkCommandBuffer _cb){
                 ShatterBuffer* buffer = SingleBPool.getBuffer(tool::combine(tool::combine("AnimationGroup",i),m_id),Buffer_Type::Vertex_Buffer);
-                UnionViewPort& tmp = getViewPort();
+                UnionViewPort& tmp = SingleAPP.getPresentViewPort();
                 vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-                VkRect2D& scissor = getScissor();
-
-                vkCmdSetScissor(_cb, 0, 1, &scissor);
+                VkRect2D& scissor = tmp.scissor;
+                vkCmdSetScissor(_cb,0,1,&scissor);
 
                 vkCmdBindPipeline(_cb, //将当前使用的命令缓冲与指定管线绑定
                                   VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()["Animation"]->getPipeline());

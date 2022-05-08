@@ -33,7 +33,7 @@ namespace Shatter {
             int success = glfwInit();
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             glfwSetErrorCallback(GLFWErrorCallback);
-            setViewPort(UnionViewPort{
+            setWindowViewPort(UnionViewPort{
                     VkViewport{0, 0,
                                float(m_info.m_width),
                                float(m_info.m_height),
@@ -41,8 +41,8 @@ namespace Shatter {
                                1.0f}
             });
 
-            setScissor(VkRect2D{
-                    VkOffset2D{0,0},
+            setWindowScissor(VkRect2D{
+                    VkOffset2D{0, 0},
                     VkExtent2D{uint32_t(m_info.m_width), uint32_t(m_info.m_height)}
             });
         }
@@ -59,11 +59,11 @@ namespace Shatter {
         {
             if(width == 0 || height == 0) return;
 
-            setViewPort(UnionViewPort{
+            setWindowViewPort(UnionViewPort{
                     VkViewport{0, 0, float(width), float(height), 0, 1}
             });
 
-            setScissor(VkRect2D{VkOffset2D{0,0},VkExtent2D{uint32_t(width),uint32_t(height)}});
+            setWindowScissor(VkRect2D{VkOffset2D{0, 0}, VkExtent2D{uint32_t(width), uint32_t(height)}});
 
             auto *app = reinterpret_cast<WindowsWindow *>(glfwGetWindowUserPointer(window));
 
@@ -109,7 +109,7 @@ namespace Shatter {
                 double xpos, ypos;
                 glfwGetCursorPos(window,&xpos,&ypos);
                 pressMouse(button);
-                glm::vec2 tmp(xpos/getViewPort().view.width, ypos/getViewPort().view.height);
+                glm::vec2 tmp(xpos / getWindowViewPort().view.width, ypos / getWindowViewPort().view.height);
                 tmp *= 2.0f;
                 tmp -= 1.0f;
                 updateCursorPressPos(tmp);
@@ -137,7 +137,7 @@ namespace Shatter {
             glm::vec2& cursor = input::getCursorWindow();
             cursor.x = xPos;
             cursor.y = yPos;
-            VkViewport viewport = getViewPort().view;
+            VkViewport viewport = getWindowViewPort().view;
             glm::vec2 tmp(xPos/viewport.width,yPos/viewport.height);
             tmp *= 2.0f;
             tmp -= 1.0f;

@@ -269,7 +269,7 @@ void GUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::s
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
-    pipelineCreateInfo.subpass = SubpassTransparency;
+    pipelineCreateInfo.subpass = 0;
 
     // Vertex bindings an attributes based on ImGui vertex definition
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
@@ -331,6 +331,14 @@ void GUI::drawFrame(VkCommandBuffer commandBuffer) {
                 scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
                 scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
                 vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
+
+                VkDescriptorSet desc_set[1] = { (VkDescriptorSet)pcmd->TextureId };
+                if (!pcmd->TextureId)
+                {
+                    desc_set[0] = descriptorSet;
+                }
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, desc_set, 0, NULL);
+
                 vkCmdDrawIndexed(commandBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
                 indexOffset += pcmd->ElemCount;
             }
@@ -464,7 +472,7 @@ void GUI::newFrame(bool updateFrameGraph) {
 void GUI::updateUI() {
     ImGuiIO& io = ImGui::GetIO();
 
-    io.DisplaySize = ImVec2((float)getViewPort().view.width,(float)getViewPort().view.height);
+    io.DisplaySize = ImVec2((float)getWindowViewPort().view.width,(float)getWindowViewPort().view.height);
     io.DeltaTime = 1.0f;
 
     glm::vec2& pos = input::getCursorWindow();
@@ -679,13 +687,34 @@ void GUI::init(float width, float height) {
         ImGui::End();// End setting
 
         {
-            //        ImGui::Begin("ViewPort");
-            //
-            //        int index = (getSwapChainIndex() - 1) < 0? Config::getConfig("SwapChainImageCount") : (getSwapChainIndex() - 1);
-            //
-            //        ImGui::Image(SingleRender.m_swapChainSets[index], {getViewPort().width, getViewPort().height});
-            //
-            //        ImGui::End();//ViewPort
+            ImGui::Begin("ViewPort");
+
+            ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+            static bool firstDraw = true;
+            if (viewportPanelSize.x != SingleAPP.getPresentViewPort().view.width || viewportPanelSize.y != SingleAPP.getPresentViewPort().view.height)
+            {
+                auto& view = SingleAPP.getPresentViewPort();
+                view.view.width = viewportPanelSize.x;
+                view.view.height = viewportPanelSize.y;
+                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+                SingleAPP.setViewPortTouched(true);
+                if (firstDraw) {
+                    SingleAPP.viewportChanged = true;
+                    firstDraw = false;
+                }
+            } else if (SingleAPP.getViewPortTouched()) {
+                auto& view = SingleAPP.getPresentViewPort();
+                view.view.width = viewportPanelSize.x;
+                view.view.height = viewportPanelSize.y;
+                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+                SingleAPP.viewportChanged = true;
+                SingleAPP.setViewPortTouched(false);
+            }
+
+            ImGui::Image(SingleRender.m_colorSet, viewportPanelSize);
+
+            ImGui::End();//ViewPort
         }
     });
 }

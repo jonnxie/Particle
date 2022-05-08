@@ -6,7 +6,6 @@
 #define VULKAN_TOTURIOL_SHATTER_APP_H
 
 #include "Engine/Renderer/shatter_render_include.h"
-//#include "../Shatter_Asset/shatterasset.h"
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
@@ -20,28 +19,25 @@
 #include <unordered_map>
 #include "Engine/Object/CaptureObject.h"
 
-//namespace Shatter::camera{
-//    class ShatterCamera;
-//}
-
 class Camera;
 
 class WorkPlane;
+
+class Window;
 
 namespace Shatter{
     class Listener;
 
 
-    namespace app{
+    namespace App{
 
-        class ShatterApp : public std::enable_shared_from_this<ShatterApp>{
+        class ShatterApp {
         public:
             static ShatterApp& getApp();
             ~ShatterApp();
             DefineUnCopy(ShatterApp);
         public:
-            int getScreenWidth() const {return m_width;};
-            int getScreenHeight() const {return m_height;};
+            std::pair<int, int> getWindowSize() const;
         public:
             void updateTimer();
             void update();
@@ -57,11 +53,22 @@ namespace Shatter{
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
             ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
             ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
-
+        public:
             void capturedPush(const std::shared_ptr<CaptureObject>& _id);
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
             std::shared_ptr<CaptureObject> getCaptureById(uint32_t _id);
             std::vector<std::shared_ptr<CaptureObject>> m_captured;
+        public:
+            void setMainWindow();
+            void setMainWindow(int _width, int _height, std::string _title);
+            Window* getMainWindow();
+            void setPresentViewPort(const UnionViewPort& _viewport);
+            UnionViewPort& getPresentViewPort();
+        private:
+            Window* m_mainWindow {nullptr};
+            std::mutex presentMutex;
+            UnionViewPort presentViewPort;
+            ClassPointerElementInitial(viewTouched, bool, ViewPortTouched, false);
         private:
             std::mutex m_captured_lock;
             ShatterApp();
@@ -71,20 +78,16 @@ namespace Shatter{
             std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
+            bool viewportChanged = false;
         private:
-            float lastTime;
-            bool showFPS;
             time_point m_start_time;
             time_point m_pre_time;
             Listener* m_listener;
             std::unordered_map<std::string,Listener*> m_otherListener;
-            int m_width;
-            int m_height;
         };
-
     }
 }
 
-#define SingleAPP Shatter::app::ShatterApp::getApp()
+#define SingleAPP Shatter::App::ShatterApp::getApp()
 
 #endif //VULKAN_TOTURIOL_SHATTER_APP_H

@@ -801,6 +801,7 @@ struct UnionViewPort{
     VkViewport  view;
     float       inverseWidth;
     float       inverseHeight;
+    VkRect2D    scissor;
     VkViewport& operator()(){
         return view;
     };
@@ -811,17 +812,17 @@ struct UnionViewPort{
     }
 };
 
-static UnionViewPort viewPort;
+static UnionViewPort windowViewPort;
 
-UnionViewPort& getViewPort();
+UnionViewPort& getWindowViewPort();
 
-void setViewPort(UnionViewPort _viewport);
+void setWindowViewPort(UnionViewPort _viewport);
 
 static VkRect2D scissor;
 
-VkRect2D& getScissor();
+VkRect2D& getWindowScissor();
 
-void setScissor(VkRect2D _scissor);
+void setWindowScissor(VkRect2D _scissor);
 
 static std::vector<ThreadObject> threadObjects;
 

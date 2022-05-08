@@ -48,8 +48,6 @@ struct QueueFamilyIndices;
 
 struct FrameBufferAttachment;
 
-struct GLFWwindow;
-
 namespace Shatter{
     namespace render {
 
@@ -90,21 +88,10 @@ namespace Shatter{
 
             void createSwapChain();
 
-            /*
-             * new render pass
-             */
             void createRenderPass();
 
-            FrameBufferAttachment
-            *newColorAttachment{nullptr},
-            *newPositionAttachment{nullptr},
-            *newNormalAttachment{nullptr},
-            *newAlbedoAttachment{nullptr},
-            *newDepthAttachment{nullptr};
-            VkCommandBuffer m_colorCommandBuffer{};
             VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
-            FrameBuffer* m_colorFrameBuffers{nullptr};
             void createColorRenderPass();
             void createColorFramebuffers();
 
@@ -116,19 +103,15 @@ namespace Shatter{
                 VkFramebuffer framebuffer;
             };
             std::vector<VkPresent> m_presents{};
-            VkCommandBuffer m_presentCommandBuffer{};
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
             void createMSAARenderPass();
 
-            VkCommandBuffer m_capture_buffer = VK_NULL_HANDLE;
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            FrameBuffer* m_frameBuffers{nullptr};
+            FrameBuffer* m_captureFrameBuffers{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
-            VkCommandBuffer now_capture_buffer{};
-            std::vector<VkCommandBuffer> pre_new_capture_buffers{};
 
             void createCaptureRenderPass();
 
@@ -170,6 +153,8 @@ namespace Shatter{
 
             void updatePresentCommandBuffers(int _index);
 
+            void createGraphicsCommandBuffers();
+
             void createGraphicsCommandBuffersMultiple();
 
             void updateGraphicsCommandBuffersMultiple(int _index);
@@ -200,6 +185,8 @@ namespace Shatter{
 
             void draw();
 
+            void newDraw();
+
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
             VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -227,43 +214,14 @@ namespace Shatter{
             [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
-            VkRenderPass getCaptureRenderPass() {
-                return m_captureRenderPass;
-            };
-            FrameBuffer* getCaptureFrameBuffer(){
-                return m_frameBuffers;
-            };
+            VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
+            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffers;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
-            void allocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& des_set_layout,
-                                        VkDescriptorSet* set);
             VkDevice* getDevice(){return &device;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
             void createCommandBuffer();
-            [[nodiscard]] GLFWwindow* getWindow() const{return window;};
+            static void updateColorSet();
         public:
-            static VKAPI_ATTR VkBool32 VKAPI_CALL
-            debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
-                          size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData) {
-                std::cerr << "validation layer: " << msg << std::endl;
-                return VK_FALSE;
-            }
-
-            static void check_vk_result(VkResult err)
-            {
-                if (err == 0)
-                    return;
-                fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-                if (err < 0)
-                    abort();
-            }
-
-        public:
-            static void onWindowResized(GLFWwindow *window, int width, int height);
-            static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-            static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
-            static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
-            static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-            static void keyTypeCallback(GLFWwindow* window,unsigned int code);
             void releaseObject(int _id, DrawObjectType _type);
             void releaseComputeObject(int _id);
             void exchangeObjects();
@@ -278,12 +236,9 @@ namespace Shatter{
             ExchangeVector<int> drawIdVec;
             ExchangeVector<int> normalIdVec;
             std::vector<int> offdrawid_vec;
-//            std::vector<int> drawid_vec;
             std::vector<int> transparency_vec;
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
-            std::vector<buffer::ShatterTexture*> tex_vec;
-            GLFWwindow *window{};
 
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};
@@ -313,8 +268,10 @@ namespace Shatter{
             std::vector<VkImageView> m_swapChainImageviews;
             std::vector<VkSampler> m_swapChainSamplers;
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
-            std::vector<VkDescriptorSet> m_swapChainSets;
             std::vector<VkCommandBuffer> composite_buffers;
+
+            VkDescriptorSet m_colorSet;
+            FrameBuffer* m_colorFrameBuffers{nullptr};
 
             VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
 
@@ -328,16 +285,36 @@ namespace Shatter{
             std::vector<VkCommandBuffer> graphics_buffers, gui_buffer{}, offscreen_buffers;
             VkCommandBuffer compute_buffer{};
 
+            VkCommandBuffer m_colorCommandBuffer{};
+            VkCommandBuffer now_capture_buffer{};
+
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
 
             std::vector<VkCommandBuffer> pre_compute_buffers, pre_new_g_buffer{}, pre_new_norm_buffer{}, pre_new_trans_buffer{}, new_graphics_buffer{};
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
 
             VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
+            VkFence renderFence{};
 
             std::vector<VkClearValue> clearValues{};
             VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
             VkPresentInfoKHR presentInfo{};
+        public:
+            static VKAPI_ATTR VkBool32 VKAPI_CALL
+            debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
+                          size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData) {
+                std::cerr << "validation layer: " << msg << std::endl;
+                return VK_FALSE;
+            }
+
+            static void check_vk_result(VkResult err)
+            {
+                if (err == 0)
+                    return;
+                fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+                if (err < 0)
+                    abort();
+            }
         };
     };
 };
