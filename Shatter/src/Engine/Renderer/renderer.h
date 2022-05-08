@@ -110,7 +110,7 @@ namespace Shatter{
 
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            FrameBuffer* m_frameBuffers{nullptr};
+            FrameBuffer* m_captureFrameBuffers{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
 
             void createCaptureRenderPass();
@@ -213,12 +213,12 @@ namespace Shatter{
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
             VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
-            FrameBuffer* getCaptureFrameBuffer() {return m_frameBuffers;};
+            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffers;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             VkDevice* getDevice(){return &device;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
             void createCommandBuffer();
-
+            static void updateColorSet();
         public:
             void releaseObject(int _id, DrawObjectType _type);
             void releaseComputeObject(int _id);

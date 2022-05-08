@@ -150,8 +150,8 @@ namespace Shatter::render{
         {
             vkDestroyRenderPass(device, m_captureRenderPass, nullptr);
         }
-        m_frameBuffers->release();
-        delete m_frameBuffers;
+        m_captureFrameBuffers->release();
+        delete m_captureFrameBuffers;
 #endif
 
         vkDestroySwapchainKHR(device, swapchain, nullptr);
@@ -535,7 +535,7 @@ namespace Shatter::render{
         spec.SwapChainTarget = false;
         spec.RenderPass = m_captureRenderPass;
 
-        m_frameBuffers = FrameBuffer::createFramebuffer(spec);
+        m_captureFrameBuffers = FrameBuffer::createFramebuffer(spec);
     }
 
     void ShatterRender::createFramebuffers(){
@@ -1614,6 +1614,10 @@ namespace Shatter::render{
             cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
         }
 
+        if (SingleAPP.viewportChanged) {
+            ((VulkanFrameBuffer*)m_captureFrameBuffers)->resize(SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height);
+        }
+
         vkBeginCommandBuffer(now_capture_buffer, &cmdBufInfo);
 
         std::array<VkClearValue,2> clearCaptureValue{};
@@ -1625,7 +1629,7 @@ namespace Shatter::render{
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassBeginInfo.pNext = VK_NULL_HANDLE;
             renderPassBeginInfo.renderPass = m_captureRenderPass;
-            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_captureFrameBuffers)->m_frame_buffer;
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = SingleAPP.getPresentViewPort().scissor.extent;
             renderPassBeginInfo.clearValueCount = 2;
@@ -1643,7 +1647,7 @@ namespace Shatter::render{
             inheritanceInfo.pNext = VK_NULL_HANDLE;
             inheritanceInfo.renderPass = m_captureRenderPass;
             inheritanceInfo.subpass = 0;
-            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_captureFrameBuffers)->m_frame_buffer;
             inheritanceInfo.occlusionQueryEnable = false;
         }
 
@@ -1718,7 +1722,7 @@ namespace Shatter::render{
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassBeginInfo.pNext = VK_NULL_HANDLE;
             renderPassBeginInfo.renderPass = m_captureRenderPass;
-            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_captureFrameBuffers)->m_frame_buffer;
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = getWindowScissor().extent;
             renderPassBeginInfo.clearValueCount = 2;
@@ -1736,7 +1740,7 @@ namespace Shatter::render{
             inheritanceInfo.pNext = VK_NULL_HANDLE;
             inheritanceInfo.renderPass = m_captureRenderPass;
             inheritanceInfo.subpass = 0;
-            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+            inheritanceInfo.framebuffer = ((VulkanFrameBuffer*)m_captureFrameBuffers)->m_frame_buffer;
             inheritanceInfo.occlusionQueryEnable = false;
         }
 
@@ -1814,7 +1818,7 @@ namespace Shatter::render{
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassBeginInfo.pNext = VK_NULL_HANDLE;
         renderPassBeginInfo.renderPass = m_captureRenderPass;
-        renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
+        renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_captureFrameBuffers)->m_frame_buffer;
         renderPassBeginInfo.renderArea.offset = {0, 0};
         renderPassBeginInfo.renderArea.extent = getWindowScissor().extent;
         renderPassBeginInfo.clearValueCount = 2;
@@ -1850,6 +1854,11 @@ namespace Shatter::render{
             renderPassBeginInfo.renderArea.extent = SingleAPP.getPresentViewPort().scissor.extent;
             renderPassBeginInfo.clearValueCount = AttachmentCount;
             renderPassBeginInfo.pClearValues = clearValues.data();
+        }
+
+        if (SingleAPP.viewportChanged) {
+            ((VulkanFrameBuffer*)m_colorFrameBuffers)->resize(SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height);
+            updateColorSet();
         }
 
         vkBeginCommandBuffer(m_colorCommandBuffer, &cmdBufInfo);
@@ -2247,6 +2256,7 @@ namespace Shatter::render{
 
     void ShatterRender::createGraphicsCommandBuffers() {
         vkQueueWaitIdle(graphics_queue);
+        vkQueueWaitIdle(transfer_queue);
         createNewCaptureCommandBuffers();
         createColorGraphicsCommandBuffersMultiple();
         createPresentGraphicsCommandBuffers();
@@ -2790,13 +2800,13 @@ namespace Shatter::render{
                     1,
                     &computeFinishedSemaphore
             };
-            VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+            assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
             computeSubmitInfo.waitSemaphoreCount = 1;
             computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
             computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
 
             uint32_t imageIndex;
-            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
+            assert(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex) == VK_SUCCESS);
             setSwapChainIndex(int(imageIndex));
 
             static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
@@ -2815,7 +2825,7 @@ namespace Shatter::render{
                     signalSemaphores
             };
 
-            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
+            assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
 //            VkPresentInfoKHR presentInfo = {};
             presentInfo = {
                     VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -2827,7 +2837,7 @@ namespace Shatter::render{
                     &imageIndex,
                     nullptr
             };
-            VK_CHECK_RESULT(vkQueuePresentKHR(present_queue, &presentInfo));
+            assert(vkQueuePresentKHR(present_queue, &presentInfo) == VK_SUCCESS);
             firstDraw = false;
         }else{
             if(!windowStill)
@@ -2836,13 +2846,13 @@ namespace Shatter::render{
                 computeSubmitInfo.waitSemaphoreCount = 0;
                 computeSubmitInfo.pWaitSemaphores = nullptr;
                 computeSubmitInfo.pWaitDstStageMask = nullptr;
-                VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+                assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
                 windowStill = true;
                 computeSubmitInfo.waitSemaphoreCount = 1;
                 computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
                 computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
             }else{
-                VK_CHECK_RESULT(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE));
+                assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
             }
 
             uint32_t imageIndex;
@@ -2855,13 +2865,12 @@ namespace Shatter::render{
             setSwapChainIndex(int(imageIndex));
             commands[2] = SingleRender.new_graphics_buffer[imageIndex];
 
-            if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged)
+            if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
             {
-//                createGraphicsCommandBuffersMultiple();
                 createGraphicsCommandBuffers();
                 guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
+                SingleAPP.viewportChanged = false;
             } else if (Config::getConfig("enableScreenGui")) {
-//                updateGraphicsCommandBuffersMultiple(imageIndex);
                 updatePresentCommandBuffers(imageIndex);
             }
 
@@ -3317,6 +3326,31 @@ namespace Shatter::render{
             ImGui_ImplGlfw_InitForVulkan(((GLFWWindow*)SingleAPP.getMainWindow())->get(), true);
             ImGui_ImplVulkan_Init(&initInfo, m_presentRenderPass);
         }
+    }
+
+    void ShatterRender::updateColorSet() {
+        std::array<VkDescriptorImageInfo, 3> descriptorImageInfos = {
+                tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[1].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+                tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[2].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+                tool::descriptorImageInfo(VK_NULL_HANDLE, ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[3].imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+        };
+        std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
+        for (size_t i = 0; i < descriptorImageInfos.size(); i++) {
+            writeDescriptorSets[i] = (tool::writeDescriptorSet(SingleSetPool["gBuffer"], VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, i, &descriptorImageInfos[i]));
+        }
+        vkUpdateDescriptorSets(SingleDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+
+        float view[2] = {SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height};
+        memcpy(SingleBPool.getBuffer("ViewPort", Buffer_Type::Uniform_Buffer)->mapped, view, 8);
+
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageView = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].imageView;
+        imageInfo.sampler = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[0].sampler;
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        auto writeSet = tool::writeDescriptorSet(SingleRender.m_colorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
+
+        vkUpdateDescriptorSets(SingleDevice(), 1, &writeSet, 0, nullptr);
     }
 }
 

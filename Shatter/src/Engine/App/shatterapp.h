@@ -77,6 +77,7 @@ namespace Shatter{
             std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
+            bool viewportChanged = false;
         private:
             time_point m_start_time;
             time_point m_pre_time;

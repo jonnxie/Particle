@@ -689,7 +689,28 @@ void GUI::init(float width, float height) {
         {
             ImGui::Begin("ViewPort");
 
-            ImGui::Image(SingleRender.m_colorSet, {SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height});
+            ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+            if (viewportPanelSize.x != SingleAPP.getPresentViewPort().view.width || viewportPanelSize.y != SingleAPP.getPresentViewPort().view.height)
+            {
+                auto& view = SingleAPP.getPresentViewPort();
+                view.view.width = viewportPanelSize.x;
+                view.view.height = viewportPanelSize.y;
+                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+                SingleAPP.viewportChanged = true;
+            }
+
+            ImVec2 pos;
+
+            ImGui::ImagePosition(SingleRender.m_colorSet, viewportPanelSize, pos);
+
+//            if (pos.x != SingleAPP.getPresentViewPort().view.x || pos.y != SingleAPP.getPresentViewPort().view.y)
+//            {
+//                auto& view = SingleAPP.getPresentViewPort();
+//                view.view.x = pos.x;
+//                view.view.y = pos.y;
+//                SingleAPP.viewportChanged = true;
+//            }
 
             ImGui::End();//ViewPort
         }

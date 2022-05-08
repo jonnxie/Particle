@@ -40,8 +40,7 @@ void TBasic::constructG()
 
 void TBasic::constructD()
 {
-    VkDescriptorSet set;
-    SingleSetPool.AllocateDescriptorSets(std::vector<Set_id>{"TransparentInput"}, &set);
+    SingleSetPool.AllocateDescriptorSets(std::vector<Set_id>{"TransparentInput"}, &m_set);
 
     std::array<VkWriteDescriptorSet,2> writes = {};
     VkDescriptorImageInfo attachImgInfo{};
@@ -51,7 +50,7 @@ void TBasic::constructD()
 
     writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[0].pNext = VK_NULL_HANDLE;
-    writes[0].dstSet = set;
+    writes[0].dstSet = m_set;
     writes[0].dstBinding = 0;
     writes[0].dstArrayElement = 0;
     writes[0].descriptorCount = 1;
@@ -67,7 +66,7 @@ void TBasic::constructD()
 
     writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[1].pNext = VK_NULL_HANDLE;
-    writes[1].dstSet = set;
+    writes[1].dstSet = m_set;
     writes[1].dstBinding = 1;
     writes[1].dstArrayElement = 0;
     writes[1].descriptorCount = 1;
@@ -88,7 +87,7 @@ void TBasic::constructD()
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
-    (*dpool)[d]->m_newDraw = [&,set,modelIndex](VkCommandBuffer _cb){
+    (*dpool)[d]->m_newDraw = [&,modelIndex](VkCommandBuffer _cb){
         UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
         VkRect2D& scissor = tmp.scissor;
@@ -97,7 +96,7 @@ void TBasic::constructD()
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex]),
                                           SingleSetPool["Camera"],
-                                          set
+                                          m_set
         };
         vkCmdBindDescriptorSets(_cb,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -110,6 +109,44 @@ void TBasic::constructD()
 
         // Mesh containing the LODs
         vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()["Transparent"]->getPipeline());
+        if (SingleAPP.viewportChanged) {
+            VkDescriptorImageInfo attachImgInfo{};
+            attachImgInfo.sampler = VK_NULL_HANDLE;
+            attachImgInfo.imageView = ((VulkanFrameBuffer*)SingleRender.m_colorFrameBuffers)->m_attachments[1].imageView;
+            attachImgInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[0].pNext = VK_NULL_HANDLE;
+            writes[0].dstSet = m_set;
+            writes[0].dstBinding = 0;
+            writes[0].dstArrayElement = 0;
+            writes[0].descriptorCount = 1;
+            writes[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+            writes[0].pImageInfo = &attachImgInfo;
+            writes[0].pBufferInfo = VK_NULL_HANDLE;
+
+            auto glass = SingleBPool.getTexture("glass");
+            VkDescriptorImageInfo glassImgInfo{};
+            glassImgInfo.sampler = glass->getSampler();
+            glassImgInfo.imageView = glass->getImageView();
+            glassImgInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[1].pNext = VK_NULL_HANDLE;
+            writes[1].dstSet = m_set;
+            writes[1].dstBinding = 1;
+            writes[1].dstArrayElement = 0;
+            writes[1].descriptorCount = 1;
+            writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writes[1].pImageInfo = &glassImgInfo;
+            writes[1].pBufferInfo = VK_NULL_HANDLE;
+
+            vkUpdateDescriptorSets(Device::getDevice()(),
+                                   writes.size(),
+                                   writes.data(),
+                                   0,
+                                   nullptr);
+        }
         m_model->draw(_cb);
     };
     insertDObject(d);
