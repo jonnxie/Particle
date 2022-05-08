@@ -68,6 +68,7 @@ namespace Shatter{
             Window* m_mainWindow {nullptr};
             std::mutex presentMutex;
             UnionViewPort presentViewPort;
+            ClassPointerElementInitial(viewTouched, bool, ViewPortTouched, false);
         private:
             std::mutex m_captured_lock;
             ShatterApp();

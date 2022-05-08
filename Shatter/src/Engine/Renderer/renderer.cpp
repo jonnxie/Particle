@@ -123,7 +123,7 @@ namespace Shatter::render{
         {
             GUI::getGUI()->updateUI();
         }
-        draw();
+        newDraw();
     }
 
     void ShatterRender::cleanup(){
@@ -169,6 +169,8 @@ namespace Shatter::render{
         vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(device, computeFinishedSemaphore, nullptr);
         vkDestroySemaphore(device, computeReadySemaphore, nullptr);
+
+        vkDestroyFence(device, renderFence, nullptr);
 
         vkDestroyCommandPool(device, graphic_commandPool, nullptr);
         vkDestroyCommandPool(device, compute_commandPool, nullptr);
@@ -2255,8 +2257,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createGraphicsCommandBuffers() {
-        vkQueueWaitIdle(graphics_queue);
-        vkQueueWaitIdle(transfer_queue);
         createNewCaptureCommandBuffers();
         createColorGraphicsCommandBuffersMultiple();
         createPresentGraphicsCommandBuffers();
@@ -2681,6 +2681,11 @@ namespace Shatter::render{
 
             throw std::runtime_error("failed to create semaphores!");
         }
+
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence);
     }
 
     void ShatterRender::recreateSwapChain(){
@@ -2699,7 +2704,7 @@ namespace Shatter::render{
         createPrimaryCommandBuffers();
         createComputeCommandBuffer();
         createSecondaryCommandBuffers();
-        createGraphicsCommandBuffers();
+//        createGraphicsCommandBuffers();
 //        createGraphicsCommandBuffersMultiple();
         vkDeviceWaitIdle(device);
     }
@@ -2781,6 +2786,71 @@ namespace Shatter::render{
                 vkDestroyFramebuffer(device, present.framebuffer, nullptr);
             }
         }
+    }
+
+    void ShatterRender::newDraw() {
+        static std::array<VkCommandBuffer, 3> commands{SingleRender.m_colorCommandBuffer, SingleRender.now_capture_buffer, VK_NULL_HANDLE};
+
+        uint32_t imageIndex;
+        auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
+            recreateSwapChain();
+            windowStill = false;
+        }
+        setSwapChainIndex(int(imageIndex));
+        commands[2] = SingleRender.new_graphics_buffer[imageIndex];
+
+        static VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+        graphicsSubmitInfo = {
+                VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                nullptr,
+                1,
+                &imageAvailableSemaphore,
+                waitStages,
+                3,
+                commands.data(),
+                1,
+                &renderFinishedSemaphore
+        };
+        VkResult fenceRes;
+        do {
+            fenceRes = vkWaitForFences(device, 1, &renderFence, VK_TRUE, 100000000);
+        } while (fenceRes == VK_TIMEOUT);
+        assert(fenceRes == VK_SUCCESS);
+        vkResetFences(device, 1, &renderFence);
+        if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
+        {
+            createGraphicsCommandBuffers();
+            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
+            SingleAPP.viewportChanged = false;
+        } else if (Config::getConfig("enableScreenGui")) {
+            updatePresentCommandBuffers(imageIndex);
+        }
+
+        VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+
+        presentInfo = {
+                VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                nullptr,
+                1,
+                &renderFinishedSemaphore,
+                1,
+                &swapchain,
+                &imageIndex,
+                nullptr
+        };
+        auto result = vkQueuePresentKHR(present_queue, &presentInfo);
+        if (!((result == VK_SUCCESS) || (result == VK_SUBOPTIMAL_KHR))) {
+            if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+                recreateSwapChain();
+                return;
+            } else {
+                VK_CHECK_RESULT(result);
+            }
+        }
+        vkQueueWaitIdle(graphics_queue);
+        vkQueueWaitIdle(transfer_queue);
     }
 
     void ShatterRender::draw() {
@@ -2875,7 +2945,7 @@ namespace Shatter::render{
             }
 
             graphicsSubmitInfo.pCommandBuffers = commands.data();
-            assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
+            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
 
             presentInfo.pImageIndices = &imageIndex;
             auto result = vkQueuePresentKHR(present_queue, &presentInfo);

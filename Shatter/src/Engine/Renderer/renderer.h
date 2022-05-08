@@ -185,6 +185,8 @@ namespace Shatter{
 
             void draw();
 
+            void newDraw();
+
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
             VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -292,6 +294,7 @@ namespace Shatter{
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
 
             VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
+            VkFence renderFence{};
 
             std::vector<VkClearValue> clearValues{};
             VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
