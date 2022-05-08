@@ -22,8 +22,10 @@ void Config::init()
     config_map["enableDockSpace"]               = 0;
     config_map["enableFullScreenPersistant"]    = 1;
     config_map["enableMultipleComputeQueue"]    = 0;
-    config_map["width"]                         = 1200;
-    config_map["height"]                        = 900;
+    config_map["width"]                         = 1500;
+    config_map["height"]                        = 1200;
+    config_map["presentWidth"]                  = 512;
+    config_map["presentHeight"]                 = 512;
     config_map["LightInitCount"]                = 64;
     config_map["PointDefaultSize"]              = 4;
     config_map["SwapChainImageCount"]           = 3;

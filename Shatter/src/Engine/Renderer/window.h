@@ -51,7 +51,7 @@ public:
     }
     ~GLFWWindow() override {
         glfwDestroyWindow(window);
-        glfwTerminate();
+//        glfwTerminate();
     };
 public:
     void keyCallback(int _key, int _action) override;

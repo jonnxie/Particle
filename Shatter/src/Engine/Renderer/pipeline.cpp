@@ -430,18 +430,17 @@ void GP::setBasePipelineIndex(int32_t basePipelineIndex){
 GP::GP() {
     m_createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-    m_defaultViewport.x = 0.0f;
-    m_defaultViewport.y = 0.0f;
-    m_defaultViewport.width = (float)getViewPort().view.width;
-    m_defaultViewport.height = (float)getViewPort().view.height;
+//    m_defaultViewport.x = 0.0f;
+//    m_defaultViewport.y = 0.0f;
+//    m_defaultViewport.width = (float) getWindowViewPort().view.width;
+//    m_defaultViewport.height = (float) getWindowViewPort().view.height;
+    m_defaultViewport = SingleAPP.getPresentViewPort()();
+//    m_defaultViewport.minDepth = 0.0f;
+//    m_defaultViewport.maxDepth = 1.0f;
 
-//    m_defaultViewport.width = (float)SingleRender.getExtent2D().width;
-//    m_defaultViewport.height = (float)SingleRender.getExtent2D().height;
-    m_defaultViewport.minDepth = 0.0f;
-    m_defaultViewport.maxDepth = 1.0f;
-
-    m_defaultScissor.offset = getScissor().offset;
-    m_defaultScissor.extent = getScissor().extent;
+//    m_defaultScissor.offset = getWindowScissor().offset;
+//    m_defaultScissor.extent = getWindowScissor().extent;
+    m_defaultScissor = SingleAPP.getPresentViewPort().scissor;
 //    m_defaultScissor.offset = {0, 0};
 //    m_defaultScissor.extent = SingleRender.getExtent2D();
 

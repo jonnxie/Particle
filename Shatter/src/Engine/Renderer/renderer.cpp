@@ -186,18 +186,18 @@ namespace Shatter::render{
     }
 
     void ShatterRender::initWindow(){
-        setViewPort(UnionViewPort{
+        setWindowViewPort(UnionViewPort{
                 VkViewport{0,
                            0,
-                           float(SingleAPP.getScreenWidth()),
-                           float(SingleAPP.getScreenHeight()),
+                           float(SingleAPP.getWindowSize().first),
+                           float(SingleAPP.getWindowSize().second),
                            0,
                            1.0f}
         });
 
-        setScissor(VkRect2D{
-            VkOffset2D{0,0},
-            VkExtent2D{uint32_t(SingleAPP.getScreenWidth()), uint32_t(SingleAPP.getScreenHeight())}
+        setWindowScissor(VkRect2D{
+                VkOffset2D{0, 0},
+                VkExtent2D{uint32_t(SingleAPP.getWindowSize().first), uint32_t(SingleAPP.getWindowSize().second)}
         });
     }
 
@@ -401,7 +401,8 @@ namespace Shatter::render{
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D extent = ::chooseSwapExtent(swapChainSupport.capabilities,getViewPort().view.width,getViewPort().view.height);
+        VkExtent2D extent = ::chooseSwapExtent(swapChainSupport.capabilities, getWindowViewPort().view.width,
+                                               getWindowViewPort().view.height);
 
         setSwapChainFormat(surfaceFormat);
 
@@ -496,7 +497,6 @@ namespace Shatter::render{
             m_swapChainImageviews.resize(m_presentImages.size());
             m_swapChainSamplers.resize(m_presentImages.size());
             VkSamplerCreateInfo samplerInfo = tool::samplerCreateInfo();
-            m_swapChainSets.resize(m_presentImages.size());
 
             for (size_t i = 0; i < m_swapchainImages.size(); i++) {
                 m_swapChainImageviews[i] = buffer::ShatterTexture::Create_ImageView(&device, m_swapchainImages[i], m_presentFormat,
@@ -527,8 +527,8 @@ namespace Shatter::render{
     void ShatterRender::createCaptureFramebuffers()
     {
         FrameBufferSpecification spec{};
-        spec.Width = getViewPort().view.width;
-        spec.Height = getViewPort().view.height;
+        spec.Width = Config::getConfig("presentWidth");
+        spec.Height = Config::getConfig("presentHeight");
         spec.formats = {{m_captureFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
                         {m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}};
         spec.Samples = 1;
@@ -605,8 +605,8 @@ namespace Shatter::render{
         VkImageCreateInfo image = tool::imageCreateInfo();
         image.imageType = VK_IMAGE_TYPE_2D;
         image.format = _format;
-        image.extent.width = getViewPort().view.width;
-        image.extent.height = getViewPort().view.height;
+        image.extent.width = SingleAPP.getPresentViewPort().view.width;
+        image.extent.height = SingleAPP.getPresentViewPort().view.height;
 //        image.extent.width = swapchain_extent.width;
 //        image.extent.height = swapchain_extent.height;
         image.extent.depth = 1;
@@ -1033,8 +1033,8 @@ namespace Shatter::render{
 
     void ShatterRender::createColorFramebuffers() {
         FrameBufferSpecification spec{};
-        spec.Width = getViewPort().view.width;
-        spec.Height = getViewPort().view.height;
+        spec.Width = SingleAPP.getPresentViewPort().view.width;
+        spec.Height = SingleAPP.getPresentViewPort().view.height;
         spec.formats = {
                 {m_presentFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT},
                 {VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT},
@@ -1627,7 +1627,7 @@ namespace Shatter::render{
             renderPassBeginInfo.renderPass = m_captureRenderPass;
             renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
             renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.renderArea.extent = SingleAPP.getPresentViewPort().scissor.extent;
             renderPassBeginInfo.clearValueCount = 2;
             renderPassBeginInfo.pClearValues = clearCaptureValue.data();
         }
@@ -1654,8 +1654,8 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
         }
-        VkViewport& viewport = getViewPort().view;
-        VkRect2D& scissor = getScissor();
+        VkViewport& viewport = SingleAPP.getPresentViewPort()();
+        VkRect2D& scissor = SingleAPP.getPresentViewPort().scissor;
 
         int threadIndex = 0;
         for(auto& pair: aabb_map)
@@ -1704,10 +1704,7 @@ namespace Shatter::render{
         if(!captureBuffers.empty()) {
             vkCmdExecuteCommands(now_capture_buffer, captureBuffers.size(), captureBuffers.data());
         }
-        pre_new_capture_buffers.clear();
-        pre_new_capture_buffers.insert(pre_new_capture_buffers.end(), captureBuffers.begin(), captureBuffers.end());
         vkCmdEndRenderPass(now_capture_buffer);
-
         vkEndCommandBuffer(now_capture_buffer);
     }
 
@@ -1723,7 +1720,7 @@ namespace Shatter::render{
             renderPassBeginInfo.renderPass = m_captureRenderPass;
             renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
             renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.renderArea.extent = getWindowScissor().extent;
             renderPassBeginInfo.clearValueCount = 2;
             renderPassBeginInfo.pClearValues = clearCaptureValue.data();
         }
@@ -1750,8 +1747,8 @@ namespace Shatter::render{
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
         }
-        VkViewport& viewport = getViewPort().view;
-        VkRect2D& scissor = getScissor();
+        VkViewport& viewport = getWindowViewPort().view;
+        VkRect2D& scissor = getWindowScissor();
 
         int threadIndex = 0;
         for(auto& pair: aabb_map)
@@ -1819,7 +1816,7 @@ namespace Shatter::render{
         renderPassBeginInfo.renderPass = m_captureRenderPass;
         renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_frameBuffers)->m_frame_buffer;
         renderPassBeginInfo.renderArea.offset = {0, 0};
-        renderPassBeginInfo.renderArea.extent = getScissor().extent;
+        renderPassBeginInfo.renderArea.extent = getWindowScissor().extent;
         renderPassBeginInfo.clearValueCount = 2;
         renderPassBeginInfo.pClearValues = clearCaptureValue.data();
 
@@ -1850,7 +1847,7 @@ namespace Shatter::render{
             renderPassBeginInfo.renderPass = m_colorRenderPass;
             renderPassBeginInfo.framebuffer = ((VulkanFrameBuffer*)m_colorFrameBuffers)->get();
             renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = getScissor().extent;
+            renderPassBeginInfo.renderArea.extent = SingleAPP.getPresentViewPort().scissor.extent;
             renderPassBeginInfo.clearValueCount = AttachmentCount;
             renderPassBeginInfo.pClearValues = clearValues.data();
         }
@@ -1916,9 +1913,9 @@ namespace Shatter::render{
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
             vkBeginCommandBuffer(m_compositeCommandBuffer, &commandBufferBeginInfo);
-            UnionViewPort& tmp = getViewPort();
+            UnionViewPort& tmp = SingleAPP.getPresentViewPort();
             vkCmdSetViewport(m_compositeCommandBuffer, 0, 1, &tmp.view);
-            VkRect2D& scissor = getScissor();
+            VkRect2D& scissor = tmp.scissor;
             vkCmdSetScissor(m_compositeCommandBuffer,0,1,&scissor);
 
             std::array<VkDescriptorSet,2> sets{};
@@ -2095,14 +2092,14 @@ namespace Shatter::render{
             vkCmdBeginRenderPass(new_graphics_buffer[i], &renderPassBeginInfo,
                                  VK_SUBPASS_CONTENTS_INLINE);
 
-            UnionViewPort& tmp = getViewPort();
-            vkCmdSetViewport(new_graphics_buffer[i], 0, 1, &tmp.view);
-            VkRect2D& scissor = getScissor();
-            vkCmdSetScissor(new_graphics_buffer[i],0,1, &scissor);
-
-            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
-            vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
-            vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
+//            UnionViewPort& tmp = getWindowViewPort();
+//            vkCmdSetViewport(new_graphics_buffer[i], 0, 1, &tmp.view);
+//            VkRect2D& scissor = getWindowScissor();
+//            vkCmdSetScissor(new_graphics_buffer[i],0,1, &scissor);
+//
+//            vkCmdBindDescriptorSets(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
+//            vkCmdBindPipeline(new_graphics_buffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
+//            vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
 
             if (Config::getConfig("enableScreenGui")) {
                 imGui->drawFrame(new_graphics_buffer[i]);
@@ -2207,14 +2204,14 @@ namespace Shatter::render{
                              VK_SUBPASS_CONTENTS_INLINE);
 
 
-        UnionViewPort& tmp = getViewPort();
-        vkCmdSetViewport(new_graphics_buffer[_index], 0, 1, &tmp.view);
-        VkRect2D& scissor = getScissor();
-        vkCmdSetScissor(new_graphics_buffer[_index],0,1, &scissor);
-
-        vkCmdBindDescriptorSets(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
-        vkCmdBindPipeline(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
-        vkCmdDraw(new_graphics_buffer[_index], 3, 1, 0, 0);
+//        UnionViewPort& tmp = getWindowViewPort();
+//        vkCmdSetViewport(new_graphics_buffer[_index], 0, 1, &tmp.view);
+//        VkRect2D& scissor = getWindowScissor();
+//        vkCmdSetScissor(new_graphics_buffer[_index],0,1, &scissor);
+//
+//        vkCmdBindDescriptorSets(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipelineLayout(), 0, 1, &m_colorSet, 0, nullptr);
+//        vkCmdBindPipeline(new_graphics_buffer[_index], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Present"]->getPipeline());
+//        vkCmdDraw(new_graphics_buffer[_index], 3, 1, 0, 0);
 
         if (Config::getConfig("enableScreenGui")) {
             imGui->drawFrame(new_graphics_buffer[_index]);
@@ -2283,7 +2280,7 @@ namespace Shatter::render{
                 renderPassBeginInfo.renderPass = m_renderPass;
                 renderPassBeginInfo.framebuffer = m_swapChainFramebuffers[i];
                 renderPassBeginInfo.renderArea.offset = {0, 0};
-                renderPassBeginInfo.renderArea.extent = getScissor().extent;
+                renderPassBeginInfo.renderArea.extent = getWindowScissor().extent;
                 renderPassBeginInfo.clearValueCount = AttachmentCount;
                 renderPassBeginInfo.pClearValues = clearValues.data();
             }
@@ -2363,9 +2360,9 @@ namespace Shatter::render{
                 commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
                 vkBeginCommandBuffer(composite_buffers[i], &commandBufferBeginInfo);
-                UnionViewPort& tmp = getViewPort();
+                UnionViewPort& tmp = getWindowViewPort();
                 vkCmdSetViewport(composite_buffers[i], 0, 1, &tmp.view);
-                VkRect2D& scissor = getScissor();
+                VkRect2D& scissor = getWindowScissor();
                 vkCmdSetScissor(composite_buffers[i],0,1,&scissor);
 
                 std::array<VkDescriptorSet,2> sets{};
@@ -2448,10 +2445,10 @@ namespace Shatter::render{
                     commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
                     vkBeginCommandBuffer(offscreen_buffers[i], &commandBufferBeginInfo);
-                    UnionViewPort& tmp = getViewPort();
+                    UnionViewPort& tmp = getWindowViewPort();
                     vkCmdSetViewport(offscreen_buffers[i], 0, 1, &tmp.view);
 
-                    VkRect2D& scissor = getScissor();
+                    VkRect2D& scissor = getWindowScissor();
                     vkCmdSetScissor(offscreen_buffers[i],0,1,&scissor);
                     VkDescriptorSet tmp_set = SingleSetPool["OffScreen"];
                     vkCmdBindDescriptorSets(offscreen_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Quad"]->getPipelineLayout(), 0, 1, &tmp_set, 0, nullptr);
@@ -2529,14 +2526,14 @@ namespace Shatter::render{
                 VK_NULL_HANDLE,
                 m_renderPass,
                 m_swapChainFramebuffers[_index],
-                {{0, 0},getScissor().extent},
+                {{0, 0}, getWindowScissor().extent},
                 AttachmentCount,
                 clearValues.data()
         };
 
         renderPassBeginInfo.framebuffer = m_swapChainFramebuffers[_index];
         renderPassBeginInfo.renderPass = m_renderPass;
-        renderPassBeginInfo.renderArea = {{0, 0},getScissor().extent};
+        renderPassBeginInfo.renderArea = {{0, 0}, getWindowScissor().extent};
 
         vkQueueWaitIdle(graphics_queue);
 
@@ -2682,7 +2679,7 @@ namespace Shatter::render{
         createSwapChain();
 //        createRenderPass();
         createDepthResources();
-        createFramebuffers();
+//        createFramebuffers();
         createCaptureFramebuffers();
 
         {
@@ -2721,8 +2718,8 @@ namespace Shatter::render{
 //            input::MousePressCoordiante(coordinate, STATE_IN);
             pressMouse(button);
             glm::vec2& tmp = getCursorPressPos();
-            tmp.x = float(coordinate.x) / getViewPort().view.width;
-            tmp.y = float(coordinate.y) / getViewPort().view.height;
+            tmp.x = float(coordinate.x) / getWindowViewPort().view.width;
+            tmp.y = float(coordinate.y) / getWindowViewPort().view.height;
             tmp *= 2.0f;
             tmp -= 1.0f;
             glm::vec3& press_cursor = input::getCursorPress();
@@ -3300,34 +3297,25 @@ namespace Shatter::render{
         imGui->init((float)presentExtent.width, (float)presentExtent.height);
         imGui->initResources(m_presentRenderPass, graphics_queue, "../shaders/");
 
-        ImGui_ImplVulkan_InitInfo initInfo{};
-        initInfo.Instance = instance;
-        initInfo.PhysicalDevice = physicalDevice;
-        initInfo.Device = device;
-        initInfo.QueueFamily = getIndices().graphicsFamily;
-        initInfo.Queue = graphics_queue;
-        initInfo.PipelineCache = VK_NULL_HANDLE;
-        initInfo.DescriptorPool = descriptorPool;
-        initInfo.Subpass = SubpassTransparency;
-        initInfo.MinImageCount =  min_image_count;
-        initInfo.ImageCount = m_swapchainImages.size();
-        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        initInfo.Allocator = nullptr;
-        initInfo.CheckVkResultFn = check_vk_result;
-
         if(Config::getConfig("enableDockSpace"))
         {
+            ImGui_ImplVulkan_InitInfo initInfo{};
+            initInfo.Instance = instance;
+            initInfo.PhysicalDevice = physicalDevice;
+            initInfo.Device = device;
+            initInfo.QueueFamily = getIndices().graphicsFamily;
+            initInfo.Queue = graphics_queue;
+            initInfo.PipelineCache = VK_NULL_HANDLE;
+            initInfo.DescriptorPool = descriptorPool;
+            initInfo.Subpass = 0;
+            initInfo.MinImageCount =  min_image_count;
+            initInfo.ImageCount = m_swapChainImageCount;
+            initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+            initInfo.Allocator = nullptr;
+            initInfo.CheckVkResultFn = check_vk_result;
+
             ImGui_ImplGlfw_InitForVulkan(((GLFWWindow*)SingleAPP.getMainWindow())->get(), true);
-            ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
-
-
-            for(size_t index = 0; index < m_swapchainImages.size(); index++)
-            {
-                m_swapChainSets[index] = ImGui_ImplVulkan_AddTexture(m_swapChainSamplers[index],
-                                                                     m_swapChainImageviews[index],
-                                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                std::cout << "SwapChainImageSet: " << m_swapChainSets[index] << std::endl;
-            }
+            ImGui_ImplVulkan_Init(&initInfo, m_presentRenderPass);
         }
     }
 }

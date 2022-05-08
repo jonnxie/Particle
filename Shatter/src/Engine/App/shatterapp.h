@@ -37,8 +37,7 @@ namespace Shatter{
             ~ShatterApp();
             DefineUnCopy(ShatterApp);
         public:
-            int getScreenWidth() const {return m_width;};
-            int getScreenHeight() const {return m_height;};
+            std::pair<int, int> getWindowSize() const;
         public:
             void updateTimer();
             void update();
@@ -54,7 +53,6 @@ namespace Shatter{
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
             ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
             ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
-
         public:
             void capturedPush(const std::shared_ptr<CaptureObject>& _id);
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
@@ -64,8 +62,12 @@ namespace Shatter{
             void setMainWindow();
             void setMainWindow(int _width, int _height, std::string _title);
             Window* getMainWindow();
+            void setPresentViewPort(const UnionViewPort& _viewport);
+            UnionViewPort& getPresentViewPort();
         private:
             Window* m_mainWindow {nullptr};
+            std::mutex presentMutex;
+            UnionViewPort presentViewPort;
         private:
             std::mutex m_captured_lock;
             ShatterApp();
@@ -76,15 +78,11 @@ namespace Shatter{
         public:
             bool cameraChanged = true;
         private:
-            float lastTime;
             time_point m_start_time;
             time_point m_pre_time;
             Listener* m_listener;
             std::unordered_map<std::string,Listener*> m_otherListener;
-            int m_width;
-            int m_height;
         };
-
     }
 }
 

@@ -41,9 +41,7 @@ void TBasic::constructG()
 void TBasic::constructD()
 {
     VkDescriptorSet set;
-    void AllocateDescriptorSets(const std::vector<Set_id>& _ids,VkDescriptorSet* _set);
-
-    SingleSetPool.AllocateDescriptorSets(std::vector<Set_id>{"TransparentInput"},&set);
+    SingleSetPool.AllocateDescriptorSets(std::vector<Set_id>{"TransparentInput"}, &set);
 
     std::array<VkWriteDescriptorSet,2> writes = {};
     VkDescriptorImageInfo attachImgInfo{};
@@ -91,10 +89,9 @@ void TBasic::constructD()
     (*dpool)[d]->m_matrix = m_world;
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_newDraw = [&,set,modelIndex](VkCommandBuffer _cb){
-        UnionViewPort& tmp = getViewPort();
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
         vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-
-        VkRect2D& scissor = getScissor();
+        VkRect2D& scissor = tmp.scissor;
         vkCmdSetScissor(_cb,0,1,&scissor);
 
         auto set_pool = MPool<VkDescriptorSet>::getPool();

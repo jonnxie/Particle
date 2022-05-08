@@ -188,6 +188,16 @@ void test()
 int main() {
     Shatter::App::ShatterApp& app = Shatter::App::ShatterApp::getApp();
     app.setMainWindow();
+    UnionViewPort viewPort;
+    viewPort.view.x = 0;
+    viewPort.view.y = 0;
+    viewPort.view.width = Config::getConfig("presentWidth");
+    viewPort.view.height = Config::getConfig("presentHeight");
+    viewPort.view.minDepth = 0;
+    viewPort.view.maxDepth = 1;
+    viewPort.scissor.offset = { 0, 0};
+    viewPort.scissor.extent = { (uint32_t)Config::getConfig("presentWidth"), (uint32_t)Config::getConfig("presentHeight")};
+    SingleAPP.setPresentViewPort(viewPort);
     /*
      * render
      */

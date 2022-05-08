@@ -1,6 +1,7 @@
 //
 // Created by maybe on 2021/6/5.
 //
+#include <Engine/App/shatterapp.h>
 #include "precompiledhead.h"
 
 #include "bpool.h"
@@ -273,7 +274,7 @@ void BPool::init() {
     m_vertex_map["CameraTargetPlane"]->map();
 
     m_uniform_map["ViewPort"]->map();
-    float view[2] = {getViewPort().view.width, getViewPort().view.height};
+    float view[2] = {SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height};
     memcpy(m_uniform_map["ViewPort"]->mapped, view, 8);
 
     m_idle_model.resize(m_model_count);

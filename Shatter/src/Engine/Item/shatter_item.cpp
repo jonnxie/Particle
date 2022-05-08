@@ -503,19 +503,19 @@ void setIndices(const QueueFamilyIndices &_indices) {
     queueIndices = _indices;
 }
 
-UnionViewPort& getViewPort() {
-    return viewPort;
+UnionViewPort& getWindowViewPort() {
+    return windowViewPort;
 }
 
-void setViewPort(UnionViewPort _viewport) {
-    viewPort = _viewport;
+void setWindowViewPort(UnionViewPort _viewport) {
+    windowViewPort = _viewport;
 }
 
-VkRect2D& getScissor() {
+VkRect2D& getWindowScissor() {
     return scissor;
 }
 
-void setScissor(VkRect2D _scissor) {
+void setWindowScissor(VkRect2D _scissor) {
     scissor = _scissor;
 }
 
@@ -1475,8 +1475,8 @@ namespace tool {
         imageCreateCI.imageType = VK_IMAGE_TYPE_2D;
         // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
         imageCreateCI.format = VK_FORMAT_R8G8B8A8_UNORM;
-        imageCreateCI.extent.width = viewPort.view.width;
-        imageCreateCI.extent.height = viewPort.view.height;
+        imageCreateCI.extent.width = windowViewPort.view.width;
+        imageCreateCI.extent.height = windowViewPort.view.height;
         imageCreateCI.extent.depth = 1;
         imageCreateCI.arrayLayers = 1;
         imageCreateCI.mipLevels = 1;
@@ -1531,8 +1531,8 @@ namespace tool {
         {
             // Define the region to blit (we will blit the whole swapchain image)
             VkOffset3D blitSize;
-            blitSize.x = viewPort.view.width;
-            blitSize.y = viewPort.view.height;
+            blitSize.x = windowViewPort.view.width;
+            blitSize.y = windowViewPort.view.height;
             blitSize.z = 1;
             VkImageBlit imageBlitRegion{};
             imageBlitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1559,8 +1559,8 @@ namespace tool {
             imageCopyRegion.srcSubresource.layerCount = 1;
             imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             imageCopyRegion.dstSubresource.layerCount = 1;
-            imageCopyRegion.extent.width = viewPort.view.width;
-            imageCopyRegion.extent.height = viewPort.view.height;
+            imageCopyRegion.extent.width = windowViewPort.view.width;
+            imageCopyRegion.extent.height = windowViewPort.view.height;
             imageCopyRegion.extent.depth = 1;
 
             // Issue the copy command
@@ -1612,7 +1612,7 @@ namespace tool {
         std::ofstream file(filename, std::ios::out | std::ios::binary);
 
         // ppm header
-        file << "P6\n" << viewPort.view.width << "\n" << viewPort.view.height << "\n" << 255 << "\n";
+        file << "P6\n" << windowViewPort.view.width << "\n" << windowViewPort.view.height << "\n" << 255 << "\n";
 
         // If source is BGR (destination is always RGB) and we can't use blit (which does automatic conversion), we'll have to manually swizzle color components
         bool colorSwizzle = false;
@@ -1625,10 +1625,10 @@ namespace tool {
         }
 
         // ppm binary pixel data
-        for (uint32_t y = 0; y < viewPort.view.height; y++)
+        for (uint32_t y = 0; y < windowViewPort.view.height; y++)
         {
             unsigned int *row = (unsigned int*)data;
-            for (uint32_t x = 0; x < viewPort.view.width; x++)
+            for (uint32_t x = 0; x < windowViewPort.view.width; x++)
             {
                 if (colorSwizzle)
                 {

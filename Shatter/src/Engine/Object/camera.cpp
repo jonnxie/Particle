@@ -35,7 +35,7 @@ void Camera::generateLookAt(){
 }
 
 void Camera::generateProj(){
-    m_aspect = getViewPort().view.width / getViewPort().view.height;
+    m_aspect = SingleAPP.getPresentViewPort().view.width / SingleAPP.getPresentViewPort().view.height;
     m_reverse_aspect = 1.0f / m_aspect;
     m_camera.proj = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
     m_camera.proj[1][1] *= -1;
@@ -103,7 +103,7 @@ void Camera::update(bool& cameraChanged) {
     glm::vec2& cursor_pos = getCursorPos();
     if(cameraChanged)
     {
-        if(checkMouse(GLFW_MOUSE_BUTTON_LEFT))
+        if(checkMouse(GLFW_MOUSE_BUTTON_MIDDLE))
         {
 //            getCursor(cursor_pos);
             glm::vec2 dis = cursor_pos - getCursorPressPos();
@@ -141,7 +141,7 @@ void Camera::update(bool& cameraChanged) {
         }
     }
 
-    if(!checkMouse(GLFW_MOUSE_BUTTON_LEFT))
+    if(!checkMouse(GLFW_MOUSE_BUTTON_MIDDLE))
     {
         m_pre_alpha = m_alpha;
         m_pre_gamma = m_gamma;

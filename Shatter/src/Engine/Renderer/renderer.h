@@ -48,8 +48,6 @@ struct QueueFamilyIndices;
 
 struct FrameBufferAttachment;
 
-struct GLFWwindow;
-
 namespace Shatter{
     namespace render {
 
@@ -90,9 +88,6 @@ namespace Shatter{
 
             void createSwapChain();
 
-            /*
-             * new render pass
-             */
             void createRenderPass();
 
             VkCommandBuffer m_compositeCommandBuffer{};
@@ -113,12 +108,10 @@ namespace Shatter{
 
             void createMSAARenderPass();
 
-            VkCommandBuffer m_capture_buffer = VK_NULL_HANDLE;
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
             FrameBuffer* m_frameBuffers{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
-            std::vector<VkCommandBuffer> pre_new_capture_buffers{};
 
             void createCaptureRenderPass();
 
@@ -219,32 +212,12 @@ namespace Shatter{
             [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
-            VkRenderPass getCaptureRenderPass() {
-                return m_captureRenderPass;
-            };
-            FrameBuffer* getCaptureFrameBuffer(){
-                return m_frameBuffers;
-            };
+            VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
+            FrameBuffer* getCaptureFrameBuffer() {return m_frameBuffers;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             VkDevice* getDevice(){return &device;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
             void createCommandBuffer();
-        public:
-            static VKAPI_ATTR VkBool32 VKAPI_CALL
-            debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
-                          size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData) {
-                std::cerr << "validation layer: " << msg << std::endl;
-                return VK_FALSE;
-            }
-
-            static void check_vk_result(VkResult err)
-            {
-                if (err == 0)
-                    return;
-                fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-                if (err < 0)
-                    abort();
-            }
 
         public:
             void releaseObject(int _id, DrawObjectType _type);
@@ -264,8 +237,6 @@ namespace Shatter{
             std::vector<int> transparency_vec;
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
-            std::vector<buffer::ShatterTexture*> tex_vec;
-//            GLFWwindow *window{};
 
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};
@@ -295,7 +266,6 @@ namespace Shatter{
             std::vector<VkImageView> m_swapChainImageviews;
             std::vector<VkSampler> m_swapChainSamplers;
             std::vector<VkFramebuffer> m_swapChainFramebuffers;
-            std::vector<VkDescriptorSet> m_swapChainSets;
             std::vector<VkCommandBuffer> composite_buffers;
 
             VkDescriptorSet m_colorSet;
@@ -326,6 +296,22 @@ namespace Shatter{
             std::vector<VkClearValue> clearValues{};
             VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
             VkPresentInfoKHR presentInfo{};
+        public:
+            static VKAPI_ATTR VkBool32 VKAPI_CALL
+            debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,
+                          size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData) {
+                std::cerr << "validation layer: " << msg << std::endl;
+                return VK_FALSE;
+            }
+
+            static void check_vk_result(VkResult err)
+            {
+                if (err == 0)
+                    return;
+                fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+                if (err < 0)
+                    abort();
+            }
         };
     };
 };

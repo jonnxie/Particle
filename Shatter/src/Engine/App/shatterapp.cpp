@@ -32,12 +32,9 @@ namespace Shatter::App{
         return app;
     }
 
-    ShatterApp::ShatterApp():
-    lastTime(0.0)
+    ShatterApp::ShatterApp()
     {
         m_listener = new Shatter::Listener;
-        m_width = Config::getConfig("width");
-        m_height = Config::getConfig("height");
     }
 
     ShatterApp::~ShatterApp(){
@@ -369,6 +366,20 @@ namespace Shatter::App{
         if (!m_mainWindow) {
             m_mainWindow = new GLFWWindow();
         }
+    }
+
+    std::pair<int, int> ShatterApp::getWindowSize() const {
+        return (*m_mainWindow)();
+    }
+
+    void ShatterApp::setPresentViewPort(const UnionViewPort &_viewport) {
+        std::lock_guard<std::mutex> lockGuard(presentMutex);
+        presentViewPort = _viewport;
+    }
+
+    UnionViewPort &ShatterApp::getPresentViewPort() {
+        std::lock_guard<std::mutex> lockGuard(presentMutex);
+        return presentViewPort;
     }
 
 }

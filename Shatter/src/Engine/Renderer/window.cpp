@@ -35,8 +35,8 @@ void GLFWWindow::mouseCallback(int _button, int _action, double _xPos, double _y
         coordinate.y = _yPos;
         pressMouse(_button);
         glm::vec2& tmp = getCursorPressPos();
-        tmp.x = float(coordinate.x) / getViewPort().view.width;
-        tmp.y = float(coordinate.y) / getViewPort().view.height;
+        tmp.x = float(coordinate.x) / getWindowViewPort().view.width;
+        tmp.y = float(coordinate.y) / getWindowViewPort().view.height;
         tmp *= 2.0f;
         tmp -= 1.0f;
         glm::vec3& press_cursor = input::getCursorPress();
@@ -52,7 +52,7 @@ void GLFWWindow::cursorPositionCallback(double _xPos, double _yPos) {
     static glm::vec2& cursor = input::getCursorWindow();
     cursor.x = _xPos;
     cursor.y = _yPos;
-    UnionViewPort& viewport = getViewPort();
+    UnionViewPort& viewport = getWindowViewPort();
     glm::vec2& tmp = getCursorPos();
     tmp.x = cursor.x * viewport.inverseWidth;
     tmp.y = cursor.y * viewport.inverseHeight;

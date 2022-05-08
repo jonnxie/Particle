@@ -8,6 +8,7 @@
 #include "device.h"
 
 #include <mutex>
+#include <Engine/Item/configs.h>
 #include "Engine/Renderer/FrameBuffer.h"
 
 #ifdef SHATTER_GRAPHICS_VULKAN
@@ -23,7 +24,7 @@ OffScreen &OffScreen::getOffScreen() {
     std::lock_guard<std::mutex> lockGuard(lock);
     if(!ready)
     {
-        screen.setup(SingleDevice.logicalDevice,getViewPort().view.width,getViewPort().view.height);
+        screen.setup(SingleDevice.logicalDevice, Config::getConfig("presentWidth"), Config::getConfig("presentHeight"));
         ready = true;
     }
     return screen;
