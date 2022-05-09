@@ -2815,8 +2815,7 @@ namespace Shatter::render{
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
         {
             createGraphicsCommandBuffers();
-            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
-            SingleAPP.viewportChanged = false;
+            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = SingleAPP.viewportChanged = false;
         } else if (Config::getConfig("enableScreenGui")) {
             updatePresentCommandBuffers(imageIndex);
         }
@@ -2843,7 +2842,7 @@ namespace Shatter::render{
             }
         }
         vkQueueWaitIdle(graphics_queue);
-//        vkQueueWaitIdle(transfer_queue);
+        vkQueueWaitIdle(transfer_queue);
     }
 
     void ShatterRender::draw() {

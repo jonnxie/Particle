@@ -712,7 +712,7 @@ void GUI::init(float width, float height) {
                     SingleAPP.viewportChanged = true;
                     firstDraw = false;
                 }
-            } else if (SingleAPP.getViewPortTouched()) {
+            } else if (!GUI::getGUI()->getItemState() && SingleAPP.getViewPortTouched()) {
                 SingleAPP.viewportChanged = true;
                 SingleAPP.setViewPortTouched(false);
             }
