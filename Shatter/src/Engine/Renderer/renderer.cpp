@@ -2815,7 +2815,7 @@ namespace Shatter::render{
             updatePresentCommandBuffers(imageIndex);
         }
 
-        assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence) == VK_SUCCESS);
+        VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
 
         presentInfo = {
                 VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,

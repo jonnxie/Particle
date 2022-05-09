@@ -472,30 +472,35 @@ void AABBLine::hide() const {
 
 CaptureObjectListener::CaptureObjectListener() {
     m_action[Event::SingleClick] = [this](){
-        glm::uvec2& coordinate = input::getMousePressCoordiante();
+        if (SingleAPP.mouseState == MouseState::ViewPort) {
+//        glm::uvec2& coordinate = input::getMousePressCoordiante();
+            auto &coordinate = input::getCursorView();
 
-        uint32_t object_id = ((VulkanFrameBuffer*)SingleRender.getCaptureFrameBuffer())->capture(coordinate.x, coordinate.y, 0);
-        input::captureObject(object_id, STATE_IN);
-        if (object_id != 0 && object_id != preCaptureId) {
-            if (preCaptureId != 0) captureObject->hide();
-            preCaptureId = object_id;
-            captureObject = SingleAPP.getCaptureById(object_id);
-            captureObject->drawBox();
-            pushUI();
-            SingleRender.normalChanged = true;
-        } else if (object_id == 0) {
-            if (captureObject) captureObject->hide();
-            preCaptureId = object_id;
-            GUI::popUI("CapturedObject");
-            SingleRender.guiChanged = true;
+            uint32_t object_id = ((VulkanFrameBuffer *) SingleRender.getCaptureFrameBuffer())->capture(
+                    (uint32_t) coordinate.x, (uint32_t) coordinate.y, 0);
+            input::captureObject(object_id, STATE_IN);
+            if (object_id != 0 && object_id != preCaptureId) {
+                if (preCaptureId != 0) captureObject->hide();
+                preCaptureId = object_id;
+                captureObject = SingleAPP.getCaptureById(object_id);
+                captureObject->drawBox();
+                pushUI();
+                SingleRender.normalChanged = true;
+            } else if (object_id == 0) {
+                if (captureObject) captureObject->hide();
+                preCaptureId = object_id;
+                GUI::popUI("CapturedObject");
+                SingleRender.guiChanged = true;
+            }
+            std::cout << "Capture Object Id: " << object_id << std::endl;
         }
-        std::cout << "Capture Object Id: " << object_id << std::endl;
     };
 }
 
 CaptureObjectListener::~CaptureObjectListener() {
     if (captureObject) captureObject->hide();
     GUI::popUI("CapturedObject");
+    SingleRender.guiChanged = true;
 }
 
 void CaptureObjectListener::pushUI() {

@@ -726,16 +726,18 @@ void GUI::init(float width, float height) {
             auto& coor = input::getCursorWindow();
             checkRect(position, viewportPanelSize, coor);
 
+            auto& viewPos = input::getCursorView();
+            viewPos = coor - glm::vec2(position.x, position.y);
+
             ImGui::End();//ViewPort
 
-
-            ImGui::Begin("Position");
-            ImGui::SliderFloat2("ViewPort Position:", reinterpret_cast<float *>(&position), 0, 10000);
-            ImGui::SliderFloat2("Mouse Position:", reinterpret_cast<float *>(&coor), 0, 10000);
-
-            ImGui::Checkbox("MouseState", reinterpret_cast<bool *>(&SingleAPP.mouseState));
-
-            ImGui::End();
+//            ImGui::Begin("Position");
+//            ImGui::SliderFloat2("ViewPort Position:", reinterpret_cast<float *>(&position), 0, 10000);
+//            ImGui::SliderFloat2("Mouse Position:", reinterpret_cast<float *>(&coor), 0, 10000);
+//
+//            ImGui::Checkbox("MouseState", reinterpret_cast<bool *>(&SingleAPP.mouseState));
+//
+//            ImGui::End();
         }
     });
 }
