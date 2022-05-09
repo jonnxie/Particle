@@ -2806,6 +2806,12 @@ namespace Shatter::render{
                 &renderFinishedSemaphore
         };
 
+        VkResult fenceRes;
+        fenceRes = vkWaitForFences(SingleDevice(), 1, &renderFence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        fenceRes = vkResetFences(SingleDevice(), 1, &renderFence);
+        VK_CHECK_RESULT(fenceRes);
+//        vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
+
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
         {
             createGraphicsCommandBuffers();
@@ -2837,7 +2843,7 @@ namespace Shatter::render{
             }
         }
         vkQueueWaitIdle(graphics_queue);
-        vkQueueWaitIdle(transfer_queue);
+//        vkQueueWaitIdle(transfer_queue);
     }
 
     void ShatterRender::draw() {
@@ -3027,7 +3033,6 @@ namespace Shatter::render{
 
         setDeviceFeatures(supportedFeatures);
 //        printDeviceFeatures();
-        std::cout << "multiDrawIndirect:" << tool::strBool(checkFeatures("multiDrawIndirect")) << std::endl;
 
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device,&deviceProperties);
@@ -3234,8 +3239,7 @@ namespace Shatter::render{
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
-//        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        getResult(vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data()));
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
         for (const auto &layer : availableLayers) {
             std::cout << std::string("availableLayers: ") + layer.layerName <<std::endl;
         }

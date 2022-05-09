@@ -56,13 +56,6 @@ namespace Shatter::App{
         m_start_time = std::chrono::system_clock::now();
         m_pre_time = m_start_time;
         while (!glfwWindowShouldClose(((GLFWWindow*)m_mainWindow)->get())) {
-            VkResult fenceRes;
-            do {
-                fenceRes = vkWaitForFences(SingleDevice(), 1, &SingleRender.renderFence, VK_TRUE, 100000000);
-            } while (fenceRes == VK_TIMEOUT);
-//            assert(fenceRes == VK_SUCCESS);
-            VK_CHECK_RESULT(fenceRes);
-            vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
             updateTimer();
             glfwPollEvents();
 
