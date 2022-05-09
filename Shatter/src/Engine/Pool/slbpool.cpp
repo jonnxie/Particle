@@ -156,13 +156,9 @@ void SlbPool::init(){
     {
         m_map["TransparentInput"] = std::vector<VkDescriptorSetLayoutBinding>{
                 tool::descriptorSetLayoutBinding(
-                        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-                        VK_SHADER_STAGE_FRAGMENT_BIT,
-                        0),
-                tool::descriptorSetLayoutBinding(
                         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                         VK_SHADER_STAGE_FRAGMENT_BIT,
-                        1),
+                        0),
         };
 
         m_map["gBuffer"] = std::vector<VkDescriptorSetLayoutBinding>{
