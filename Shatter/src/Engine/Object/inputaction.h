@@ -48,6 +48,7 @@ namespace input{
     delReferenceItem(CursorRay, glm::vec3);
     delReferenceItem(CursorPress, glm::vec3);
     delReferenceItem(CursorWindow, glm::vec2);
+    delReferenceItem(CursorView, glm::vec2);
     delReferenceItem(MousePressCoordiante, glm::uvec2);
     delReferenceItem(CenterViewPort, UnionViewPort);
     delReferenceItem(TargetDepth, float);

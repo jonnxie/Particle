@@ -402,8 +402,7 @@ void GUI::newFrame(bool updateFrameGraph) {
     static bool dock_space_open = true;
     static bool fullscreen = Config::getConfig("enableFullScreenPersistant");
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-    if(enable_dock)
-    {
+    if (enable_dock) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
     }
@@ -411,42 +410,44 @@ void GUI::newFrame(bool updateFrameGraph) {
 
     // Init imGui windows and elements
 
-    if(enable_dock)
     {
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (fullscreen)
-        {
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-
-        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-        ImGui::Begin("DockSpace", &dock_space_open, window_flags);
-        ImGui::PopStyleVar();
-
-        if (fullscreen) ImGui::PopStyleVar(2);
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 370.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
-        style.WindowMinSize.x = minWinSizeX;
+        //    if(enable_dock)
+//    {
+//        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+//        if (fullscreen)
+//        {
+//            ImGuiViewport* viewport = ImGui::GetMainViewport();
+//            ImGui::SetNextWindowPos(viewport->Pos);
+//            ImGui::SetNextWindowSize(viewport->Size);
+//            ImGui::SetNextWindowViewport(viewport->ID);
+//            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+//            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+//            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+//            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+//        }
+//
+//        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+//        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+//            window_flags |= ImGuiWindowFlags_NoBackground;
+//
+//        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+//
+//        ImGui::Begin("DockSpace", &dock_space_open, window_flags);
+//        ImGui::PopStyleVar();
+//
+//        if (fullscreen) ImGui::PopStyleVar(2);
+//
+//        ImGuiIO& io = ImGui::GetIO();
+//        ImGuiStyle& style = ImGui::GetStyle();
+//        float minWinSizeX = style.WindowMinSize.x;
+//        style.WindowMinSize.x = 370.0f;
+//        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+//        {
+//            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+//            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+//        }
+//        style.WindowMinSize.x = minWinSizeX;
+//    }
     }
 
     for(auto& [id,task] : m_tasks)
@@ -489,6 +490,17 @@ void GUI::updateUI() {
 //        std::cout << "IsAnyItemActive:" << anyItemActive <<std::endl;
 //    };
     anyItemActive = ImGui::IsAnyItemActive();
+}
+
+bool checkRect(const ImVec2& _pos, const ImVec2& _size, const glm::vec2& _point) {
+    if (_point.x >= _pos.x && _point.x <= _pos.x + _size.x &&
+        _point.y >= _pos.y && _point.y <= _pos.y + _size.y) {
+        SingleAPP.mouseState = MouseState::ViewPort;
+        return true;
+    } else {
+        SingleAPP.mouseState = MouseState::Manipulate;
+        return false;
+    }
 }
 
 void GUI::init(float width, float height) {
@@ -692,29 +704,42 @@ void GUI::init(float width, float height) {
             ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
             static bool firstDraw = true;
+
             if (viewportPanelSize.x != SingleAPP.getPresentViewPort().view.width || viewportPanelSize.y != SingleAPP.getPresentViewPort().view.height)
             {
-                auto& view = SingleAPP.getPresentViewPort();
-                view.view.width = viewportPanelSize.x;
-                view.view.height = viewportPanelSize.y;
-                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
                 SingleAPP.setViewPortTouched(true);
                 if (firstDraw) {
                     SingleAPP.viewportChanged = true;
                     firstDraw = false;
                 }
-            } else if (SingleAPP.getViewPortTouched()) {
-                auto& view = SingleAPP.getPresentViewPort();
-                view.view.width = viewportPanelSize.x;
-                view.view.height = viewportPanelSize.y;
-                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+            } else if (!GUI::getGUI()->getItemState() && SingleAPP.getViewPortTouched()) {
                 SingleAPP.viewportChanged = true;
                 SingleAPP.setViewPortTouched(false);
             }
 
-            ImGui::Image(SingleRender.m_colorSet, viewportPanelSize);
+            auto& view = SingleAPP.getPresentViewPort();
+            view.view.width = viewportPanelSize.x;
+            view.view.height = viewportPanelSize.y;
+            view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+
+            ImVec2 position;
+            ImGui::ImagePosition(SingleRender.m_colorSet, viewportPanelSize, position);
+
+            auto& coor = input::getCursorWindow();
+            checkRect(position, viewportPanelSize, coor);
+
+            auto& viewPos = input::getCursorView();
+            viewPos = coor - glm::vec2(position.x, position.y);
 
             ImGui::End();//ViewPort
+
+//            ImGui::Begin("Position");
+//            ImGui::SliderFloat2("ViewPort Position:", reinterpret_cast<float *>(&position), 0, 10000);
+//            ImGui::SliderFloat2("Mouse Position:", reinterpret_cast<float *>(&coor), 0, 10000);
+//
+//            ImGui::Checkbox("MouseState", reinterpret_cast<bool *>(&SingleAPP.mouseState));
+//
+//            ImGui::End();
         }
     });
 }

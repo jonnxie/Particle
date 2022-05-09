@@ -75,6 +75,7 @@ namespace input{
     genReferenceItem(CursorRay, glm::vec3);
     genReferenceItem(CursorPress, glm::vec3);
     genReferenceItem(CursorWindow, glm::vec2);
+    genReferenceItem(CursorView, glm::vec2);
     genReferenceItem(MousePressCoordiante, glm::uvec2);
     genReferenceItem(CenterViewPort, UnionViewPort);
     genReferenceItem(TargetDepth, float);

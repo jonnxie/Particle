@@ -983,33 +983,28 @@ void vkglTF::Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, u
 				const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
 				indexCount = static_cast<uint32_t>(accessor.count);
+                const void *dataPtr = &(buffer.data[accessor.byteOffset + bufferView.byteOffset]);
 
 				switch (accessor.componentType) {
 				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
-					uint32_t *buf = new uint32_t[accessor.count];
-					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(uint32_t));
+					const auto *buf = static_cast<const uint32_t*>(dataPtr);
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
-                    delete[] buf;
 					break;
 				}
 				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
-					uint16_t *buf = new uint16_t[accessor.count];
-					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(uint16_t));
+                    const auto *buf = static_cast<const uint16_t*>(dataPtr);
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
-                    delete[] buf;
                     break;
 				}
 				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
-					uint8_t *buf = new uint8_t[accessor.count];
-					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(uint8_t));
+					const auto *buf = static_cast<const uint8_t*>(dataPtr);
 					for (size_t index = 0; index < accessor.count; index++) {
 						indexBuffer.push_back(buf[index] + vertexStart);
 					}
-                    delete[] buf;
                     break;
 				}
 				default:
@@ -1456,13 +1451,12 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 				const tinygltf::Buffer &buffer = gltfModel.buffers[bufferView.buffer];
 
 				assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
+                const void *dataPtr = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
 
-				float *buf = new float[accessor.count];
-				memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(float));
+				const auto *buf = static_cast<const float*>(dataPtr);
 				for (size_t index = 0; index < accessor.count; index++) {
 					sampler.inputs.push_back(buf[index]);
 				}
-                delete[] buf;
 				for (auto input : sampler.inputs) {
 					if (input < animation.start) {
 						animation.start = input;
@@ -1481,23 +1475,20 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
 
 				assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
 
-				switch (accessor.type) {
+                const void *dataPtr = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
+                switch (accessor.type) {
 				case TINYGLTF_TYPE_VEC3: {
-					glm::vec3 *buf = new glm::vec3[accessor.count];
-					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec3));
+                    const auto *buf = static_cast<const glm::vec3*>(dataPtr);
 					for (size_t index = 0; index < accessor.count; index++) {
 						sampler.outputsVec4.emplace_back(buf[index], 0.0f);
 					}
-                    delete[] buf;
                     break;
 				}
 				case TINYGLTF_TYPE_VEC4: {
-					glm::vec4 *buf = new glm::vec4[accessor.count];
-					memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec4));
+                    const auto *buf = static_cast<const glm::vec4*>(dataPtr);
 					for (size_t index = 0; index < accessor.count; index++) {
 						sampler.outputsVec4.push_back(buf[index]);
 					}
-                    delete[] buf;
                     break;
 				}
 				default: {

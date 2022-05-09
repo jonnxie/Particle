@@ -290,7 +290,7 @@ namespace Shatter{
 
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
 
-            std::vector<VkCommandBuffer> pre_compute_buffers, pre_new_g_buffer{}, pre_new_norm_buffer{}, pre_new_trans_buffer{}, new_graphics_buffer{};
+            std::vector<VkCommandBuffer> pre_compute_buffers, new_graphics_buffer{};
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
 
             VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};

@@ -1906,8 +1906,6 @@ namespace Shatter::render{
             }
             (*threadPool).wait();
             vkCmdExecuteCommands(m_colorCommandBuffer, gBuffers.size(), gBuffers.data());
-            pre_new_g_buffer.clear();
-            pre_new_g_buffer.insert(pre_new_g_buffer.end(), gBuffers.begin(), gBuffers.end());
         }
         vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1964,8 +1962,6 @@ namespace Shatter::render{
                 }
                 (*threadPool).wait();
                 vkCmdExecuteCommands(m_colorCommandBuffer, normalBuffers.size(), normalBuffers.data());
-                pre_new_norm_buffer.clear();
-                pre_new_norm_buffer.insert(pre_new_norm_buffer.end(), normalBuffers.begin(), normalBuffers.end());
             }
         }
 
@@ -1992,8 +1988,6 @@ namespace Shatter::render{
                 }
                 (*threadPool).wait();
                 vkCmdExecuteCommands(m_colorCommandBuffer, transparencyBuffers.size(), transparencyBuffers.data());
-                pre_new_trans_buffer.clear();
-                pre_new_trans_buffer.insert(pre_new_trans_buffer.end(), transparencyBuffers.begin(), transparencyBuffers.end());
             }
         }
 
@@ -2294,8 +2288,6 @@ namespace Shatter::render{
                 renderPassBeginInfo.clearValueCount = AttachmentCount;
                 renderPassBeginInfo.pClearValues = clearValues.data();
             }
-
-
 
             vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo);
             auto threadPool = ThreadPool::pool();
@@ -2813,17 +2805,17 @@ namespace Shatter::render{
                 1,
                 &renderFinishedSemaphore
         };
+
         VkResult fenceRes;
-        do {
-            fenceRes = vkWaitForFences(device, 1, &renderFence, VK_TRUE, 100000000);
-        } while (fenceRes == VK_TIMEOUT);
-        assert(fenceRes == VK_SUCCESS);
-        vkResetFences(device, 1, &renderFence);
+        fenceRes = vkWaitForFences(SingleDevice(), 1, &renderFence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        fenceRes = vkResetFences(SingleDevice(), 1, &renderFence);
+        VK_CHECK_RESULT(fenceRes);
+//        vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
+
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
         {
             createGraphicsCommandBuffers();
-            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
-            SingleAPP.viewportChanged = false;
+            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = SingleAPP.viewportChanged = false;
         } else if (Config::getConfig("enableScreenGui")) {
             updatePresentCommandBuffers(imageIndex);
         }
@@ -3040,7 +3032,6 @@ namespace Shatter::render{
 
         setDeviceFeatures(supportedFeatures);
 //        printDeviceFeatures();
-        std::cout << "multiDrawIndirect:" << tool::strBool(checkFeatures("multiDrawIndirect")) << std::endl;
 
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device,&deviceProperties);
@@ -3247,8 +3238,7 @@ namespace Shatter::render{
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
-//        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        getResult(vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data()));
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
         for (const auto &layer : availableLayers) {
             std::cout << std::string("availableLayers: ") + layer.layerName <<std::endl;
         }

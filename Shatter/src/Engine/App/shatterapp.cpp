@@ -63,7 +63,7 @@ namespace Shatter::App{
             {
                 ThreadPool::pool()->addTask([&,e](){
                     m_listener->handle(e);
-                    for(auto& l : m_otherListener)
+                    for (auto& l : m_otherListener)
                     {
                         l.second->handle(e);
                     }
@@ -75,7 +75,7 @@ namespace Shatter::App{
             TaskPool::executeMultiple();
             TaskPool::updateMultiple(timer::getTime());
 
-            if(!GUI::getGUI()->getItemState())
+            if (!GUI::getGUI()->getItemState() && mouseState == MouseState::ViewPort)
             {
                 Camera::getCamera().update(cameraChanged);
             }

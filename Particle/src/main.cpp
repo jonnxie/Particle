@@ -401,13 +401,6 @@ int main() {
     TargetPlane targetPlane;
     SingleAPP.generateWorkPlane(targetPlane, glm::vec3(0.0f, 0.0f, 0.0f));
 
-//    TaskPool::pushUpdateTask("TestGuiState", [&](float abs_time){
-//        static bool active = false;
-//        if(ImGui::IsAnyItemActive() != active){
-//            std::cout << "IsAnyItemActive:" << active <<std::endl;
-//        };
-//    });
-
     try {
         app.update();
         slb_pool.release();
