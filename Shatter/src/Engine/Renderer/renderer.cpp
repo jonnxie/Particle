@@ -1906,8 +1906,6 @@ namespace Shatter::render{
             }
             (*threadPool).wait();
             vkCmdExecuteCommands(m_colorCommandBuffer, gBuffers.size(), gBuffers.data());
-            pre_new_g_buffer.clear();
-            pre_new_g_buffer.insert(pre_new_g_buffer.end(), gBuffers.begin(), gBuffers.end());
         }
         vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1964,8 +1962,6 @@ namespace Shatter::render{
                 }
                 (*threadPool).wait();
                 vkCmdExecuteCommands(m_colorCommandBuffer, normalBuffers.size(), normalBuffers.data());
-                pre_new_norm_buffer.clear();
-                pre_new_norm_buffer.insert(pre_new_norm_buffer.end(), normalBuffers.begin(), normalBuffers.end());
             }
         }
 
@@ -1992,8 +1988,6 @@ namespace Shatter::render{
                 }
                 (*threadPool).wait();
                 vkCmdExecuteCommands(m_colorCommandBuffer, transparencyBuffers.size(), transparencyBuffers.data());
-                pre_new_trans_buffer.clear();
-                pre_new_trans_buffer.insert(pre_new_trans_buffer.end(), transparencyBuffers.begin(), transparencyBuffers.end());
             }
         }
 
@@ -2294,8 +2288,6 @@ namespace Shatter::render{
                 renderPassBeginInfo.clearValueCount = AttachmentCount;
                 renderPassBeginInfo.pClearValues = clearValues.data();
             }
-
-
 
             vkBeginCommandBuffer(graphics_buffers[i], &cmdBufInfo);
             auto threadPool = ThreadPool::pool();
@@ -2813,12 +2805,7 @@ namespace Shatter::render{
                 1,
                 &renderFinishedSemaphore
         };
-        VkResult fenceRes;
-        do {
-            fenceRes = vkWaitForFences(device, 1, &renderFence, VK_TRUE, 100000000);
-        } while (fenceRes == VK_TIMEOUT);
-        assert(fenceRes == VK_SUCCESS);
-        vkResetFences(device, 1, &renderFence);
+
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
         {
             createGraphicsCommandBuffers();
@@ -2828,7 +2815,7 @@ namespace Shatter::render{
             updatePresentCommandBuffers(imageIndex);
         }
 
-        VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+        assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence) == VK_SUCCESS);
 
         presentInfo = {
                 VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,

@@ -491,6 +491,16 @@ void GUI::updateUI() {
     anyItemActive = ImGui::IsAnyItemActive();
 }
 
+bool checkRect(const ImVec2& _pos, const ImVec2& _size, const glm::vec2& _point) {
+
+    if (_point.x >= _pos.x && _point.x <= _pos.x + _size.x &&
+        _point.y >= _pos.y && _point.y <= _pos.y + _size.y) {
+        SingleAPP.mouseState = MouseState::ViewPort;
+    } else {
+        SingleAPP.mouseState = MouseState::Manipulate;
+    }
+}
+
 void GUI::init(float width, float height) {
     // Color scheme
     device = &Device::getDevice();
@@ -692,29 +702,40 @@ void GUI::init(float width, float height) {
             ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
             static bool firstDraw = true;
+
             if (viewportPanelSize.x != SingleAPP.getPresentViewPort().view.width || viewportPanelSize.y != SingleAPP.getPresentViewPort().view.height)
             {
-                auto& view = SingleAPP.getPresentViewPort();
-                view.view.width = viewportPanelSize.x;
-                view.view.height = viewportPanelSize.y;
-                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
                 SingleAPP.setViewPortTouched(true);
                 if (firstDraw) {
                     SingleAPP.viewportChanged = true;
                     firstDraw = false;
                 }
             } else if (SingleAPP.getViewPortTouched()) {
-                auto& view = SingleAPP.getPresentViewPort();
-                view.view.width = viewportPanelSize.x;
-                view.view.height = viewportPanelSize.y;
-                view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
                 SingleAPP.viewportChanged = true;
                 SingleAPP.setViewPortTouched(false);
             }
 
-            ImGui::Image(SingleRender.m_colorSet, viewportPanelSize);
+            auto& view = SingleAPP.getPresentViewPort();
+            view.view.width = viewportPanelSize.x;
+            view.view.height = viewportPanelSize.y;
+            view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+
+            ImVec2 position;
+            ImGui::ImagePosition(SingleRender.m_colorSet, viewportPanelSize, position);
+
+            auto& coor = input::getCursorWindow();
+            checkRect(position, viewportPanelSize, coor);
 
             ImGui::End();//ViewPort
+
+
+            ImGui::Begin("Position");
+            ImGui::SliderFloat2("ViewPort Position:", reinterpret_cast<float *>(&position), 0, 10000);
+            ImGui::SliderFloat2("Mouse Position:", reinterpret_cast<float *>(&coor), 0, 10000);
+
+            ImGui::Checkbox("MouseState", reinterpret_cast<bool *>(&SingleAPP.mouseState));
+
+            ImGui::End();
         }
     });
 }

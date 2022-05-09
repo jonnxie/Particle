@@ -56,6 +56,13 @@ namespace Shatter::App{
         m_start_time = std::chrono::system_clock::now();
         m_pre_time = m_start_time;
         while (!glfwWindowShouldClose(((GLFWWindow*)m_mainWindow)->get())) {
+            VkResult fenceRes;
+            do {
+                fenceRes = vkWaitForFences(SingleDevice(), 1, &SingleRender.renderFence, VK_TRUE, 100000000);
+            } while (fenceRes == VK_TIMEOUT);
+//            assert(fenceRes == VK_SUCCESS);
+            VK_CHECK_RESULT(fenceRes);
+            vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
             updateTimer();
             glfwPollEvents();
 
@@ -63,7 +70,7 @@ namespace Shatter::App{
             {
                 ThreadPool::pool()->addTask([&,e](){
                     m_listener->handle(e);
-                    for(auto& l : m_otherListener)
+                    for (auto& l : m_otherListener)
                     {
                         l.second->handle(e);
                     }
@@ -75,7 +82,7 @@ namespace Shatter::App{
             TaskPool::executeMultiple();
             TaskPool::updateMultiple(timer::getTime());
 
-            if(!GUI::getGUI()->getItemState())
+            if (!GUI::getGUI()->getItemState() && mouseState == MouseState::ViewPort)
             {
                 Camera::getCamera().update(cameraChanged);
             }

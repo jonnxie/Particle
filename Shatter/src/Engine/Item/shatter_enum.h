@@ -379,6 +379,11 @@ enum class TextureType {
     Texture3D,
 };
 
+enum class MouseState {
+    ViewPort,
+    Manipulate,
+};
+
 /*
  * custom color
  */

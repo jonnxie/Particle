@@ -40,9 +40,6 @@ CaptureObject::mallocCapture(Object *_parent,
     buffer->unmap();
     SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*pool)[boxIndex]->m_capture_set);
 
-    std::cout << _name + "`s UniformBuffer: " << buffer->getBuffer() << std::endl;
-    std::cout << _name + "`s DescriptorSet: " << (*pool)[boxIndex]->m_capture_set << std::endl;
-
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
     VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*pool)[boxIndex]->m_capture_set,
                                                                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
