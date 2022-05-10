@@ -698,6 +698,8 @@ void GUI::init(float width, float height) {
 
         ImGui::End();// End setting
 
+//        ImGui::ShowDemoWindow();
+
         {
             ImGui::Begin("ViewPort");
 
@@ -714,6 +716,7 @@ void GUI::init(float width, float height) {
                 }
             } else if (!GUI::getGUI()->getItemState() && SingleAPP.getViewPortTouched()) {
                 SingleAPP.viewportChanged = true;
+                SingleAPP.cameraChanged = true;
                 SingleAPP.setViewPortTouched(false);
             }
 

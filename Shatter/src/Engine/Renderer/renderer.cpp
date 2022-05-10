@@ -2166,12 +2166,6 @@ namespace Shatter::render{
 
         vkQueueWaitIdle(graphics_queue);
 
-        if(Config::getConfig("enableScreenGui"))
-        {
-            imGui->newFrame(false);
-            imGui->updateBuffers();
-        }
-
         vkBeginCommandBuffer(new_graphics_buffer[_index], &cmdBufInfo);
         auto threadPool = ThreadPool::pool();
 
@@ -2817,7 +2811,15 @@ namespace Shatter::render{
             createGraphicsCommandBuffers();
             guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = SingleAPP.viewportChanged = false;
         } else if (Config::getConfig("enableScreenGui")) {
+            if (Config::getConfig("enableScreenGui"))
+            {
+                imGui->newFrame(false);
+                imGui->updateBuffers();
+            }
+//            if (GUI::getGUI()->getItemState() || SingleAPP.presentReset) {
             updatePresentCommandBuffers(imageIndex);
+//                SingleAPP.presentReset = false;
+//            }
         }
 
         VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));

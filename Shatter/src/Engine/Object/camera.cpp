@@ -171,7 +171,8 @@ void Camera::update(bool& cameraChanged) {
 
     if(cameraChanged) {
         m_camera.view = glm::lookAt(eye + center, center, up);
-        vkQueueWaitIdle(SingleRender.graphics_queue);
+//        vkQueueWaitIdle(SingleRender.graphics_queue);
+        generateProj();
         flush();
     }
 }
