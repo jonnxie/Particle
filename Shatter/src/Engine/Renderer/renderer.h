@@ -193,7 +193,6 @@ namespace Shatter{
             void endSingleTimeTransCommands(VkCommandBuffer commandBuffer);
 
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
-            [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
             VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
@@ -225,7 +224,6 @@ namespace Shatter{
 
             VkQueue graphics_queue{}, present_queue{}, compute_queue{}, transfer_queue{};
 
-            VkSwapchainKHR swapchain{};
             bool resized = false;
             bool initialed = false;
             /*
@@ -235,13 +233,10 @@ namespace Shatter{
             std::vector<VkImage> m_presentImages;
             VkExtent2D presentExtent{};
 
-            VkRenderPass m_renderPass = VK_NULL_HANDLE;
             uint32_t m_swapChainImageCount;
 
             VkDescriptorSet m_colorSet;
             FrameBuffer* m_colorFrameBuffers{nullptr};
-
-            VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
 
             VkFormat m_depthFormat;
             VkImage m_depthImage{};
@@ -249,7 +244,6 @@ namespace Shatter{
             VkImageView m_depthImageView{};
 
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
-
         private:
             std::vector<VkCommandBuffer> gui_buffer{}, offscreen_buffers;
             VkCommandBuffer compute_buffer{};
@@ -266,7 +260,9 @@ namespace Shatter{
             std::vector<VkClearValue> clearValues{};
             VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
             VkPresentInfoKHR presentInfo{};
+            VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
         private:
+            VkSwapchainKHR swapchain{};
             VkDescriptorPool descriptorPool{};
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};

@@ -124,11 +124,6 @@ namespace Shatter::render{
 
     void ShatterRender::cleanup(){
         cleanupSwapChain();
-        if(m_renderPass != VK_NULL_HANDLE)
-        {
-            vkDestroyRenderPass(device, m_renderPass, nullptr);
-        }
-
         if (m_colorRenderPass != VK_NULL_HANDLE)
         {
             vkDestroyRenderPass(device, m_colorRenderPass, nullptr);
