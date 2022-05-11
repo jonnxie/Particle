@@ -23,7 +23,7 @@ void setActionState(const Input_Action&,State);
 static glm::vec2 m_cursor_pos;
 void updateCursor(const glm::vec2&);
 void getCursor(glm::vec2&);
-glm::vec2& getCursorPos();
+glm::vec2& getCursorCoor();
 
 static glm::vec2 m_cursor_press_pos;
 void updateCursorPressPos(const glm::vec2&);

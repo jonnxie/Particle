@@ -709,6 +709,19 @@ void GUI::init(float width, float height) {
 
             if (viewportPanelSize.x != SingleAPP.getPresentViewPort().view.width || viewportPanelSize.y != SingleAPP.getPresentViewPort().view.height)
             {
+
+                /*
+                 * update present viewport.
+                 */
+                {
+                    auto& view = SingleAPP.getPresentViewPort();
+                    view.view.width = viewportPanelSize.x;
+                    view.view.height = viewportPanelSize.y;
+                    view.inverseWidth = 1.0f / viewportPanelSize.x;
+                    view.inverseHeight = 1.0f / viewportPanelSize.y;
+                    view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
+                }
+
                 SingleAPP.setViewPortTouched(true);
                 if (firstDraw) {
                     SingleAPP.viewportChanged = true;
@@ -719,11 +732,6 @@ void GUI::init(float width, float height) {
                 SingleAPP.cameraChanged = true;
                 SingleAPP.setViewPortTouched(false);
             }
-
-            auto& view = SingleAPP.getPresentViewPort();
-            view.view.width = viewportPanelSize.x;
-            view.view.height = viewportPanelSize.y;
-            view.scissor.extent = {static_cast<uint32_t>(view.view.width), static_cast<uint32_t>(view.view.height)};
 
             ImVec2 position;
             ImGui::ImagePosition(SingleRender.m_colorSet, viewportPanelSize, position);

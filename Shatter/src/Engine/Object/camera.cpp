@@ -100,7 +100,7 @@ void Camera::alphaPlus(float _num) {
 }
 
 void Camera::update(bool& cameraChanged) {
-    glm::vec2& cursor_pos = getCursorPos();
+    glm::vec2& cursor_pos = getCursorCoor();
     if(cameraChanged)
     {
         if(checkMouse(GLFW_MOUSE_BUTTON_MIDDLE))
@@ -173,6 +173,11 @@ void Camera::update(bool& cameraChanged) {
         m_camera.view = glm::lookAt(eye + center, center, up);
 //        vkQueueWaitIdle(SingleRender.graphics_queue);
         generateProj();
+        presentCenter = m_camera.proj * m_camera.view * glm::vec4(center,1.0f);
+        float& depth = input::getTargetDepth();
+        depth = presentCenter.z / presentCenter.w;
+        inverseView = glm::inverse(m_camera.view);
+        inverseProj = glm::inverse(m_camera.proj);
         flush();
     }
 }

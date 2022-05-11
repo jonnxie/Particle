@@ -193,6 +193,8 @@ int main() {
     viewPort.view.y = 0;
     viewPort.view.width = Config::getConfig("presentWidth");
     viewPort.view.height = Config::getConfig("presentHeight");
+    viewPort.inverseWidth = 1.0f / float(Config::getConfig("presentWidth"));
+    viewPort.inverseHeight = 1.0f / float(Config::getConfig("presentHeight"));
     viewPort.view.minDepth = 0;
     viewPort.view.maxDepth = 1;
     viewPort.scissor.offset = { 0, 0};
