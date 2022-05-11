@@ -211,7 +211,8 @@ namespace Shatter::render{
 //        createFramebuffers();
         createPresentFramebuffers();
         prepareImGui();
-        createPrimaryCommandBuffers();
+        createGraphicsPrimaryCB();
+        createComputePrimaryCB();
         prepareMultipleThreadDate();
         createSemaphores();
     }
@@ -277,6 +278,15 @@ namespace Shatter::render{
 
         cleanupSwapChain();
 
+        createSwapChain();
+
+        createPresentFramebuffers();
+
+        prepareImGui();
+
+        freeGraphicsPrimaryCB();
+
+        createGraphicsPrimaryCB();
 
     }
 
@@ -488,81 +498,6 @@ namespace Shatter::render{
         spec.RenderPass = m_captureRenderPass;
 
         m_captureFrameBuffers = FrameBuffer::createFramebuffer(spec);
-    }
-
-    void ShatterRender::clearAttachment(FrameBufferAttachment* _attachment)
-    {
-        vkDestroyImageView(device, _attachment->view, nullptr);
-        _attachment->view = VK_NULL_HANDLE;
-        vkDestroyImage(device, _attachment->image, nullptr);
-        _attachment->image = VK_NULL_HANDLE;
-        vkFreeMemory(device, _attachment->mem, nullptr);
-        _attachment->mem = VK_NULL_HANDLE;
-    }
-
-    void ShatterRender::createAttachment(VkFormat _format, VkImageUsageFlags _usage, FrameBufferAttachment* _attachment)
-    {
-        if (_attachment->image != VK_NULL_HANDLE) {
-            vkDestroyImageView(device, _attachment->view, nullptr);
-            vkDestroyImage(device, _attachment->image, nullptr);
-            vkFreeMemory(device, _attachment->mem, nullptr);
-        }
-
-        VkImageAspectFlags aspectMask = 0;
-        VkImageLayout imageLayout;
-
-        _attachment->format = _format;
-
-        if (_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-        {
-            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        }
-        if (_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-        {
-            aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-            imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        }
-
-        assert(aspectMask > 0);
-
-        VkImageCreateInfo image = tool::imageCreateInfo();
-        image.imageType = VK_IMAGE_TYPE_2D;
-        image.format = _format;
-        image.extent.width = SingleAPP.getPresentViewPort().view.width;
-        image.extent.height = SingleAPP.getPresentViewPort().view.height;
-//        image.extent.width = swapchain_extent.width;
-//        image.extent.height = swapchain_extent.height;
-        image.extent.depth = 1;
-        image.mipLevels = 1;
-        image.arrayLayers = 1;
-        image.samples = VK_SAMPLE_COUNT_1_BIT;
-        image.tiling = VK_IMAGE_TILING_OPTIMAL;
-        // VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT flag is required for input attachments
-        image.usage = _usage | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-        image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        VkMemoryAllocateInfo memAlloc = tool::memoryAllocateInfo();
-        VkMemoryRequirements memReqs;
-
-        VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &_attachment->image));
-        vkGetImageMemoryRequirements(device, _attachment->image, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        memAlloc.memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &_attachment->mem));
-        VK_CHECK_RESULT(vkBindImageMemory(device, _attachment->image, _attachment->mem, 0));
-
-        VkImageViewCreateInfo imageView = tool::imageViewCreateInfo();
-        imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        imageView.format = _format;
-        imageView.subresourceRange = {};
-        imageView.subresourceRange.aspectMask = aspectMask;
-        imageView.subresourceRange.baseMipLevel = 0;
-        imageView.subresourceRange.levelCount = 1;
-        imageView.subresourceRange.baseArrayLayer = 0;
-        imageView.subresourceRange.layerCount = 1;
-        imageView.image = _attachment->image;
-        VK_CHECK_RESULT(vkCreateImageView(device, &imageView, nullptr, &_attachment->view));
     }
 
     void ShatterRender::createGraphicsCommandPool(){
@@ -981,7 +916,13 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_captureRenderPass));
     }
 
-    void ShatterRender::createPrimaryCommandBuffers(){
+    void ShatterRender::freeGraphicsPrimaryCB() {
+        vkFreeCommandBuffers(device, graphic_commandPool, SingleAPP.getSwapChainCount(), presentCB.data());
+        vkFreeCommandBuffers(device, graphic_commandPool, 1, &colorCB);
+        vkFreeCommandBuffers(device, graphic_commandPool, 1, &captureCB);
+    }
+
+    void ShatterRender::createGraphicsPrimaryCB() {
         VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
         commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
@@ -989,18 +930,24 @@ namespace Shatter::render{
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
         commandBufferAllocateInfo.commandBufferCount = m_swapChainImageCount;
-        presentBuffers.resize(m_swapChainImageCount);
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, presentBuffers.data()));
+        presentCB.resize(m_swapChainImageCount);
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, presentCB.data()));
 
         commandBufferAllocateInfo.commandBufferCount = 1;
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_colorCommandBuffer));
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &now_capture_buffer));
-
-        commandBufferAllocateInfo.commandPool = compute_commandPool;
-
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &compute_buffer));
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &colorCB));
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &captureCB));
     }
 
+    void ShatterRender::createComputePrimaryCB() {
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
+        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        commandBufferAllocateInfo.pNext = VK_NULL_HANDLE;
+        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        commandBufferAllocateInfo.commandBufferCount = 1;
+        commandBufferAllocateInfo.commandPool = compute_commandPool;
+
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &computeCB));
+    }
 
     void ShatterRender::prepareMultipleThreadDate() {
         VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -1166,7 +1113,7 @@ namespace Shatter::render{
             cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
         }
 
-        VK_CHECK_RESULT(vkBeginCommandBuffer(compute_buffer, &cmdBufInfo));
+        VK_CHECK_RESULT(vkBeginCommandBuffer(computeCB, &cmdBufInfo));
         auto threadPool = ThreadPool::pool();
         // Inheritance info for the secondary command buffers
         VkCommandBufferInheritanceInfo inheritanceInfo {};
@@ -1196,11 +1143,11 @@ namespace Shatter::render{
         pre_compute_buffers = commandBuffers;
 
         // Execute render commands from the secondary command buffer
-        vkCmdExecuteCommands(compute_buffer, commandBuffers.size(), commandBuffers.data());
+        vkCmdExecuteCommands(computeCB, commandBuffers.size(), commandBuffers.data());
 
 //        TaskPool::computeBarrierRelease(compute_buffer);
 
-        VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
+        VK_CHECK_RESULT(vkEndCommandBuffer(computeCB));
     }
 
     void ShatterRender::updateComputeCommandBufferAsync()
@@ -1215,13 +1162,13 @@ namespace Shatter::render{
         cmdBufInfo.pInheritanceInfo = VK_NULL_HANDLE;
 
 //        vkQueueWaitIdle(compute_queue);
-        VK_CHECK_RESULT(vkBeginCommandBuffer(compute_buffer, &cmdBufInfo));
+        VK_CHECK_RESULT(vkBeginCommandBuffer(computeCB, &cmdBufInfo));
         if(!computeid_vec.empty())
         {
-            vkCmdExecuteCommands(compute_buffer, computeid_vec.size(), pre_compute_buffers.data());
+            vkCmdExecuteCommands(computeCB, computeid_vec.size(), pre_compute_buffers.data());
         }
 
-        VK_CHECK_RESULT(vkEndCommandBuffer(compute_buffer));
+        VK_CHECK_RESULT(vkEndCommandBuffer(computeCB));
     }
 
     void ShatterRender::createNewCaptureCommandBuffers() {
@@ -1237,7 +1184,7 @@ namespace Shatter::render{
             ((VulkanFrameBuffer*)m_captureFrameBuffers)->resize(SingleAPP.getPresentViewPort().view.width, SingleAPP.getPresentViewPort().view.height);
         }
 
-        vkBeginCommandBuffer(now_capture_buffer, &cmdBufInfo);
+        vkBeginCommandBuffer(captureCB, &cmdBufInfo);
 
         std::array<VkClearValue,2> clearCaptureValue{};
         clearCaptureValue[0].color = { { uint32_t(0) } };
@@ -1255,7 +1202,7 @@ namespace Shatter::render{
             renderPassBeginInfo.pClearValues = clearCaptureValue.data();
         }
 //        TaskPool::captureBarrierRequire(m_capture_buffer);
-        vkCmdBeginRenderPass(now_capture_buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdBeginRenderPass(captureCB, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         VkDeviceSize offsets = 0;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkCommandBuffer> captureBuffers(aabb_map.size());
@@ -1325,10 +1272,10 @@ namespace Shatter::render{
         }
         SingleThreadPool->wait();
         if(!captureBuffers.empty()) {
-            vkCmdExecuteCommands(now_capture_buffer, captureBuffers.size(), captureBuffers.data());
+            vkCmdExecuteCommands(captureCB, captureBuffers.size(), captureBuffers.data());
         }
-        vkCmdEndRenderPass(now_capture_buffer);
-        vkEndCommandBuffer(now_capture_buffer);
+        vkCmdEndRenderPass(captureCB);
+        vkEndCommandBuffer(captureCB);
     }
 
     void ShatterRender::createColorGraphicsCommandBuffersMultiple() {
@@ -1358,7 +1305,7 @@ namespace Shatter::render{
             updateColorSet();
         }
 
-        vkBeginCommandBuffer(m_colorCommandBuffer, &cmdBufInfo);
+        vkBeginCommandBuffer(colorCB, &cmdBufInfo);
         auto threadPool = ThreadPool::pool();
         // Inheritance info for the secondary command buffers
         VkCommandBufferInheritanceInfo inheritanceInfo {};
@@ -1375,9 +1322,9 @@ namespace Shatter::render{
         /*
          * Use barrier to changed offscreen and shadow image layout to shader resource
          */
-        TaskPool::barrierRequire(m_colorCommandBuffer);
+        TaskPool::barrierRequire(colorCB);
 
-        vkCmdBeginRenderPass(m_colorCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdBeginRenderPass(colorCB, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         int draw_index = 0;
         int threadIndex = 0;
 
@@ -1400,9 +1347,9 @@ namespace Shatter::render{
                 }
             }
             (*threadPool).wait();
-            vkCmdExecuteCommands(m_colorCommandBuffer, gBuffers.size(), gBuffers.data());
+            vkCmdExecuteCommands(colorCB, gBuffers.size(), gBuffers.data());
         }
-        vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdNextSubpass(colorCB, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         /*
          * Light
@@ -1432,9 +1379,9 @@ namespace Shatter::render{
             vkCmdDraw(m_compositeCommandBuffer, 3, 1, 0, 0);
             vkEndCommandBuffer(m_compositeCommandBuffer);
 
-            vkCmdExecuteCommands(m_colorCommandBuffer, 1, &m_compositeCommandBuffer);
+            vkCmdExecuteCommands(colorCB, 1, &m_compositeCommandBuffer);
         }
-        vkCmdNextSubpass(m_colorCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdNextSubpass(colorCB, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         inheritanceInfo.subpass = SubpassTransparency;
 
         /*
@@ -1456,7 +1403,7 @@ namespace Shatter::render{
                     }
                 }
                 (*threadPool).wait();
-                vkCmdExecuteCommands(m_colorCommandBuffer, normalBuffers.size(), normalBuffers.data());
+                vkCmdExecuteCommands(colorCB, normalBuffers.size(), normalBuffers.data());
             }
         }
 
@@ -1482,7 +1429,7 @@ namespace Shatter::render{
                     }
                 }
                 (*threadPool).wait();
-                vkCmdExecuteCommands(m_colorCommandBuffer, transparencyBuffers.size(), transparencyBuffers.data());
+                vkCmdExecuteCommands(colorCB, transparencyBuffers.size(), transparencyBuffers.data());
             }
         }
 
@@ -1518,11 +1465,11 @@ namespace Shatter::render{
 
 //            std::cout << "CommandBuffer: " << m_colorCommandBuffer << std::endl;
 
-        vkCmdEndRenderPass(m_colorCommandBuffer);
+        vkCmdEndRenderPass(colorCB);
 
-        TaskPool::barrierRelease(m_colorCommandBuffer);
+        TaskPool::barrierRelease(colorCB);
 
-        vkEndCommandBuffer(m_colorCommandBuffer);
+        vkEndCommandBuffer(colorCB);
     }
 
     void ShatterRender::createPresentGraphicsCommandBuffers() {
@@ -1534,7 +1481,7 @@ namespace Shatter::render{
             imGui->newFrame(false);
             imGui->updateBuffers();
         }
-        for (size_t i = 0; i < presentBuffers.size(); i++) {
+        for (size_t i = 0; i < presentCB.size(); i++) {
             VkCommandBufferBeginInfo cmdBufInfo{};
             {
                 cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1556,7 +1503,7 @@ namespace Shatter::render{
                 renderPassBeginInfo.pClearValues = clearPresentValue.data();
             }
 
-            vkBeginCommandBuffer(presentBuffers[i], &cmdBufInfo);
+            vkBeginCommandBuffer(presentCB[i], &cmdBufInfo);
             auto threadPool = ThreadPool::pool();
 
             VkImageSubresourceRange subresourceRange = {};
@@ -1580,7 +1527,7 @@ namespace Shatter::render{
 
                 // Put barrier inside setup command buffer
                 vkCmdPipelineBarrier(
-                        presentBuffers[i],
+                        presentCB[i],
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                         0,
@@ -1589,7 +1536,7 @@ namespace Shatter::render{
                         1, &imageMemoryBarrier);
             }
 
-            vkCmdBeginRenderPass(presentBuffers[i], &renderPassBeginInfo,
+            vkCmdBeginRenderPass(presentCB[i], &renderPassBeginInfo,
                                  VK_SUBPASS_CONTENTS_INLINE);
 
 //            UnionViewPort& tmp = getWindowViewPort();
@@ -1602,10 +1549,10 @@ namespace Shatter::render{
 //            vkCmdDraw(new_graphics_buffer[i], 3, 1, 0, 0);
 
             if (Config::getConfig("enableScreenGui")) {
-                imGui->drawFrame(presentBuffers[i]);
+                imGui->drawFrame(presentCB[i]);
             }
 
-            vkCmdEndRenderPass(presentBuffers[i]);
+            vkCmdEndRenderPass(presentCB[i]);
 
             {
                 VkImageMemoryBarrier imageMemoryBarrier {};
@@ -1621,7 +1568,7 @@ namespace Shatter::render{
 
                 // Put barrier inside setup command buffer
                 vkCmdPipelineBarrier(
-                        presentBuffers[i],
+                        presentCB[i],
                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                         0,
@@ -1630,7 +1577,7 @@ namespace Shatter::render{
                         1, &imageMemoryBarrier);
             }
 
-            vkEndCommandBuffer(presentBuffers[i]);
+            vkEndCommandBuffer(presentCB[i]);
         }
     }
 
@@ -1661,7 +1608,7 @@ namespace Shatter::render{
 
         vkQueueWaitIdle(graphics_queue);
 
-        vkBeginCommandBuffer(presentBuffers[_index], &cmdBufInfo);
+        vkBeginCommandBuffer(presentCB[_index], &cmdBufInfo);
         auto threadPool = ThreadPool::pool();
 
         VkImageSubresourceRange subresourceRange = {};
@@ -1685,7 +1632,7 @@ namespace Shatter::render{
 
             // Put barrier inside setup command buffer
             vkCmdPipelineBarrier(
-                    presentBuffers[_index],
+                    presentCB[_index],
                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     0,
@@ -1694,7 +1641,7 @@ namespace Shatter::render{
                     1, &imageMemoryBarrier);
         }
 
-        vkCmdBeginRenderPass(presentBuffers[_index], &renderPassBeginInfo,
+        vkCmdBeginRenderPass(presentCB[_index], &renderPassBeginInfo,
                              VK_SUBPASS_CONTENTS_INLINE);
 
 
@@ -1708,10 +1655,10 @@ namespace Shatter::render{
 //        vkCmdDraw(new_graphics_buffer[_index], 3, 1, 0, 0);
 
         if (Config::getConfig("enableScreenGui")) {
-            imGui->drawFrame(presentBuffers[_index]);
+            imGui->drawFrame(presentCB[_index]);
         }
 
-        vkCmdEndRenderPass(presentBuffers[_index]);
+        vkCmdEndRenderPass(presentCB[_index]);
 
         {
             VkImageMemoryBarrier imageMemoryBarrier {};
@@ -1727,7 +1674,7 @@ namespace Shatter::render{
 
             // Put barrier inside setup command buffer
             vkCmdPipelineBarrier(
-                    presentBuffers[_index],
+                    presentCB[_index],
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     0,
@@ -1736,7 +1683,7 @@ namespace Shatter::render{
                     1, &imageMemoryBarrier);
         }
 
-        vkEndCommandBuffer(presentBuffers[_index]);
+        vkEndCommandBuffer(presentCB[_index]);
     }
 
     void ShatterRender::createGraphicsCommandBuffers() {
@@ -1754,17 +1701,17 @@ namespace Shatter::render{
                 VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
                 nullptr
         };
-        if (vkBeginCommandBuffer(compute_buffer, &command_buffer_begin_info) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(computeCB, &command_buffer_begin_info) != VK_SUCCESS)
         {
             throw std::runtime_error("command buffer begin failed");
         }
 
         auto cpool = MPool<CObject>::getPool();
         for(auto& computeobj : computeid_vec){
-            (*cpool)[computeobj]->compute(compute_buffer);
+            (*cpool)[computeobj]->compute(computeCB);
         }
 
-        vkEndCommandBuffer(compute_buffer);
+        vkEndCommandBuffer(computeCB);
     }
 
     void ShatterRender::createSemaphores(){
@@ -1798,7 +1745,8 @@ namespace Shatter::render{
             SinglePPool.release();
             SinglePPool.init();
         }
-        createPrimaryCommandBuffers();
+        createGraphicsPrimaryCB();
+        createComputePrimaryCB();
         createComputeCommandBuffer();
         createSecondaryCommandBuffers();
 //        createGraphicsCommandBuffers();
@@ -1811,10 +1759,6 @@ namespace Shatter::render{
         vkDestroyImage(device, m_depthImage, nullptr);
         vkFreeMemory(device, m_depthImageMemory, nullptr);
 
-        vkFreeCommandBuffers(device,graphic_commandPool,gui_buffer.size(),gui_buffer.data());
-        vkFreeCommandBuffers(device,graphic_commandPool,offscreen_buffers.size(),offscreen_buffers.data());
-        vkFreeCommandBuffers(device,compute_commandPool,1,&compute_buffer);
-
         {
             for (auto & present : m_presents) {
                 vkDestroyImageView(device, present.imageView, nullptr);
@@ -1825,7 +1769,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::newDraw() {
-        static std::array<VkCommandBuffer, 3> commands{SingleRender.m_colorCommandBuffer, SingleRender.now_capture_buffer, VK_NULL_HANDLE};
+        static std::array<VkCommandBuffer, 3> commands{SingleRender.colorCB, SingleRender.captureCB, VK_NULL_HANDLE};
 
         uint32_t imageIndex;
         auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
@@ -1834,7 +1778,7 @@ namespace Shatter::render{
             windowStill = false;
         }
         setSwapChainIndex(int(imageIndex));
-        commands[2] = SingleRender.presentBuffers[imageIndex];
+        commands[2] = SingleRender.presentCB[imageIndex];
 
         static VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -1900,7 +1844,7 @@ namespace Shatter::render{
     void ShatterRender::draw() {
         static bool firstDraw = true;
         static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-        static std::array<VkCommandBuffer, 3> commands{SingleRender.m_colorCommandBuffer, SingleRender.now_capture_buffer, VK_NULL_HANDLE};
+        static std::array<VkCommandBuffer, 3> commands{SingleRender.colorCB, SingleRender.captureCB, VK_NULL_HANDLE};
         if(firstDraw)
         {
             computeSubmitInfo = {
@@ -1910,7 +1854,7 @@ namespace Shatter::render{
                     nullptr,
                     nullptr,
                     1,
-                    &compute_buffer,
+                    &computeCB,
                     1,
                     &computeFinishedSemaphore
             };
@@ -1926,7 +1870,7 @@ namespace Shatter::render{
             static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
             static VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
             static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore, computeReadySemaphore};
-            commands[2] = SingleRender.presentBuffers[imageIndex];
+            commands[2] = SingleRender.presentCB[imageIndex];
             graphicsSubmitInfo = {
                     VK_STRUCTURE_TYPE_SUBMIT_INFO,
                     nullptr,
@@ -1977,7 +1921,7 @@ namespace Shatter::render{
                 windowStill = false;
             }
             setSwapChainIndex(int(imageIndex));
-            commands[2] = SingleRender.presentBuffers[imageIndex];
+            commands[2] = SingleRender.presentCB[imageIndex];
 
             if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
             {

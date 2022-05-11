@@ -117,10 +117,6 @@ namespace Shatter{
 
             void createNewCaptureCommandBuffers();
 
-            void clearAttachment(FrameBufferAttachment* _attachment);
-
-            void createAttachment(VkFormat _format, VkImageUsageFlags _usage, FrameBufferAttachment* _attachment);
-
             void createGraphicsCommandPool();
 
             void createComputeCommandPool();
@@ -131,7 +127,11 @@ namespace Shatter{
 
             void createDescriptorPool();
 
-            void createPrimaryCommandBuffers();
+            void freeGraphicsPrimaryCB();
+
+            void createGraphicsPrimaryCB();
+
+            void createComputePrimaryCB();
 
             void createSecondaryCommandBuffers();
 
@@ -195,7 +195,7 @@ namespace Shatter{
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
-            VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
+            [[nodiscard]] VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
             FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffers;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             VkDevice* getDevice(){return &device;};
@@ -246,12 +246,13 @@ namespace Shatter{
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
         private:
             std::vector<VkCommandBuffer> gui_buffer{}, offscreen_buffers;
-            VkCommandBuffer compute_buffer{};
+            VkCommandBuffer computeCB{};
+            VkCommandBuffer colorCB{};
+            VkCommandBuffer captureCB{};
+            std::vector<VkCommandBuffer> presentCB{};
 
-            VkCommandBuffer m_colorCommandBuffer{};
-            VkCommandBuffer now_capture_buffer{};
-
-            std::vector<VkCommandBuffer> pre_compute_buffers, presentBuffers{};
+        private:
+            std::vector<VkCommandBuffer> pre_compute_buffers;
             std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{};
 
             VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
