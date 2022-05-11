@@ -66,6 +66,7 @@ public:
     ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
     ClassElementInitial(m_pipeline, std::string, Pipeline, "AGBasic");
     ClassElementInitial(m_filePath, std::string, FilePath, );
+    ClassPointerElementInitial(m_textured, bool, Textured, false);
 private:
     std::vector<std::string> m_sets{"Camera", "Planet"};
 public:
@@ -120,7 +121,9 @@ public:
                                int _id,
                                I3DMLoader* _loader,
                                std::string   _pipeline = "AGBasicInstance",
-                               std::vector<std::string>   _sets = {"Camera", "Planet"});
+                               std::vector<std::string>   _sets = {"Camera", "Planet"},
+                               bool _textured = false,
+                               std::string _texPipeline = "I3DMInstanceTexture");
     ~I3DMBasicInstance() override;
     void constructG() override ;
     void constructD() override;
@@ -129,8 +132,11 @@ public:
 private:
     vkglTF::Model*              m_model{};
     std::string                 m_pipeline;
+    std::string                 m_texturePipeline;
     std::vector<std::string>    m_sets;
+    std::vector<std::string>    m_textureSets {"Camera"};
     I3DMLoader*                 m_loader;
+    bool                        m_textured;
     int                         m_id;
 };
 

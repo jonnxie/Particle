@@ -127,6 +127,19 @@ void PPool::init() {
                  RenderPassType::Color,
                  SubpassG);
 
+        createGP("I3DMInstanceTexture",
+                 std::vector<Input_Type>{Input_Type::GLTFInstance, Input_Type::GLTF},
+                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aginstance_vs"),
+                                                              ShaderPool::getPool().Get("aginstanceTex_fs")},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
+                 std::vector<Sl_id> {"Default","Camera", "BaseTexture"},
+                 RenderPassType::Color,
+                 SubpassG);
+
         createGP("GPlanet",
                  std::vector<Input_Type>{Input_Type::Point3d},
                  std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gplanet_vs"),

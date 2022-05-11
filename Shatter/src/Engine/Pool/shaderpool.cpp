@@ -91,6 +91,7 @@ void ShaderPool::init() {
 
     createShaderStage("aginstance_vs",tool::combineShader("aginstance/vert.spv"), VertexShader);
     createShaderStage("aginstance_fs",tool::combineShader("aginstance/frag.spv"), FragmentShader);
+    createShaderStage("aginstanceTex_fs",tool::combineShader("aginstance/tex_frag.spv"), FragmentShader);
 
     createShaderStage("gplanet_vs",tool::combineShader("gplanet/vert.spv"), VertexShader);
     createShaderStage("gplanet_fs",tool::combineShader("gplanet/frag.spv"), FragmentShader);
