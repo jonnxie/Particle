@@ -20,7 +20,7 @@ Device &Device::getDevice() {
     if(!if_geted){
         if_geted = true;
         device.logicalDevice = *ShatterRender::getRender().getDevice();
-        device.physicalDevice = ShatterRender::getRender().physicalDevice;
+        device.physicalDevice = ShatterRender::getRender().getPhysicalDevice();
     }
     return device;
 }

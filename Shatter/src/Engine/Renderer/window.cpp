@@ -9,7 +9,8 @@
 #include CameraCatalog
 
 void GLFWWindow::windowResized(int _width, int _height) {
-    glfwGetFramebufferSize(window, &width, &height);
+    width = _width;
+    height = _height;
 }
 
 void GLFWWindow::keyCallback(int _key, int _action) {
@@ -19,7 +20,7 @@ void GLFWWindow::keyCallback(int _key, int _action) {
     {
         pressKey(_key);
         io.KeysDown[_key] =  true;
-    }else if(_action == GLFW_RELEASE)
+    } else if(_action == GLFW_RELEASE)
     {
         io.KeysDown[_key] =  false;
         releaseKey(_key);
@@ -89,6 +90,8 @@ void GLFWWindow::keyTypeCallback(unsigned int _code) {
 
 static void windowResizedStatic(GLFWwindow *_window, int _width, int _height) {
     printf("Window resized!");
+    auto *w = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(_window));
+    w->windowResized(_width, _height);
 }
 
 static void keyCallbackStatic(GLFWwindow* _window, int _key, int _scancode, int _action, int _mods) {
