@@ -111,15 +111,18 @@ namespace Shatter::render{
         clearValues[4].depthStencil = { 1.0f, 0 };
         initWindow();
         initVulkan();
+        initialed = true;
     }
 
     void ShatterRender::loop(){
 //        glfwPollEvents();
-        if(Config::getConfig("enableScreenGui"))
-        {
-            GUI::getGUI()->updateUI();
+        if (initialed) {
+            if(Config::getConfig("enableScreenGui"))
+            {
+                GUI::getGUI()->updateUI();
+            }
+            newDraw();
         }
-        newDraw();
     }
 
     void ShatterRender::cleanup(){
@@ -273,6 +276,7 @@ namespace Shatter::render{
         if (!initialed) {
             return;
         }
+        initialed = false;
         resized = true;
         vkDeviceWaitIdle(device);
 
@@ -288,6 +292,9 @@ namespace Shatter::render{
 
         createGraphicsPrimaryCB();
 
+        vkDeviceWaitIdle(device);
+
+        initialed = true;
     }
 
     void ShatterRender::pickPhysicalDevice(){
@@ -470,6 +477,10 @@ namespace Shatter::render{
         }
 
         VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain));
+
+        if (oldSwapchain != VK_NULL_HANDLE) {
+            vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
+        }
 
         min_image_count = createInfo.minImageCount;
 
@@ -1064,7 +1075,6 @@ namespace Shatter::render{
         }
     }
 
-
     void ShatterRender::createSecondaryCommandBuffers()
     {
         VkCommandBufferAllocateInfo allocInfo = {};
@@ -1080,11 +1090,6 @@ namespace Shatter::render{
 
         offscreen_buffers.resize(m_swapChainImageCount);
         if (vkAllocateCommandBuffers(device, &allocInfo, offscreen_buffers.data()) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate off screen command buffers!");
-        }
-
-        allocInfo.commandBufferCount = 1;
-        if (vkAllocateCommandBuffers(device, &allocInfo, &m_compositeCommandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate off screen command buffers!");
         }
     }
@@ -1357,29 +1362,38 @@ namespace Shatter::render{
         {
             inheritanceInfo.subpass = SubpassLight;
 
+            VkCommandBuffer compositeCB;
+            VkCommandBufferAllocateInfo allocInfo = {};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.commandPool = graphic_commandPool;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+            allocInfo.commandBufferCount = 1;
+            vkAllocateCommandBuffers(device, &allocInfo, &compositeCB);
+
+
             VkCommandBufferBeginInfo commandBufferBeginInfo {};
             commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             commandBufferBeginInfo.pNext = VK_NULL_HANDLE;
             commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-            vkBeginCommandBuffer(m_compositeCommandBuffer, &commandBufferBeginInfo);
+            vkBeginCommandBuffer(compositeCB, &commandBufferBeginInfo);
             UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-            vkCmdSetViewport(m_compositeCommandBuffer, 0, 1, &tmp.view);
+            vkCmdSetViewport(compositeCB, 0, 1, &tmp.view);
             VkRect2D& scissor = tmp.scissor;
-            vkCmdSetScissor(m_compositeCommandBuffer,0,1,&scissor);
+            vkCmdSetScissor(compositeCB,0,1,&scissor);
 
             std::array<VkDescriptorSet,2> sets{};
             {
                 sets[0] = SingleSetPool["gBuffer"];
                 sets[1] = SingleSetPool["MultiLight"];
             }
-            vkCmdBindDescriptorSets(m_compositeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-            vkCmdBindPipeline(m_compositeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
-            vkCmdDraw(m_compositeCommandBuffer, 3, 1, 0, 0);
-            vkEndCommandBuffer(m_compositeCommandBuffer);
+            vkCmdBindDescriptorSets(compositeCB, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+            vkCmdBindPipeline(compositeCB, VK_PIPELINE_BIND_POINT_GRAPHICS, SinglePPool["Composition"]->getPipeline());
+            vkCmdDraw(compositeCB, 3, 1, 0, 0);
+            vkEndCommandBuffer(compositeCB);
 
-            vkCmdExecuteCommands(colorCB, 1, &m_compositeCommandBuffer);
+            vkCmdExecuteCommands(colorCB, 1, &compositeCB);
         }
         vkCmdNextSubpass(colorCB, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         inheritanceInfo.subpass = SubpassTransparency;
@@ -1769,16 +1783,14 @@ namespace Shatter::render{
     }
 
     void ShatterRender::newDraw() {
-        static std::array<VkCommandBuffer, 3> commands{SingleRender.colorCB, SingleRender.captureCB, VK_NULL_HANDLE};
 
         uint32_t imageIndex;
         auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
         if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
-            recreateSwapChain();
-            windowStill = false;
+            windowResize();
         }
         setSwapChainIndex(int(imageIndex));
-        commands[2] = SingleRender.presentCB[imageIndex];
+        std::array<VkCommandBuffer, 3> commands{SingleRender.colorCB, SingleRender.captureCB, SingleRender.presentCB[imageIndex]};
 
         static VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -1800,10 +1812,11 @@ namespace Shatter::render{
         VK_CHECK_RESULT(fenceRes);
 //        vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
 
-        if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
+        if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged || SingleRender.resized)
         {
             createGraphicsCommandBuffers();
-            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = SingleAPP.viewportChanged = false;
+            guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged =
+                    SingleAPP.viewportChanged = SingleRender.resized =  false;
         } else if (Config::getConfig("enableScreenGui")) {
             if (Config::getConfig("enableScreenGui"))
             {
@@ -1811,7 +1824,7 @@ namespace Shatter::render{
                 imGui->updateBuffers();
             }
 //            if (GUI::getGUI()->getItemState() || SingleAPP.presentReset) {
-            updatePresentCommandBuffers(imageIndex);
+            updatePresentCommandBuffers((int)imageIndex);
 //                SingleAPP.presentReset = false;
 //            }
         }
@@ -1831,7 +1844,7 @@ namespace Shatter::render{
         auto result = vkQueuePresentKHR(present_queue, &presentInfo);
         if (!((result == VK_SUCCESS) || (result == VK_SUBOPTIMAL_KHR))) {
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-                recreateSwapChain();
+                windowResize();
                 return;
             } else {
                 VK_CHECK_RESULT(result);
@@ -1839,122 +1852,6 @@ namespace Shatter::render{
         }
         vkQueueWaitIdle(graphics_queue);
         vkQueueWaitIdle(transfer_queue);
-    }
-
-    void ShatterRender::draw() {
-        static bool firstDraw = true;
-        static VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-        static std::array<VkCommandBuffer, 3> commands{SingleRender.colorCB, SingleRender.captureCB, VK_NULL_HANDLE};
-        if(firstDraw)
-        {
-            computeSubmitInfo = {
-                    VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                    nullptr,
-                    0,
-                    nullptr,
-                    nullptr,
-                    1,
-                    &computeCB,
-                    1,
-                    &computeFinishedSemaphore
-            };
-            assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
-            computeSubmitInfo.waitSemaphoreCount = 1;
-            computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
-            computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
-
-            uint32_t imageIndex;
-            assert(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(),imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex) == VK_SUCCESS);
-            setSwapChainIndex(int(imageIndex));
-
-            static VkSemaphore waitSemaphores[] = {imageAvailableSemaphore,computeFinishedSemaphore};
-            static VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-            static VkSemaphore signalSemaphores[] = {renderFinishedSemaphore, computeReadySemaphore};
-            commands[2] = SingleRender.presentCB[imageIndex];
-            graphicsSubmitInfo = {
-                    VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                    nullptr,
-                    2,
-                    waitSemaphores,
-                    waitStages,
-                    3,
-                    commands.data(),
-                    2,
-                    signalSemaphores
-            };
-
-            assert(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
-//            VkPresentInfoKHR presentInfo = {};
-            presentInfo = {
-                    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-                    nullptr,
-                    1,
-                    &renderFinishedSemaphore,
-                    1,
-                    &swapchain,
-                    &imageIndex,
-                    nullptr
-            };
-            assert(vkQueuePresentKHR(present_queue, &presentInfo) == VK_SUCCESS);
-            firstDraw = false;
-        }else{
-            if(!windowStill)
-            {
-//                vkDeviceWaitIdle(device);
-                computeSubmitInfo.waitSemaphoreCount = 0;
-                computeSubmitInfo.pWaitSemaphores = nullptr;
-                computeSubmitInfo.pWaitDstStageMask = nullptr;
-                assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
-                windowStill = true;
-                computeSubmitInfo.waitSemaphoreCount = 1;
-                computeSubmitInfo.pWaitSemaphores = &computeReadySemaphore;
-                computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
-            }else{
-                assert(vkQueueSubmit(compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE) == VK_SUCCESS);
-            }
-
-            uint32_t imageIndex;
-//            VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex));
-            auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-            if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
-                recreateSwapChain();
-                windowStill = false;
-            }
-            setSwapChainIndex(int(imageIndex));
-            commands[2] = SingleRender.presentCB[imageIndex];
-
-            if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged)
-            {
-                createGraphicsCommandBuffers();
-                guiChanged = offChanged = drawChanged = normalChanged = transChanged = aabbChanged = false;
-                SingleAPP.viewportChanged = false;
-            } else if (Config::getConfig("enableScreenGui")) {
-                updatePresentCommandBuffers(imageIndex);
-            }
-
-            graphicsSubmitInfo.pCommandBuffers = commands.data();
-            VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, VK_NULL_HANDLE));
-
-            presentInfo.pImageIndices = &imageIndex;
-            auto result = vkQueuePresentKHR(present_queue, &presentInfo);
-            if (!((result == VK_SUCCESS) || (result == VK_SUBOPTIMAL_KHR))) {
-                if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-                    recreateSwapChain();
-                    return;
-                } else {
-                    VK_CHECK_RESULT(result);
-                }
-            }
-//            vkQueueWaitIdle(present_queue);
-//            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-//            {
-//                recreateSwapChain();
-//                windowStill = false;
-//            } else if(result != VK_SUCCESS)
-//            {
-//                VK_CHECK_RESULT(result);
-//            }
-        }
     }
 
     SwapChainSupportDetails ShatterRender::querySwapChainSupport(VkPhysicalDevice device){

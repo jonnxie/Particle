@@ -89,7 +89,7 @@ void GLFWWindow::keyTypeCallback(unsigned int _code) {
 }
 
 static void windowResizedStatic(GLFWwindow *_window, int _width, int _height) {
-    printf("Window resized!");
+    printf("Window resized!\n");
     auto *w = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(_window));
     w->windowResized(_width, _height);
 }

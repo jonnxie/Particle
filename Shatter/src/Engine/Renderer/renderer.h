@@ -80,8 +80,6 @@ namespace Shatter{
 
             void createSurface();
 
-            void windowResize();
-
             void pickPhysicalDevice();
 
             static bool enableFeatures();
@@ -90,7 +88,6 @@ namespace Shatter{
 
             void createSwapChain();
 
-            VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
             void createColorRenderPass();
             void createColorFramebuffers();
@@ -165,8 +162,6 @@ namespace Shatter{
 
             void cleanupSwapChain();
 
-            void draw();
-
             void newDraw();
 
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
@@ -191,6 +186,8 @@ namespace Shatter{
 
             VkCommandBuffer beginSingleTimeTransCommands() ;
             void endSingleTimeTransCommands(VkCommandBuffer commandBuffer);
+
+            void windowResize();
 
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
@@ -263,7 +260,7 @@ namespace Shatter{
             VkPresentInfoKHR presentInfo{};
             VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
         private:
-            VkSwapchainKHR swapchain{};
+            VkSwapchainKHR swapchain{VK_NULL_HANDLE};
             VkDescriptorPool descriptorPool{};
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};
