@@ -105,7 +105,7 @@ namespace Shatter{
 
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            FrameBuffer* m_captureFrameBuffers{nullptr};
+            FrameBuffer* m_captureFrameBuffer{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
 
             void createCaptureRenderPass();
@@ -120,15 +120,13 @@ namespace Shatter{
 
             void createTransferCommandPool();
 
-            void createDepthResources();
-
             void createDescriptorPool();
 
             void freeGraphicsPrimaryCB();
 
-            void createGraphicsPrimaryCB();
+            void allocateGraphicsPrimaryCB();
 
-            void createComputePrimaryCB();
+            void allocateComputePrimaryCB();
 
             void createSecondaryCommandBuffers();
 
@@ -193,7 +191,7 @@ namespace Shatter{
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
             [[nodiscard]] VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
-            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffers;};
+            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffer;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             VkDevice* getDevice(){return &device;};
             VkPhysicalDevice getPhysicalDevice() {return physicalDevice;};
@@ -229,16 +227,12 @@ namespace Shatter{
             VkFormat m_presentFormat;
             std::vector<VkImage> m_presentImages;
             VkExtent2D presentExtent{};
+            VkFormat m_depthFormat;
 
             uint32_t m_swapChainImageCount;
-
             VkDescriptorSet m_colorSet;
-            FrameBuffer* m_colorFrameBuffers{nullptr};
 
-            VkFormat m_depthFormat;
-            VkImage m_depthImage{};
-            VkDeviceMemory m_depthImageMemory{};
-            VkImageView m_depthImageView{};
+            FrameBuffer* colorFrameBuffers{nullptr};
 
             bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
         private:
