@@ -167,7 +167,6 @@ enum class BlendState{
 };
 
 enum class RenderPassType{
-    Default,
     CascadeShadow,
     OffScreen,
     Capture,

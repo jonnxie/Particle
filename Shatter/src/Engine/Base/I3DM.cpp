@@ -3,6 +3,8 @@
 //
 
 #include "I3DM.h"
+
+#include <utility>
 #include PPoolCatalog
 #include PipelineCatalog
 
@@ -171,7 +173,8 @@ void I3DMLoader::loadI3DMFileInstance() {
                                           mallocId(),
                                           this,
                                           m_pipeline,
-                                          m_sets);
+                                          m_sets,
+                                          m_textured);
     SingleRender.normalChanged = true;
 }
 
@@ -234,11 +237,14 @@ I3DMBasic::~I3DMBasic() {
 }
 
 I3DMBasicInstance::I3DMBasicInstance(vkglTF::Model *_model, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle,
-                                     glm::vec3 _scale, int _id, I3DMLoader* _loader, std::string _pipeline, std::vector<std::string> _sets) :
+                                     glm::vec3 _scale, int _id, I3DMLoader* _loader, std::string _pipeline, std::vector<std::string> _sets, bool _textured,
+                                     std::string _texPipeline) :
         m_id(_id),
         m_pipeline(std::move(_pipeline)),
         m_sets(std::move(_sets)),
-        m_loader(_loader)
+        m_loader(_loader),
+        m_textured(_textured),
+        m_texturePipeline(std::move(_texPipeline))
 {
     m_model = _model;
     m_scale = glm::scale(glm::mat4(1.0f), _scale);
@@ -289,6 +295,44 @@ void I3DMBasicInstance::constructD() {
         m_model->drawInstance(_cb, m_loader->getInstanceLength());
     };
     insertDObject(d);
+
+    if (m_textured) {
+        d = dpool->malloc();
+        (*dpool)[d]->m_model_index = modelIndex;
+        (*dpool)[d]->m_matrix = m_world;
+        (*dpool)[d]->m_type = DType::Normal;
+        (*dpool)[d]->m_gGraphics = [&, modelIndex, instanceBuffer](VkCommandBuffer _cb){
+            vkCmdSetViewport(_cb, 0, 1, &SingleAPP.getPresentViewPort().view);
+            vkCmdSetScissor(_cb,0,1,&SingleAPP.getPresentViewPort().scissor);
+
+            auto set_pool = MPool<VkDescriptorSet>::getPool();
+            std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
+            for(auto & s: m_textureSets)
+            {
+                sets.emplace_back(SingleSetPool[s]);
+            }
+            vkCmdBindDescriptorSets(_cb,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    PPool::getPool()[m_texturePipeline]->getPipelineLayout(),
+                                    0,
+                                    sets.size(),
+                                    sets.data(),
+                                    0,
+                                    VK_NULL_HANDLE);
+            VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(_cb, 1, 1, &instanceBuffer, &offset);
+            // Mesh containing the LODs
+            vkCmdBindPipeline(_cb, VK_PIPELINE_BIND_POINT_GRAPHICS, PPool::getPool()[m_texturePipeline]->getPipeline());
+
+            m_model->drawInstance(_cb, m_loader->getInstanceLength(), vkglTF::RenderFlags::BindImages,
+                                  PPool::getPool()[m_texturePipeline]->getPipelineLayout(),
+                                  2,
+                                  false
+            );
+        };
+        insertDObject(d);
+    }
+
     for (int i : m_dobjs){SingleRender.pushDObjects(i);}
     TaskPool::pushUpdateTask(tool::combine("I3DMInstanceBasic", m_id),[&, modelIndex, d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();

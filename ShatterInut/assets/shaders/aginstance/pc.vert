@@ -12,12 +12,14 @@ layout(set = 1,binding = 0) uniform UniformCameraObject{
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec2 inUV;
 
 //Instanced attributes
 layout(location = 7) in vec3 instancePos;
 
 layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outWorldPos;
+layout (location = 2) out vec2 outUV;
 
 out gl_PerVertex{
     vec4 gl_Position;
@@ -32,6 +34,8 @@ void main() {
 
     // GL to Vulkan coord space
     outWorldPos.y = -outWorldPos.y;
+
+    outUV = inUV;
 
     // Normal in world space
     mat3 mNormal = transpose(inverse(mat3(m.model)));

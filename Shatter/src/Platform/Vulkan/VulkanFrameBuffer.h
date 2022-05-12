@@ -29,17 +29,15 @@ public:
     void init();
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
+    void releaseCaptureVals() override;
     auto capture(uint32_t _xCoordinate, uint32_t _yCoordinate, int _attachmentIndex){
         auto format = m_attachments[_attachmentIndex].format;
-//    uint32_t index = _yCoordinate * m_spec.Width + _xCoordinate;
         void* mapped;
         switch (format) {
             case VK_FORMAT_R32_UINT:{
-                static bool init = false;
-                static VkBuffer buffer;
-                static VkDeviceMemory memory;
-                if(!init)
-                {
+                VkBuffer buffer;
+                VkDeviceMemory memory;
+                if (m_captureVals.count(VK_FORMAT_R32_UINT) == 0) {
                     VkDeviceSize size = 4;
                     auto bufferInfo = tool::bufferCreateInfo(VK_BUFFER_USAGE_TRANSFER_DST_BIT, size);
 
@@ -53,9 +51,7 @@ public:
                     memAlloc.memoryTypeIndex = SingleDevice.getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
                     VK_CHECK_RESULT(vkAllocateMemory(SingleDevice(), &memAlloc, nullptr, &memory));
                     VK_CHECK_RESULT(vkBindBufferMemory(SingleDevice(), buffer, memory, 0))
-                    init = true;
-                    m_buffers.push_back(buffer);
-                    m_deviceMemories.push_back(memory);
+                    m_captureVals[VK_FORMAT_R32_UINT] = std::make_pair(buffer, memory);
                 }
 
                 auto cmd = beginSingleTransCommandBuffer();
@@ -76,7 +72,12 @@ public:
                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
-                vkCmdCopyImageToBuffer(cmd, m_attachments[_attachmentIndex].image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &bufferCopyRegion);
+                vkCmdCopyImageToBuffer(cmd,
+                                       m_attachments[_attachmentIndex].image,
+                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                       m_captureVals[VK_FORMAT_R32_UINT].first,
+                                       1,
+                                       &bufferCopyRegion);
 
                 tool::setImageLayout(
                         cmd,
@@ -87,9 +88,9 @@ public:
 
                 endSingleTransCommandBuffer(cmd);
 
-                vkMapMemory(SingleDevice(), memory, 0, 4, 0, &mapped);
+                vkMapMemory(SingleDevice(), m_captureVals[VK_FORMAT_R32_UINT].second, 0, 4, 0, &mapped);
                 uint32_t result = *((uint32_t*)mapped);
-                vkUnmapMemory(SingleDevice(), memory);
+                vkUnmapMemory(SingleDevice(), m_captureVals[VK_FORMAT_R32_UINT].second);
                 return result;
             }
             default:{
@@ -102,8 +103,7 @@ public:
         return m_frame_buffer;
     }
 public:
-    std::vector<VkBuffer>           m_buffers{};
-    std::vector<VkDeviceMemory>     m_deviceMemories{};
+    std::unordered_map<VkFormat, std::pair<VkBuffer, VkDeviceMemory>> m_captureVals;
     VkFramebuffer                   m_frame_buffer{};
     std::vector<VkAttachment>       m_attachments{};
     bool                            m_released = false;

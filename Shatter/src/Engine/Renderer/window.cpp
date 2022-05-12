@@ -9,7 +9,8 @@
 #include CameraCatalog
 
 void GLFWWindow::windowResized(int _width, int _height) {
-    glfwGetFramebufferSize(window, &width, &height);
+    width = _width;
+    height = _height;
 }
 
 void GLFWWindow::keyCallback(int _key, int _action) {
@@ -19,7 +20,7 @@ void GLFWWindow::keyCallback(int _key, int _action) {
     {
         pressKey(_key);
         io.KeysDown[_key] =  true;
-    }else if(_action == GLFW_RELEASE)
+    } else if(_action == GLFW_RELEASE)
     {
         io.KeysDown[_key] =  false;
         releaseKey(_key);
@@ -53,19 +54,24 @@ void GLFWWindow::cursorPositionCallback(double _xPos, double _yPos) {
     cursor.x = _xPos;
     cursor.y = _yPos;
     UnionViewPort& viewport = getWindowViewPort();
-    glm::vec2& tmp = getCursorPos();
+    glm::vec2& tmp = getCursorCoor();
     tmp.x = cursor.x * viewport.inverseWidth;
     tmp.y = cursor.y * viewport.inverseHeight;
     tmp *= 2.0f;
     tmp -= 1.0f;
 
-    glm::vec4 center = SingleCamera.m_camera.proj * SingleCamera.m_camera.view * glm::vec4(SingleCamera.center,1.0f);
-    float& depth = input::getTargetDepth();
-    depth = center.z / center.w;
-    glm::vec4 view = glm::inverse(SingleCamera.m_camera.proj) * glm::vec4(getCursorPos(), depth, 1.0f);
+    UnionViewPort& presentViewPort = SingleAPP.getPresentViewPort();
+    glm::vec2& viewCursor = input::getCursorView();
+    glm::vec2 worldCoor;
+    worldCoor.x = viewCursor.x * presentViewPort.inverseWidth;
+    worldCoor.y = viewCursor.y * presentViewPort.inverseHeight;
+    worldCoor *= 2.0f;
+    worldCoor -= 1.0f;
+
+    glm::vec4 view = SingleCamera.inverseProj * glm::vec4(worldCoor, input::getTargetDepth(), 1.0f);
     view /= view.w;
     glm::vec3& world = input::getCursor();
-    world = glm::inverse(SingleCamera.m_camera.view) * view;
+    world = SingleCamera.inverseView * view;
     SingleCamera.updateCursorRay();
 }
 
@@ -83,7 +89,9 @@ void GLFWWindow::keyTypeCallback(unsigned int _code) {
 }
 
 static void windowResizedStatic(GLFWwindow *_window, int _width, int _height) {
-    printf("Window resized!");
+    printf("Window resized!\n");
+    auto *w = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(_window));
+    w->windowResized(_width, _height);
 }
 
 static void keyCallbackStatic(GLFWwindow* _window, int _key, int _scancode, int _action, int _mods) {

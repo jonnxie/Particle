@@ -88,9 +88,6 @@ namespace Shatter{
 
             void createSwapChain();
 
-            void createRenderPass();
-
-            VkCommandBuffer m_compositeCommandBuffer{};
             VkRenderPass m_colorRenderPass{VK_NULL_HANDLE};
             void createColorRenderPass();
             void createColorFramebuffers();
@@ -106,11 +103,9 @@ namespace Shatter{
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
-            void createMSAARenderPass();
-
             VkFormat m_captureFormat = VK_FORMAT_R32_UINT;
             VkRenderPass m_captureRenderPass = VK_NULL_HANDLE;
-            FrameBuffer* m_captureFrameBuffers{nullptr};
+            FrameBuffer* m_captureFrameBuffer{nullptr};
             std::vector<std::vector<VkCommandBuffer>> pre_capture_buffers{};
 
             void createCaptureRenderPass();
@@ -119,29 +114,19 @@ namespace Shatter{
 
             void createNewCaptureCommandBuffers();
 
-            void createCaptureCommandBuffers(VkCommandBuffer _cb, int _imageIndex);
-
-            void updateCaptureCommandBuffers(VkCommandBuffer _cb,int _imageIndex);
-
-            void createFramebuffers();
-
-            void clearAttachment(FrameBufferAttachment* _attachment);
-
-            void createAttachment(VkFormat _format, VkImageUsageFlags _usage, FrameBufferAttachment* _attachment);
-
-            void createAttachmentResources();
-
             void createGraphicsCommandPool();
 
             void createComputeCommandPool();
 
             void createTransferCommandPool();
 
-            void createDepthResources();
-
             void createDescriptorPool();
 
-            void createPrimaryCommandBuffers();
+            void freeGraphicsPrimaryCB();
+
+            void allocateGraphicsPrimaryCB();
+
+            void allocateComputePrimaryCB();
 
             void createSecondaryCommandBuffers();
 
@@ -154,10 +139,6 @@ namespace Shatter{
             void updatePresentCommandBuffers(int _index);
 
             void createGraphicsCommandBuffers();
-
-            void createGraphicsCommandBuffersMultiple();
-
-            void updateGraphicsCommandBuffersMultiple(int _index);
 
             void updateOffscreenBufferAsync(VkCommandBuffer _cb,int _imageIndex) const;
 
@@ -177,13 +158,7 @@ namespace Shatter{
 
             void recreateSwapChain();
 
-            void keyEventCallback(int key, int action);
-
-            void mouseEventCallback(int button, int action, int xpos, int ypos);
-
             void cleanupSwapChain();
-
-            void draw();
 
             void newDraw();
 
@@ -210,14 +185,16 @@ namespace Shatter{
             VkCommandBuffer beginSingleTimeTransCommands() ;
             void endSingleTimeTransCommands(VkCommandBuffer commandBuffer);
 
+            void windowResize();
+
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) ;
-            [[nodiscard]] VkRenderPass getDefaultRenderPass() const {return m_renderPass;};
             [[nodiscard]] VkRenderPass getPresentRenderPass() const {return m_presentRenderPass;};
             [[nodiscard]] VkRenderPass getColorRenderPass() const {return m_colorRenderPass;};
-            VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
-            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffers;};
+            [[nodiscard]] VkRenderPass getCaptureRenderPass() { return m_captureRenderPass;};
+            FrameBuffer* getCaptureFrameBuffer() {return m_captureFrameBuffer;};
             [[nodiscard]] VkExtent2D getExtent2D() const {return presentExtent;};
             VkDevice* getDevice(){return &device;};
+            VkPhysicalDevice getPhysicalDevice() {return physicalDevice;};
             [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const{return physicalDevice;};
             void createCommandBuffer();
             static void updateColorSet();
@@ -240,6 +217,45 @@ namespace Shatter{
             std::vector<int> computeid_vec;
             std::unordered_map<int, int> aabb_map;//capture id , aabb index
 
+            VkQueue graphics_queue{}, present_queue{}, compute_queue{}, transfer_queue{};
+
+            bool resized = false;
+            bool initialed = false;
+            /*
+            * 图像代表交换链中的项
+            */
+            VkFormat m_presentFormat;
+            std::vector<VkImage> m_presentImages;
+            VkExtent2D presentExtent{};
+            VkFormat m_depthFormat;
+
+            uint32_t m_swapChainImageCount;
+            VkDescriptorSet m_colorSet;
+
+            FrameBuffer* colorFrameBuffers{nullptr};
+
+            bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
+        private:
+            std::vector<VkCommandBuffer> gui_buffer{}, offscreen_buffers;
+            VkCommandBuffer computeCB{};
+            VkCommandBuffer colorCB{};
+            VkCommandBuffer captureCB{};
+            std::vector<VkCommandBuffer> presentCB{};
+
+        private:
+            std::vector<VkCommandBuffer> pre_compute_buffers;
+            std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{};
+
+            VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
+            VkFence renderFence{};
+
+            std::vector<VkClearValue> clearValues{};
+            VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
+            VkPresentInfoKHR presentInfo{};
+            VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
+        private:
+            VkSwapchainKHR swapchain{VK_NULL_HANDLE};
+            VkDescriptorPool descriptorPool{};
             VkInstance instance{};
             VkDebugReportCallbackEXT callback{};
             /*
@@ -249,56 +265,6 @@ namespace Shatter{
 
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device{};
-
-            VkQueue graphics_queue{}, present_queue{}, compute_queue{}, transfer_queue{};
-
-            VkSwapchainKHR swapchain{};
-            /*
-            * 图像代表交换链中的项
-            */
-            VkFormat m_presentFormat;
-            std::vector<VkImage> m_presentImages;
-            VkExtent2D presentExtent{};
-
-            FrameBufferAttachment* positionAttachment{nullptr}, *normalAttachment{nullptr}, *albedoAttachment{nullptr}, *depthAttachment{nullptr};
-
-            VkRenderPass m_renderPass = VK_NULL_HANDLE;
-            uint32_t m_swapChainImageCount;
-            std::vector<VkImage> m_swapchainImages;
-            std::vector<VkImageView> m_swapChainImageviews;
-            std::vector<VkSampler> m_swapChainSamplers;
-            std::vector<VkFramebuffer> m_swapChainFramebuffers;
-            std::vector<VkCommandBuffer> composite_buffers;
-
-            VkDescriptorSet m_colorSet;
-            FrameBuffer* m_colorFrameBuffers{nullptr};
-
-            VkCommandPool graphic_commandPool{}, compute_commandPool{}, transfer_commandPool{};
-
-            VkFormat m_depthFormat;
-            VkImage m_depthImage{};
-            VkDeviceMemory m_depthImageMemory{};
-            VkImageView m_depthImageView{};
-
-            VkDescriptorPool descriptorPool{};
-
-            std::vector<VkCommandBuffer> graphics_buffers, gui_buffer{}, offscreen_buffers;
-            VkCommandBuffer compute_buffer{};
-
-            VkCommandBuffer m_colorCommandBuffer{};
-            VkCommandBuffer now_capture_buffer{};
-
-            bool guiChanged = false, offChanged = false, drawChanged = false, normalChanged = false, transChanged = false, aabbChanged = false, windowStill = true;
-
-            std::vector<VkCommandBuffer> pre_compute_buffers, new_graphics_buffer{};
-            std::vector<std::vector<VkCommandBuffer>> pre_offscreen_buffer{}, pre_shadow_buffer{}, pre_g_buffer{}, pre_norm_buffer{}, pre_trans_buffer{};
-
-            VkSemaphore imageAvailableSemaphore{}, renderFinishedSemaphore{}, computeFinishedSemaphore{}, computeReadySemaphore{};
-            VkFence renderFence{};
-
-            std::vector<VkClearValue> clearValues{};
-            VkSubmitInfo computeSubmitInfo{}, graphicsSubmitInfo{};
-            VkPresentInfoKHR presentInfo{};
         public:
             static VKAPI_ATTR VkBool32 VKAPI_CALL
             debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj,

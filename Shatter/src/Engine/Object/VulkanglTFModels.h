@@ -405,9 +405,9 @@ namespace vkglTF
 
         void bindBuffers(VkCommandBuffer commandBuffer);
         void drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
-		void drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
+		void drawNodeInstance(Node* node, VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1, bool useUniform = true);
 		void draw(VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
-		void drawInstance(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
+		void drawInstance(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1, bool useUniform = true);
 		void getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& max);
 		void getSceneDimensions();
         void resetAnimation();

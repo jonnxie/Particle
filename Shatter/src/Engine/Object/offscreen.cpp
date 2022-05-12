@@ -219,6 +219,7 @@ void OffScreen::setup(const VkDevice& _device,
 
 void OffScreen::release() {
     m_newframebuffer->release();
+    m_newframebuffer->releaseCaptureVals();
     delete m_newframebuffer;
     vkDestroyImageView(SingleDevice.logicalDevice,m_depth_image_view,nullptr);
     vkDestroyImageView(SingleDevice.logicalDevice,m_color_image_view,nullptr);

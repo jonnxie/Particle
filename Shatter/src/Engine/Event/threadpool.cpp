@@ -68,12 +68,10 @@ ThreadPool::ThreadPool() {
 }
 
 ThreadPool::~ThreadPool() {
-    std::cout << "ThreadPool destruct" << std::endl;
     for(auto& thread: threads)
     {
         delete thread;
     }
-    std::cout << "Done" << std::endl;
 }
 
 ThreadPool* ThreadPool::pool(){

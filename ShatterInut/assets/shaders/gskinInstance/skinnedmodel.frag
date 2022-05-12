@@ -12,16 +12,7 @@ layout (location = 1) out vec4 outPosition;
 layout (location = 2) out vec4 outNormal;
 layout (location = 3) out vec4 outAlbedo;
 
-const float NEAR_PLANE = 0.1f;
-const float FAR_PLANE = 256.0f;
-
-float linearDepth(float depth)
-{
-	float z = depth * 2.0f - 1.0f;
-	return (2.0f * NEAR_PLANE * FAR_PLANE) / (FAR_PLANE + NEAR_PLANE - z * (FAR_PLANE - NEAR_PLANE));
-}
-
-void main() 
+void main()
 {
 	vec4 color = texture(samplerColorMap, inUV) * vec4(inColor, 1.0);
 
@@ -32,9 +23,6 @@ void main()
 	outNormal = vec4(N, 1.0);
 
 	outAlbedo.rgb = color.rgb;
-
-	// Store linearized depth in alpha component
-	outPosition.a = linearDepth(gl_FragCoord.z);
 
 	// Write color attachments to avoid undefined behaviour (validation error)
 	outColor = vec4(0.0);

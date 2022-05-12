@@ -23,7 +23,7 @@ void getCursor(glm::vec2& _pos){
     _pos = m_cursor_pos;
 }
 
-glm::vec2& getCursorPos(){
+glm::vec2& getCursorCoor(){
     return m_cursor_pos;
 }
 

@@ -53,10 +53,13 @@ public:
 
     glm::vec3 eye{};
     glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec4 presentCenter{};
     glm::vec3 pre_center = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f);
 
     CameraBuffer m_camera{};
+    glm::mat4 inverseProj{};
+    glm::mat4 inverseView{};
 
     Frustum m_frustum{};
 

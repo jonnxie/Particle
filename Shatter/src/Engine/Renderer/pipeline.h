@@ -50,17 +50,6 @@ VkPipelineDepthStencilStateCreateInfo getDepthStencilState(DepthStencilState _st
 class GP : public Pipeline{
 public:
     GP();
-//    static GP* createGP(const std::vector<Input_Type>& _inputType,
-//                                const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
-//                                AssemState _assemState,
-//                                RasterState _rasterState,
-//                                MultisampleState _multisampleState,
-//                                DepthStencilState _depthStencilState,
-//                                BlendState _blendState,
-//                                const std::vector<Sl_id>& _sl_id,
-//                        uint32_t _pass = 0,
-//                        bool _off = false
-//    );
     static GP* createGP(const std::vector<Input_Type>& _inputType,
                         const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
                         AssemState _assemState,
@@ -69,7 +58,7 @@ public:
                         DepthStencilState _depthStencilState,
                         BlendState _blendState,
                         const std::vector<Sl_id>& _sl_id,
-                        RenderPassType _passType = RenderPassType::Default,
+                        RenderPassType _passType = RenderPassType::Color,
                         uint32_t _pass = 0
     );
 
@@ -83,7 +72,7 @@ public:
                 BlendState _blendState,
                 const std::vector<Sl_id>& _sl_id,
                 uint32_t _pass,
-                RenderPassType _passType = RenderPassType::Default);
+                RenderPassType _passType = RenderPassType::Color);
 public:
     void setVertexInputInfo(VkPipelineVertexInputStateCreateInfo* createinfo);
     void setShaderStage(std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_vec);
