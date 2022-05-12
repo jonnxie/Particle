@@ -100,6 +100,13 @@ void VulkanFrameBuffer::resize(uint32_t _width, uint32_t _height) {
     init();
 }
 
+void VulkanFrameBuffer::releaseCaptureVals() {
+    for (auto& [id , pair] : m_captureVals) {
+        vkDestroyBuffer(SingleDevice(), pair.first, nullptr);
+        vkFreeMemory(SingleDevice(), pair.second, nullptr);
+    }
+};
+
 void VulkanFrameBuffer::release() {
     auto device = SingleDevice();
     for(auto& a : m_attachments)
@@ -108,16 +115,6 @@ void VulkanFrameBuffer::release() {
         vkDestroyImage(device, a.image,nullptr);
         vkFreeMemory(device, a.memory, nullptr);
         vkDestroySampler(device, a.sampler, nullptr);
-    }
-
-    for(auto b : m_buffers)
-    {
-        vkDestroyBuffer(SingleDevice(), b, nullptr);
-    }
-
-    for(auto m : m_deviceMemories)
-    {
-        vkFreeMemory(SingleDevice(), m, nullptr);
     }
 
     vkDestroyFramebuffer(device, m_frame_buffer, nullptr);

@@ -131,6 +131,7 @@ namespace Shatter::render{
         {
             vkDestroyRenderPass(device, m_colorRenderPass, nullptr);
             colorFrameBuffers->release();
+            colorFrameBuffers->releaseCaptureVals();
             delete colorFrameBuffers;
         }
 
@@ -145,6 +146,7 @@ namespace Shatter::render{
             vkDestroyRenderPass(device, m_captureRenderPass, nullptr);
         }
         m_captureFrameBuffer->release();
+        m_captureFrameBuffer->releaseCaptureVals();
         delete m_captureFrameBuffer;
 #endif
 
