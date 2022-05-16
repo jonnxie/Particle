@@ -26,8 +26,8 @@ void PPool::init() {
 
         createGP("Skybox",
                  std::vector<Input_Type>{Input_Type::Point3dNormalUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("skybox_vs"),
-                                                              ShaderPool::getPool().Get("skybox_fs")},
+                 std::vector<Shader_id>{"skybox_vs",
+                                                              "skybox_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -40,9 +40,7 @@ void PPool::init() {
 //
 //        createGP("Quad",
 //                 std::vector<Input_Type>{Input_Type::NONE},
-//                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("quad_vs"),
-//                                                              ShaderPool::getPool().Get("quad_fs")},
-//                 AssemState::Triangle_Strip,
+//                 std::vector<Shader_id>{"quad_vs"),//                                                              "quad_fs")},//                 AssemState::Triangle_Strip,
 //                 RasterState::TriangleFace,
 //                 MultisampleState::Default,
 //                 DepthStencilState::Default,
@@ -56,9 +54,7 @@ void PPool::init() {
 //    {
 //        createGP("PhysicalBasicRender",
 //                 std::vector<Input_Type>{Input_Type::Point3dNormal},
-//                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("pbr_vs"),
-//                                                              ShaderPool::getPool().Get("pbr_fs")},
-//                 AssemState::Triangle_List,
+//                 std::vector<Shader_id>{"pbr_vs"),//                                                              "pbr_fs")},//                 AssemState::Triangle_List,
 //                 RasterState::TriangleFace,
 //                 MultisampleState::Default,
 //                 DepthStencilState::Default,
@@ -72,8 +68,8 @@ void PPool::init() {
     {
         createGP("Animation",
                  std::vector<Input_Type>{Input_Type::Point3dUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("animation_vs"),
-                                                              ShaderPool::getPool().Get("animation_fs")},
+                 std::vector<Shader_id>{"animation_vs",
+                                                              "animation_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -90,8 +86,8 @@ void PPool::init() {
     {
         createGP("Build",
                  std::vector<Input_Type>{Input_Type::Building},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("build_vs"),
-                                                              ShaderPool::getPool().Get("build_fs")},
+                 std::vector<Shader_id>{"build_vs",
+                                                              "build_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -103,8 +99,8 @@ void PPool::init() {
 
         createGP("AGBasic",
                  std::vector<Input_Type>{Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("agbasic_vs"),
-                                                              ShaderPool::getPool().Get("agbasic_fs")},
+                 std::vector<Shader_id>{"agbasic_vs",
+                                                              "agbasic_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -116,8 +112,8 @@ void PPool::init() {
 
         createGP("I3DMInstanceBasic",
                  std::vector<Input_Type>{Input_Type::GLTFInstance, Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aginstance_vs"),
-                                                              ShaderPool::getPool().Get("aginstance_fs")},
+                 std::vector<Shader_id>{"aginstance_vs",
+                                                              "aginstance_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -129,8 +125,8 @@ void PPool::init() {
 
         createGP("I3DMInstanceTexture",
                  std::vector<Input_Type>{Input_Type::GLTFInstance, Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aginstance_vs"),
-                                                              ShaderPool::getPool().Get("aginstanceTex_fs")},
+                 std::vector<Shader_id>{"aginstance_vs",
+                                                              "aginstanceTex_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -142,8 +138,8 @@ void PPool::init() {
 
         createGP("GPlanet",
                  std::vector<Input_Type>{Input_Type::Point3d},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gplanet_vs"),
-                                                              ShaderPool::getPool().Get("gplanet_fs")},
+                 std::vector<Shader_id>{"gplanet_vs",
+                                                              "gplanet_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -155,8 +151,8 @@ void PPool::init() {
 
         createGP("GPlane",
                  std::vector<Input_Type>{Input_Type::Point3dUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("plane_vs"),
-                                                              ShaderPool::getPool().Get("plane_fs")},
+                 std::vector<Shader_id>{"plane_vs",
+                                                              "plane_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -168,8 +164,8 @@ void PPool::init() {
 
         createGP("GPlaneTex",
                  std::vector<Input_Type>{Input_Type::Point3dUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("plane_vs"),
-                                                              ShaderPool::getPool().Get("planeTex_fs")},
+                 std::vector<Shader_id>{"plane_vs",
+                                                              "planeTex_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -181,8 +177,8 @@ void PPool::init() {
 
         createGP("GCube",
                  std::vector<Input_Type>{Input_Type::Point3dNormalUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("cube_vs"),
-                                                              ShaderPool::getPool().Get("cube_fs")},
+                 std::vector<Shader_id>{"cube_vs",
+                                                              "cube_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -194,8 +190,8 @@ void PPool::init() {
 
         createGP("GCubeTex",
                  std::vector<Input_Type>{Input_Type::Point3dNormalUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("cube_vs"),
-                                                              ShaderPool::getPool().Get("cubeTex_fs")},
+                 std::vector<Shader_id>{"cube_vs",
+                                                              "cubeTex_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -207,8 +203,8 @@ void PPool::init() {
 
         createGP("GSkin",
                  std::vector<Input_Type>{Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gskin_vs"),
-                                                              ShaderPool::getPool().Get("gskin_fs")},
+                 std::vector<Shader_id>{"gskin_vs",
+                                                              "gskin_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -221,8 +217,8 @@ void PPool::init() {
 
         createGP("GSkinInstance",
                  std::vector<Input_Type>{Input_Type::GLTFInstance, Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("gskinInstance_vs"),
-                                                              ShaderPool::getPool().Get("gskinInstance_fs")},
+                 std::vector<Shader_id>{"gskinInstance_vs",
+                                                              "gskinInstance_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -234,8 +230,8 @@ void PPool::init() {
 
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("composition_vs"),
-                                                              ShaderPool::getPool().Get("composition_fs")},
+                 std::vector<Shader_id>{"composition_vs",
+                                                              "composition_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -247,8 +243,8 @@ void PPool::init() {
 
         createGP("Present",
                  std::vector<Input_Type>{Input_Type::NONE},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("present_vs"),
-                                                              ShaderPool::getPool().Get("present_fs")},
+                 std::vector<Shader_id>{"present_vs",
+                                                              "present_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -260,8 +256,8 @@ void PPool::init() {
 
         createGP("Transparent",
                  std::vector<Input_Type>{Input_Type::TransparentGlass},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("transparent_vs"),
-                                                              ShaderPool::getPool().Get("transparent_fs")},
+                 std::vector<Shader_id>{"transparent_vs",
+                                                              "transparent_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -273,8 +269,8 @@ void PPool::init() {
 
         createGP("Point",
                  std::vector<Input_Type>{Input_Type::Point3dColorSize},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("particle_vs"),
-                                                              ShaderPool::getPool().Get("particle_fs")},
+                 std::vector<Shader_id>{"particle_vs",
+                                                              "particle_fs"},
                  AssemState::Point_List,
                  RasterState::Point,
                  MultisampleState::Default,
@@ -287,8 +283,8 @@ void PPool::init() {
 
         createGP("PointTex",
                  std::vector<Input_Type>{Input_Type::Point3dColorSize},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("particle_vs"),
-                                                              ShaderPool::getPool().Get("particleTex_fs")},
+                 std::vector<Shader_id>{"particle_vs",
+                                                              "particleTex_fs"},
                  AssemState::Point_List,
                  RasterState::Point,
                  MultisampleState::Default,
@@ -301,8 +297,8 @@ void PPool::init() {
 
         createGP("Planet_Face",
                  std::vector<Input_Type>{Input_Type::Point3d},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("planet_vs"),
-                                                              ShaderPool::getPool().Get("planet_fs")},
+                 std::vector<Shader_id>{"planet_vs",
+                                                              "planet_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -315,8 +311,8 @@ void PPool::init() {
 
         createGP("Planet_Line",
                  std::vector<Input_Type>{Input_Type::Point3d},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("planet_vs"),
-                                                              ShaderPool::getPool().Get("planet_fs")},
+                 std::vector<Shader_id>{"planet_vs",
+                                                              "planet_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleLine,
                  MultisampleState::Default,
@@ -329,8 +325,8 @@ void PPool::init() {
 
         createGP("ABasic",
                  std::vector<Input_Type>{Input_Type::GLTF},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("abasic_vs"),
-                                                              ShaderPool::getPool().Get("abasic_fs")},
+                 std::vector<Shader_id>{"abasic_vs",
+                                                              "abasic_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -344,8 +340,8 @@ void PPool::init() {
 #ifdef SHATTER_GPU_CAPTURE
         createGP("AABBCapture",
                  std::vector<Input_Type>{Input_Type::Point3d},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("aabb_vs"),
-                                                              ShaderPool::getPool().Get("aabb_fs")},
+                 std::vector<Shader_id>{"aabb_vs",
+                                                              "aabb_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -359,8 +355,8 @@ void PPool::init() {
 
         createGP("Polyline",
                  std::vector<Input_Type>{Input_Type::Point3dColor},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("polyline_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                 std::vector<Shader_id>{"polyline_vs",
+                                                              "polyline_fs"},
                  AssemState::Line_List,
                  RasterState::Polyline,
                  MultisampleState::Default,
@@ -373,8 +369,8 @@ void PPool::init() {
 
         createGP("TriangleLine",
                  std::vector<Input_Type>{Input_Type::Point3dColor},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("polyline_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                 std::vector<Shader_id>{"polyline_vs",
+                                                              "polyline_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleLine,
                  MultisampleState::Default,
@@ -386,8 +382,8 @@ void PPool::init() {
 
         createGP("TriangleFace",
                  std::vector<Input_Type>{Input_Type::Point3dColor},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("polyline_vs"),
-                                                              ShaderPool::getPool().Get("polyline_fs")},
+                 std::vector<Shader_id>{"polyline_vs",
+                                                              "polyline_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -399,8 +395,8 @@ void PPool::init() {
 
         createGP("ShadowDepth",
                  std::vector<Input_Type>{Input_Type::Point3dUV},
-                 std::vector<VkPipelineShaderStageCreateInfo>{ShaderPool::getPool().Get("shadowDepth_vs"),
-                                                              ShaderPool::getPool().Get("shadowDepth_fs")},
+                 std::vector<Shader_id>{"shadowDepth_vs",
+                                                              "shadowDepth_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,
@@ -421,7 +417,7 @@ void PPool::release() {
 
 void PPool::createGP(const P_id & _id,
               const std::vector<Input_Type>& _inputType,
-              const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+              const std::vector<Shader_id>& _shader,
               AssemState _assemState,
               RasterState _rasterState,
               MultisampleState _multisampleState,
@@ -437,11 +433,10 @@ void PPool::createGP(const P_id & _id,
                  _multisampleState,_depthStencilState,_blendState,_sl_id,_passType,_pass);
 }
 
-void PPool::createCP(const P_id &_id, const VkPipelineShaderStageCreateInfo &_shader,
-                     const std::vector<Sl_id> &_descriptorSetLayoutBinding) {
+void PPool::createCP(const P_id &_id, const Shader_id &_shader) {
     std::lock_guard<std::mutex> g_mutex(m_mutex);
     checkMap(m_map);
-    m_map[_id] = Pipeline::createCP(_shader, _descriptorSetLayoutBinding);
+    m_map[_id] = Pipeline::createCP(_shader);
 }
 
 void PPool::createRP(const P_id &_id, const std::vector<VkPipelineShaderStageCreateInfo> &_shader,

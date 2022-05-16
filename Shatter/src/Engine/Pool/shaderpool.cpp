@@ -218,6 +218,16 @@ void ShaderPool::release() {
     for(auto & i: m_map){
         vkDestroyShaderModule(Device::getDevice()(), i.second.module, nullptr);
     }
+
+    for (auto & i : reflectSlMap) {
+        for (auto& l : i.second) {
+            vkDestroyDescriptorSetLayout(Device::getDevice()(), l, nullptr);
+        }
+    }
+}
+
+std::unordered_map<Shader_id, std::vector<VKSL>> &ShaderPool::getSLMap() {
+    return reflectSlMap;
 }
 
 

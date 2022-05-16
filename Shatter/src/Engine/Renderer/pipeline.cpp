@@ -10,6 +10,7 @@
 #include InputTypeCatalog
 #include RenderCatalog
 #include "renderer.h"
+#include ShaderCatalog
 
 VkPipelineInputAssemblyStateCreateInfo getAssemblyState(AssemState _state){
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -231,21 +232,16 @@ void Pipeline::initRayTracingPipeline(const std::vector<VkPipelineShaderStageCre
 //    VK_CHECK_RESULT(Raytracing::getTracer()->vkCreateRayTracingPipelinesKHR(Device::getDevice().logicalDevice, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &m_pipeline));
 }
 
-Pipeline* Pipeline::createCP(const VkPipelineShaderStageCreateInfo& _shader,
-                   const std::vector<Sl_id>&_sl_id)
+Pipeline* Pipeline::createCP(const Shader_id& _shader)
 {
     auto cp = new Pipeline;
-    cp->initCP(_shader,_sl_id);
+    cp->initCP(_shader);
     return cp;
 }
 
-void Pipeline::initCP(const VkPipelineShaderStageCreateInfo& _shader,
-            const std::vector<Sl_id>& _sl_id){
+void Pipeline::initCP(const Shader_id& _shader){
     std::vector<VkDescriptorSetLayout> setLayout;
-    setLayout.reserve(_sl_id.size());
-    for(auto &i: _sl_id){
-        setLayout.push_back(SlbPool::getPool().getSL(i));
-    }
+    setLayout.insert(setLayout.end(), SingleShaderPool.getSLMap()[_shader].begin(), SingleShaderPool.getSLMap()[_shader].end());
     /*PipelineLayoutCreateInfo*/
     VkPipelineLayoutCreateInfo pipelineLayoutInfo =
             {
@@ -263,7 +259,7 @@ void Pipeline::initCP(const VkPipelineShaderStageCreateInfo& _shader,
     }
 
     auto createInfo = tool::computePipelineCreateInfo(m_pipelineLayout);
-    createInfo.stage = _shader;
+    createInfo.stage = SingleShaderPool[_shader];
 
     if (vkCreateComputePipelines(SingleDevice(),
                                  VK_NULL_HANDLE,
@@ -477,7 +473,7 @@ GP::GP() {
 //}
 
 GP* GP::createGP(const std::vector<Input_Type>& _inputType,
-                    const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+                    const std::vector<Shader_id>& _shader,
                     AssemState _assemState,
                     RasterState _rasterState,
                     MultisampleState _multisampleState,
@@ -502,7 +498,7 @@ GP* GP::createGP(const std::vector<Input_Type>& _inputType,
 }
 
 void GP::initGP(const std::vector<Input_Type>& _inputType,
-                const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+                const std::vector<Shader_id>& _shader,
                 AssemState _assemState,
                 RasterState _rasterState,
                 MultisampleState _multisampleState,
@@ -514,7 +510,11 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
 {
     /* ShaderStageCreateInfo*/
     m_createInfo.stageCount = _shader.size();
-    m_createInfo.pStages = _shader.data();
+    std::vector<VkPipelineShaderStageCreateInfo> stages(_shader.size());
+    for (int i = 0; i < _shader.size(); ++i) {
+        stages[i] = SingleShaderPool[_shader[i]];
+    }
+    m_createInfo.pStages = stages.data();
 
     /*VertexInputStateCreateInfo*/
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -561,9 +561,8 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
 
 
     std::vector<VkDescriptorSetLayout> setLayout;
-    setLayout.reserve(_sl_id.size());
-    for(auto &i: _sl_id){
-        setLayout.push_back(SlbPool::getPool().getSL(i));
+    for(auto &shader : _shader){
+        setLayout.insert(setLayout.end(), SingleShaderPool.getSLMap()[shader].begin(), SingleShaderPool.getSLMap()[shader].end());
     }
 
     /*PipelineLayoutCreateInfo*/

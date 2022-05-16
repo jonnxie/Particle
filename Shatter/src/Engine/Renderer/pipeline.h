@@ -26,10 +26,8 @@ public:
                                 const std::vector<VkRayTracingShaderGroupCreateInfoKHR>& _group,
                                 const std::vector<Sl_id>& _sl_id,
                                 uint32_t _recursion_depth);
-    static Pipeline* createCP(const VkPipelineShaderStageCreateInfo& _shader,
-                                const std::vector<Sl_id>&_sl_id);
-    void initCP(const VkPipelineShaderStageCreateInfo& _shader,
-                const std::vector<Sl_id>& _sl_id);
+    static Pipeline* createCP(const Shader_id& _shader);
+    void initCP(const Shader_id& _shader);
 public:
     VkPipelineLayout getPipelineLayout(){return m_pipelineLayout;};
     VkPipeline getPipeline(){return m_pipeline;};
@@ -51,7 +49,7 @@ class GP : public Pipeline{
 public:
     GP();
     static GP* createGP(const std::vector<Input_Type>& _inputType,
-                        const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+                        const std::vector<Shader_id>& _shader,
                         AssemState _assemState,
                         RasterState _rasterState,
                         MultisampleState _multisampleState,
@@ -64,7 +62,7 @@ public:
 
 
     void initGP(const std::vector<Input_Type>& _inputType,
-                const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+                const std::vector<Shader_id>& _shader,
                 AssemState _assemState,
                 RasterState _rasterState,
                 MultisampleState _multisampleState,

@@ -626,6 +626,10 @@ struct DescriptorSetLayoutData {
 
 using ReflectShader = std::pair<SpvReflectShaderModule, std::vector<DescriptorSetLayoutData>>;
 
+using VKSL = VkDescriptorSetLayout;
+
+using VKPL = VkPipelineLayout;
+
 namespace std {
     template<>
     struct hash<Point3d_Color_UV> {

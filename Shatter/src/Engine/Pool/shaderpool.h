@@ -24,10 +24,11 @@ public:
 
     void createShaderStage(const Shader_id& _id,const std::string& _filename,ShaderType _type);
 
+    std::unordered_map<Shader_id, std::vector<VKSL>>& getSLMap();
+
 private:
     ShaderPool() = default;
-//    std::unordered_map<Shader_id, ReflectShader> reflectMap;
-    std::unordered_map<Shader_id, std::vector<VkDescriptorSetLayout>> reflectSlMap;
+    std::unordered_map<Shader_id, std::vector<VkDescriptorSetLayout>> reflectSlMap{};
 };
 
 #define SingleShaderPool ShaderPool::getPool()

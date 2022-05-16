@@ -30,7 +30,7 @@ public:
 
     void createGP(const P_id & _id,
                   const std::vector<Input_Type>& _inputType,
-                  const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
+                  const std::vector<Shader_id>& _shader,
                   AssemState _assemState,
                   RasterState _rasterState,
                   MultisampleState _multisampleState,
@@ -42,8 +42,7 @@ public:
                   );
 
     void createCP(const P_id & _id,
-                  const VkPipelineShaderStageCreateInfo& _shader,
-                  const std::vector<Sl_id>& _descriptorSetLayoutBinding);
+                  const Shader_id& _shader);
 
     void createRP(const P_id& _id,
                   const std::vector<VkPipelineShaderStageCreateInfo>& _shader,
