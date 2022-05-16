@@ -5,7 +5,8 @@
 #ifndef SHATTER_ENGINE_POOL_H
 #define SHATTER_ENGINE_POOL_H
 #include <cassert>
-#include<map>
+#include <map>
+#include <unordered_map>
 #include <mutex>
 
 template<class ID_Type,class Value_Type>
@@ -32,7 +33,7 @@ public:
         return true;
     }
 
-    std::map<ID_Type,Value_Type> m_map;
+    std::unordered_map<ID_Type,Value_Type> m_map;
     std::mutex m_mutex;
 };
 

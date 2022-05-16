@@ -617,6 +617,12 @@ struct VolumeInfo{
     glm::vec2   ScreenSize;
 };
 
+struct DescriptorSetLayoutData {
+    uint32_t set_number;
+    VkDescriptorSetLayoutCreateInfo create_info;
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+};
+
 namespace std {
     template<>
     struct hash<Point3d_Color_UV> {
