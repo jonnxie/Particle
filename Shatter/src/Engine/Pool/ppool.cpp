@@ -33,7 +33,7 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::DepthWriteDisable,
                  BlendState::Default,
-                 std::vector<Sl_id>{"Default", "Camera", "Texture"},
+                 std::vector<Sl_id>{"Default", "Camera", "CameraCenter", "CubeTexture"},
                  RenderPassType::Color,
                  SubpassTransparency
         );

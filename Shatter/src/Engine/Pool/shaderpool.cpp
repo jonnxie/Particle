@@ -5,13 +5,11 @@
 
 #include "shaderpool.h"
 #include "Engine/Renderer/shatter_render_include.h"
-#include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Object/device.h"
 #include <mutex>
 #include ConfigCatalog
 #include <algorithm>
-#include "spirv_reflect.h"
 
 using namespace Shatter::render;
 
@@ -55,6 +53,8 @@ void ShaderPool::createShaderStage(const Shader_id& _id,const std::string& _file
         assert(result == SPV_REFLECT_RESULT_SUCCESS);
 
         std::vector<DescriptorSetLayoutData> set_layouts(sets.size(), DescriptorSetLayoutData{});
+        std::vector<VkDescriptorSetLayout> vk_layouts(sets.size());
+        VkDescriptorSetLayout vk_layout;
         for (size_t i_set = 0; i_set < sets.size(); ++i_set) {
             const SpvReflectDescriptorSet& refl_set = *(sets[i_set]);
             DescriptorSetLayoutData& layout = set_layouts[i_set];
@@ -74,7 +74,16 @@ void ShaderPool::createShaderStage(const Shader_id& _id,const std::string& _file
             layout.create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             layout.create_info.bindingCount = refl_set.binding_count;
             layout.create_info.pBindings = layout.bindings.data();
+
+            vkCreateDescriptorSetLayout(SingleDevice(),
+                            &layout.create_info,
+                                        nullptr,
+                                        &vk_layout
+            );
+            vk_layouts[i_set] = vk_layout;
         }
+
+        reflectSlMap[_id] = vk_layouts;
 
         spvReflectDestroyShaderModule(&module);
     }

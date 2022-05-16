@@ -54,7 +54,11 @@ void Camera::init() {
     view_space_buffer.offset = 0;
     view_space_buffer.range = 8;
 
-    std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+    VkDescriptorBufferInfo camBuffer{SingleBPool.getBuffer("CameraPos",Buffer_Type::Uniform_Buffer)->m_buffer,
+                                     0,
+                                     sizeof(glm::vec3)};
+
+    std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
 
     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[0].dstSet = SetPool::getPool()["Camera"];
@@ -71,6 +75,16 @@ void Camera::init() {
     descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrites[1].descriptorCount = 1;
     descriptorWrites[1].pBufferInfo = &view_space_buffer;
+
+    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[2].pNext = VK_NULL_HANDLE;
+    descriptorWrites[2].dstSet =  SetPool::getPool()["CameraCenter"];
+    descriptorWrites[2].dstBinding = 0;
+    descriptorWrites[2].dstArrayElement = 0;
+    descriptorWrites[2].descriptorCount = 1;
+    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[2].pImageInfo = VK_NULL_HANDLE;
+    descriptorWrites[2].pBufferInfo = &camBuffer;
 
     vkUpdateDescriptorSets(Device::getDevice()(),
                            descriptorWrites.size(),

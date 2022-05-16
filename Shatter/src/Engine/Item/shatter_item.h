@@ -21,6 +21,7 @@
 #include "shatter_enum.h"
 #include <map>
 #include <chrono>
+#include "spirv_reflect.h"
 
 #define PARTICLE_SIZE 10.0f
 
@@ -622,6 +623,8 @@ struct DescriptorSetLayoutData {
     VkDescriptorSetLayoutCreateInfo create_info;
     std::vector<VkDescriptorSetLayoutBinding> bindings;
 };
+
+using ReflectShader = std::pair<SpvReflectShaderModule, std::vector<DescriptorSetLayoutData>>;
 
 namespace std {
     template<>

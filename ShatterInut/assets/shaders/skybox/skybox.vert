@@ -26,6 +26,6 @@ void main ()
 {
 	outUVW = inPos;
 	outUVW.xy *= -1.0f;
-	gl_Position = c.proj * c.view /*m.model */ * vec4(camera.camPos + inPos.xyz,1.0f);
+	gl_Position = c.proj * c.view * vec4(camera.camPos + inPos.xyz,1.0f);
 	gl_Position.z = gl_Position.w;
 }
