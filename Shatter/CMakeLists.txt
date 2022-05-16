@@ -31,6 +31,12 @@ set(KTX_SOURCES
 
 add_library(ktx STATIC ${KTX_SOURCES})
 
+set(REFLECT_DIR vendor/spirv_reflect)
+set(REFLECT_SOURCES
+        ${REFLECT_DIR}/spirv_reflect.h
+        ${REFLECT_DIR}/spirv_reflect.c)
+add_library(reflect STATIC ${REFLECT_SOURCES})
+
 option(USE_OFFSCREEN "Build Offscreen Rendering" OFF)
 option(USE_SHADOW "Build Shadow Map DLL" OFF)
 option(USE_SIMD "USE Simd In Math Calculation" OFF)
@@ -73,12 +79,14 @@ target_include_directories(Shatter PUBLIC
         vendor/glm/
         vendor/Entt/
         vendor/json/
-        ${Vulkan_INCLUDE_DIRS})
+        ${Vulkan_INCLUDE_DIRS}
+        ${REFLECT_DIR})
 
 target_link_libraries(Shatter
         ktx
         glfw3
         ${Vulkan_LIBRARIES}
+        reflect
         )
 
 set(CMAKE_C_FLAGS "-static")
