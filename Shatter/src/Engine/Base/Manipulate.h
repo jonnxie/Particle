@@ -13,14 +13,28 @@
 
 class Manipulate {
 public:
+    void move(const glm::vec3& _deta);
+    void addElevation(float _deta);
+    void addRotation(float _deta);
+public:
     ClassElementInitial(m_rotation, float, Rotation, 0);
     ClassElementInitial(m_elevation, float, Elevation, 0);
+    ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
     ClassProtectedElement(m_localCoordiante, int, Coordinate);
     ClassProtectedElement(m_animationIndex, int, AnimationIndex);
     ClassProtectedElement(m_localTime, float, Time);
-    ClassReferenceElement(m_matrix, glm::mat4, Matrix);
+private:
+    glm::mat4 m_matrix{};
+public:
+    glm::mat4 &getMatrix() {
+        if (changed) updateMatrix();
+        return m_matrix;
+    }
     void generateAnimationMatrix();
 private:
+    void updateMatrix();
+private:
+    bool changed = false;
     vkglTF::Model* model;
 };
 
