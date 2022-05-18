@@ -53,6 +53,7 @@ namespace Shatter{
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
         private:
             void updateTimer();
+            void release();
         public:
             void capturedPush(const std::shared_ptr<CaptureObject>& _id);
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
@@ -75,6 +76,7 @@ namespace Shatter{
             ClassPointerElementInitial(viewTouched, bool, ViewPortTouched, false);
         public:
             MouseState mouseState;
+            Scene* mainScene;
         private:
             std::mutex m_captured_lock;
             ShatterApp();

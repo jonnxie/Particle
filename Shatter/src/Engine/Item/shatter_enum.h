@@ -484,6 +484,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define DPointCatalog      "Engine/Base/points.h"
 #define DLineCatalog       "Engine/Base/lines.h"
 #define HandleCatalog      "Engine/Base/handle.h"
+#define OperatorCatalog    "Engine/Base/operator.h"
 //#define RayCatalog       "Engine/Base/Raytracing.h"
 
 //#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"

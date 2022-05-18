@@ -22,6 +22,7 @@
 #include GLTFCatalog
 #include AABBCatalog
 #include CaptureCatalog
+#include OperatorCatalog
 
 static int initIdVal = 0;
 static std::mutex idLock;
@@ -150,7 +151,8 @@ void DLines::copy(const glm::vec3 &_pos) {
         tmp_lines[i].begin.pos = lines[i].begin.pos + _pos;
         tmp_lines[i].end.pos = lines[i].end.pos + _pos;
     }
-    auto result = DLines(tmp_lines);
+    auto result = std::make_shared<DLines>(tmp_lines);
+    pushObject2MainScene(int(result->m_captureObject->getCaptureId()), result);
 }
 
 DLinePool::DLinePool(const std::vector<Line>& _lines,
