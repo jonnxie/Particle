@@ -16,6 +16,7 @@
 #include MathCatalog
 #include OffScreenCatalog
 #include RenderCatalog
+#include ManipulateCatalog
 
 Basic::Basic(const std::string& _files,
              glm::vec3 _pos,
@@ -31,10 +32,12 @@ Basic::Basic(const std::string& _files,
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
     m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags);
-    m_scale = glm::scale(glm::mat4(1.0f),_scale);
-    m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
-    m_translation = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = m_translation * m_scale * m_rotate;
+    m_manipulate = std::make_unique<Manipulate>();
+    m_manipulate->setScale(_scale);
+    m_manipulate->_rotationAxis = _rotationAxis;
+    m_manipulate->_angle = _angle;
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = _pos;
+    m_manipulate->setChanged(true);
     m_id = _id;
     init();
 }
@@ -51,7 +54,7 @@ void Basic::constructD()
     int modelIndex = ModelSetPool::getPool().malloc();
 
     (*dpool)[d]->m_model_index = modelIndex;
-    (*dpool)[d]->m_matrix = m_world;
+    (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
         UnionViewPort& tmp = SingleAPP.getPresentViewPort();

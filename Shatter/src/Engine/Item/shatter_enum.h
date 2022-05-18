@@ -472,6 +472,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define RenderCatalog      "Engine/Renderer/shatter_render_include.h"
 #define PCatalog           "Engine/Renderer/pipeline.h"
 #define AppCatalog         "Engine/App/shatterapp.h"
+#define ManipulateCatalog  "Engine/Base/Manipulate.h"
 
 #define ItemCatalog        "Engine/Item/shatter_item.h"
 #define MacroCatalog       "Engine/Item/shatter_macro.h"

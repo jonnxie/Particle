@@ -59,7 +59,6 @@ void DTris::constructD() {
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
-//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.pushNObjects(d);
 }
 
@@ -87,6 +86,7 @@ textured(_textured),
 setId(std::move(_setId))
 {
     id = mallocId();
+    m_manipulate = std::make_unique<Manipulate>();
     init();
 };
 
@@ -137,9 +137,8 @@ void DPlane::constructD(){
             glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
             glm::vec4{SingleAPP.getWorkTargetCenter(), 1.0f},
     };
-    m_plane = SingleAPP.getWorkTargetPlane();
-    m_center = SingleAPP.getWorkTargetCenter();
-//    matrix = glm::inverse(matrix);
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->plane = SingleAPP.getWorkTargetPlane();
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = SingleAPP.getWorkTargetCenter();
     (*dpool)[d]->prepare(matrix,
                          ms_index,
                          DrawType::Index,
@@ -158,7 +157,6 @@ void DPlane::constructD(){
         glm::mat4* ptr = SingleBPool.getModels();
         memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
-//    Shatter::app::ShatterApp::getApp().getNObjects()->push_back(d);
     SingleRender.pushDObjects(d);
 };
 
@@ -214,6 +212,8 @@ textured(_textured),
 setId(_setId)
 {
     id = mallocCubeId();
+    m_manipulate = std::make_unique<Manipulate>();
+
     init();
 }
 
@@ -276,9 +276,8 @@ void DCube::constructD() {
             glm::vec4{SingleAPP.getWorkTargetPlane().z_coordinate, 0.0f},
             glm::vec4{SingleAPP.getWorkTargetCenter(), 1.0f},
     };
-    m_plane = SingleAPP.getWorkTargetPlane();
-    m_center = SingleAPP.getWorkTargetCenter();
-//    matrix = glm::inverse(matrix);
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->plane = SingleAPP.getWorkTargetPlane();
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = SingleAPP.getWorkTargetCenter();
     (*dpool)[d]->prepare(matrix,
                          ms_index,
                          DrawType::Index,
@@ -362,6 +361,7 @@ DPlaneHandle::DPlaneHandle() {
 
 DPlaneHandle::~DPlaneHandle() {
     GUI::popUI("DPlaneHandle");
+    TaskPool::popUpdateTask("DPlaneHandle");
 }
 
 NPlane &DPlaneHandle::operator[](size_t _index) {

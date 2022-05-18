@@ -17,6 +17,7 @@
 #include OffScreenCatalog
 #include AppCatalog
 #include RenderCatalog
+#include ManipulateCatalog
 
 Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, float _angle, glm::vec3 _scale, float _radius,
                glm::vec3 _color,
@@ -28,10 +29,13 @@ Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, fl
     m_radius = _radius;
     m_color = _color;
     m_resolution = _resolution;
-    m_scale = glm::scale(glm::mat4(1.0f),_scale);
-    m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
-    m_translation = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = m_translation * m_scale * m_rotate;
+    m_manipulate = std::make_unique<Manipulate>();
+    m_manipulate->setScale(_scale);
+    m_manipulate->_rotationAxis = _rotationAxis;
+    m_manipulate->_angle = _angle;
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = _pos;
+    m_manipulate->setChanged(true);
+    m_manipulate->getMatrix();
     m_id = mallocPlanetId();
     init();
 }
