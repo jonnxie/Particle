@@ -143,6 +143,16 @@ void DLines::show() {
     }
 }
 
+void DLines::copy(const glm::vec3 &_pos) {
+    std::vector<Line> tmp_lines;
+    tmp_lines.resize(lines.size());
+    for (int i = 0; i < lines.size(); ++i) {
+        tmp_lines[i].begin.pos = lines[i].begin.pos + _pos;
+        tmp_lines[i].end.pos = lines[i].end.pos + _pos;
+    }
+    auto result = DLines(tmp_lines);
+}
+
 DLinePool::DLinePool(const std::vector<Line>& _lines,
                      int _coordinate,
                      bool _updateFunc,std::string _pipeline,

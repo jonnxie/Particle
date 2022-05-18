@@ -602,7 +602,7 @@ struct Target {
     glm::vec3   center;
 };
 
-static struct Material {
+static struct PhysicalMaterial {
     float roughness;
     float metallic;
     float r;
@@ -610,7 +610,7 @@ static struct Material {
     float b;
 } material;
 
-Material& getMaterial();
+PhysicalMaterial& getMaterial();
 
 struct VolumeInfo{
     float       StepSize;

@@ -12,6 +12,8 @@
 #include <string>
 #include <algorithm>
 
+class Object;
+
 class Scene{
 public:
     Scene() = default;
@@ -38,19 +40,31 @@ public:
         }
     };
 
+    void pushObject(int _id,SP(Object) _obj);
+
+    void releaseObject(int _id);
+
 private:
+    std::mutex object_lock;
+    std::unordered_map<int, SP(Object)> object_map;
+
     std::mutex aabb_lock;
+    std::unordered_map<int, int> aabb_map{};
+
     std::vector<int> m_compute_id_vec{};
     bool m_compute_changed = false;
+
     std::vector<int> m_offscreen_id_vec{};
     bool m_offscreen_changed = false;
+
     std::vector<int> m_default_id_vec{};
     bool m_default_changed = false;
+
     std::vector<int> m_normal_id_vec{};
     bool m_normal_changed = false;
+
     std::vector<int> m_transparency_id_vec{};
     bool m_transparency_changed = false;
-    std::unordered_map<int, int> aabb_map{};
 };
 
 

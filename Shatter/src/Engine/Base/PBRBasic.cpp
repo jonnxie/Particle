@@ -38,7 +38,7 @@ void PBRBasic::constructG(){
 
         VkDescriptorBufferInfo materialBuffer{SingleBPool.getBuffer("Material",Buffer_Type::Uniform_Buffer)->m_buffer,
                                          0,
-                                         sizeof(Material)};
+                                         sizeof(PhysicalMaterial)};
 
         mc_write[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         mc_write[0].pNext = VK_NULL_HANDLE;
@@ -78,7 +78,7 @@ void PBRBasic::constructG(){
     });
 
     TaskPool::pushUpdateTask(tool::combine("PBRBasic",m_id),[&](float _abs_time){
-        memcpy(SingleBPool.getBuffer("Material",Buffer_Type::Uniform_Buffer)->mapped, &getMaterial(), sizeof(Material));
+        memcpy(SingleBPool.getBuffer("Material",Buffer_Type::Uniform_Buffer)->mapped, &getMaterial(), sizeof(PhysicalMaterial));
 
         m_lights[0].x = glm::sin(glm::radians(_abs_time * 360.0f)) * 20.0f;
         m_lights[0].z = glm::cos(glm::radians(_abs_time * 360.0f)) * 20.0f;

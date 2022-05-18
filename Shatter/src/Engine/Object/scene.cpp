@@ -3,8 +3,8 @@
 //
 #include "precompiledhead.h"
 #include "scene.h"
+#include <utility>
 #include "Engine/Renderer/renderer.h"
-
 
 Scene::~Scene() {
     for (int i : m_compute_id_vec) {
@@ -39,4 +39,22 @@ void Scene::save() {
 
 Scene *Scene::loadFile(std::string &_filename) {
     return nullptr;
+}
+
+void Scene::pushObject(int _id, std::shared_ptr<Object> _obj) {
+    GuardMutex(object_lock);
+    if (object_map.count(_id) == 0) {
+        std::cout << "Event: Insert Object, Id: " << _id << std::endl;
+    } else {
+        object_map[_id] = std::move(_obj);
+    }
+}
+
+void Scene::releaseObject(int _id) {
+    GuardMutex(object_lock);
+    if (object_map.count(_id) == 0) {
+        std::cout << "Event: Release Object, Id: " << _id << std::endl;
+    } else {
+        object_map.erase(_id);
+    }
 }

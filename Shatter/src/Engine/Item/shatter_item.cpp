@@ -678,7 +678,7 @@ Line makeLine(glm::vec3& _axis, glm::vec3& _center)
     };
 }
 
-Material &getMaterial() {
+PhysicalMaterial &getMaterial() {
     return material;
 }
 

@@ -45,3 +45,7 @@ Manipulate &Object::getManipulate() {
 Object::~Object() {
     release();
 }
+
+void Object::copy(const glm::vec3& _position) {
+    std::cout << "Target has not realize copy function" << std::endl;
+}
