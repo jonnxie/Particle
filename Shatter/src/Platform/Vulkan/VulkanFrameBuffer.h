@@ -30,7 +30,7 @@ public:
     void resize(uint32_t _width,uint32_t _height) override;
     void release() override;
     void releaseCaptureVals() override;
-    auto capture(uint32_t _xCoordinate, uint32_t _yCoordinate, int _attachmentIndex){
+    auto capture(uint32_t _xCoordinate, uint32_t _yCoordinate, int _attachmentIndex) {
         auto format = m_attachments[_attachmentIndex].format;
         void* mapped;
         switch (format) {

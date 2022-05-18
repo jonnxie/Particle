@@ -445,6 +445,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define CObjectCatalog     "Engine/Object/cobject.h"
 #define DObjectCatalog     "Engine/Object/dobject.h"
 #define GObjectCatalog     "Engine/Object/gobject.h"
+#define SceneCatalog       "Engine/Object/scene.h"
 #define MPoolCatalog       "Engine/Pool/mpool.h"
 #define BPoolCatalog       "Engine/Pool/bpool.h"
 #define PPoolCatalog       "Engine/Pool/ppool.h"

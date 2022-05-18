@@ -14,7 +14,7 @@
 
 class Object;
 
-class Scene{
+class Scene {
 public:
     Scene() = default;
     ~Scene();

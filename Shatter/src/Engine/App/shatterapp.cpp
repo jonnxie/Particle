@@ -21,6 +21,7 @@
 #include "Engine/Base/lines.h"
 #include "Engine/Base/points.h"
 #include "Engine/Renderer/window.h"
+#include SceneCatalog
 
 namespace Shatter::App{
     bool app_created = false;
