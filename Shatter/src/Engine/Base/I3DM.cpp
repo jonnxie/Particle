@@ -7,6 +7,7 @@
 #include <utility>
 #include PPoolCatalog
 #include PipelineCatalog
+#include ManipulateCatalog
 
 std::string workingPathFromURL(const std::string& _url){
     size_t pos = _url.find_last_of('/');
@@ -184,7 +185,7 @@ void I3DMBasic::constructD() {
     int modelIndex = ModelSetPool::getPool().malloc();
 
     (*dpool)[d]->m_model_index = modelIndex;
-    (*dpool)[d]->m_matrix = m_world;
+    (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
         UnionViewPort& tmp = SingleAPP.getPresentViewPort();
@@ -225,10 +226,12 @@ I3DMBasic::I3DMBasic(vkglTF::Model *_model, glm::vec3 _pos, glm::vec3 _rotationA
         m_sets(std::move(_sets))
 {
     m_model = _model;
-    m_scale = glm::scale(glm::mat4(1.0f), _scale);
-    m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
-    m_translation = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = m_translation * m_scale * m_rotate;
+    m_manipulate = std::make_unique<Manipulate>();
+    m_manipulate->setScale(_scale);
+    m_manipulate->_rotationAxis = _rotationAxis;
+    m_manipulate->_angle = _angle;
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = _pos;
+    m_manipulate->setChanged(true);
     init();
 }
 
@@ -247,10 +250,12 @@ I3DMBasicInstance::I3DMBasicInstance(vkglTF::Model *_model, glm::vec3 _pos, glm:
         m_texturePipeline(std::move(_texPipeline))
 {
     m_model = _model;
-    m_scale = glm::scale(glm::mat4(1.0f), _scale);
-    m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
-    m_translation = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = m_translation * m_scale * m_rotate;
+    m_manipulate = std::make_unique<Manipulate>();
+    m_manipulate->setScale(_scale);
+    m_manipulate->_rotationAxis = _rotationAxis;
+    m_manipulate->_angle = _angle;
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = _pos;
+    m_manipulate->setChanged(true);
     init();
 }
 
@@ -264,7 +269,7 @@ void I3DMBasicInstance::constructD() {
     int modelIndex = ModelSetPool::getPool().malloc();
 
     (*dpool)[d]->m_model_index = modelIndex;
-    (*dpool)[d]->m_matrix = m_world;
+    (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     auto instanceBuffer = SingleBPool.getBuffer(tool::combine("I3DMInstanceBasic", m_id),
                                                 Buffer_Type::Vertex_Buffer)->getBuffer();
@@ -299,7 +304,7 @@ void I3DMBasicInstance::constructD() {
     if (m_textured) {
         d = dpool->malloc();
         (*dpool)[d]->m_model_index = modelIndex;
-        (*dpool)[d]->m_matrix = m_world;
+        (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
         (*dpool)[d]->m_type = DType::Normal;
         (*dpool)[d]->m_gGraphics = [&, modelIndex, instanceBuffer](VkCommandBuffer _cb){
             vkCmdSetViewport(_cb, 0, 1, &SingleAPP.getPresentViewPort().view);

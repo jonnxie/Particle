@@ -398,57 +398,11 @@ void GUI::updateBuffers() {
 }
 
 void GUI::newFrame(bool updateFrameGraph) {
-    static bool enable_dock = Config::getConfig("enableDockSpace");
-    static bool dock_space_open = true;
-    static bool fullscreen = Config::getConfig("enableFullScreenPersistant");
-    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-    if (enable_dock) {
-        ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-    }
     ImGui::NewFrame();
 
     // Init imGui windows and elements
 
-    {
-        //    if(enable_dock)
-//    {
-//        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-//        if (fullscreen)
-//        {
-//            ImGuiViewport* viewport = ImGui::GetMainViewport();
-//            ImGui::SetNextWindowPos(viewport->Pos);
-//            ImGui::SetNextWindowSize(viewport->Size);
-//            ImGui::SetNextWindowViewport(viewport->ID);
-//            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-//            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-//            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-//            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-//        }
-//
-//        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-//        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-//            window_flags |= ImGuiWindowFlags_NoBackground;
-//
-//        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-//
-//        ImGui::Begin("DockSpace", &dock_space_open, window_flags);
-//        ImGui::PopStyleVar();
-//
-//        if (fullscreen) ImGui::PopStyleVar(2);
-//
-//        ImGuiIO& io = ImGui::GetIO();
-//        ImGuiStyle& style = ImGui::GetStyle();
-//        float minWinSizeX = style.WindowMinSize.x;
-//        style.WindowMinSize.x = 370.0f;
-//        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-//        {
-//            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-//            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-//        }
-//        style.WindowMinSize.x = minWinSizeX;
-//    }
-    }
+    dockSpace();
 
     for(auto& [id,task] : m_tasks)
     {
@@ -457,17 +411,8 @@ void GUI::newFrame(bool updateFrameGraph) {
 
 //    ImGui::ShowDemoWindow();
 
-    if(enable_dock)
-    {
-        ImGui::End();// End DockSpace
-    }
-
     // Renderer to generate draw buffers
     ImGui::Render();
-    if(enable_dock)
-    {
-        ImGui::UpdatePlatformWindows();
-    }
 }
 
 void GUI::updateUI() {
@@ -490,6 +435,90 @@ void GUI::updateUI() {
 //        std::cout << "IsAnyItemActive:" << anyItemActive <<std::endl;
 //    };
     anyItemActive = ImGui::IsAnyItemActive();
+}
+
+void GUI::dockSpace() {
+    static bool show_app_dockspace = true;
+    static bool opt_fullscreen = true;
+    static bool opt_padding = false;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+    // because it would be confusing to have two docking targets within each others.
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    if (opt_fullscreen)
+    {
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    }
+    else
+    {
+        dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+    }
+
+    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+    // and handle the pass-thru hole, so we ask Begin() to not render a background.
+    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+    // all active windows docked into it will lose their parent and become undocked.
+    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+    if (!opt_padding)
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace", &show_app_dockspace, window_flags);
+    if (!opt_padding)
+        ImGui::PopStyleVar();
+
+    if (opt_fullscreen)
+        ImGui::PopStyleVar(2);
+
+    // Submit the DockSpace
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    }
+    else
+    {
+        assert(0);
+    }
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Options"))
+        {
+            // Disabling fullscreen would allow the window to be moved to the front of other windows,
+            // which we can't undo at the moment without finer window depth/z control.
+            ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+            ImGui::MenuItem("Padding", NULL, &opt_padding);
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Flag: NoSplit",                "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 { dockspace_flags ^= ImGuiDockNodeFlags_NoSplit; }
+            if (ImGui::MenuItem("Flag: NoResize",               "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
+            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode; }
+            if (ImGui::MenuItem("Flag: AutoHideTabBar",         "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
+            if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Close", NULL, false, &show_app_dockspace != NULL)) {
+                show_app_dockspace = false;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::End();
 }
 
 bool checkRect(const ImVec2& _pos, const ImVec2& _size, const glm::vec2& _point) {
@@ -523,31 +552,6 @@ void GUI::init(float width, float height) {
 
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-
-    if(Config::getConfig("enableScreenGui") && !Config::getConfig("enableDockSpace"))
-    {
-        io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
-        io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
-        io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
-        io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
-        io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
-        io.KeyMap[ImGuiKey_PageUp] = GLFW_KEY_PAGE_UP;
-        io.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
-        io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
-        io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
-        io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
-        io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
-        io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
-        io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
-        io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
-        io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
-        io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
-        io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
-        io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
-        io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
-        io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
-        io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
-    }
 
     ImGui::StyleColorsLight();
 
@@ -698,7 +702,6 @@ void GUI::init(float width, float height) {
 
         ImGui::End();// End setting
 
-//        ImGui::ShowDemoWindow();
 
         {
             ImGui::Begin("ViewPort");

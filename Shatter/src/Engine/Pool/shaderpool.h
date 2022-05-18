@@ -10,6 +10,8 @@
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Item/shatter_macro.h"
 #include "pool.h"
+#include "spirv_reflect.h"
+#include "Engine/Item/shatter_item.h"
 
 class ShaderPool : public Pool<Shader_id,VkPipelineShaderStageCreateInfo> {
 public:
@@ -22,8 +24,11 @@ public:
 
     void createShaderStage(const Shader_id& _id,const std::string& _filename,ShaderType _type);
 
+    std::unordered_map<Shader_id, std::vector<VKSL>>& getSLMap();
+
 private:
     ShaderPool() = default;
+    std::unordered_map<Shader_id, std::vector<VkDescriptorSetLayout>> reflectSlMap{};
 };
 
 #define SingleShaderPool ShaderPool::getPool()

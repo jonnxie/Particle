@@ -20,6 +20,7 @@
 #include TaskCatalog
 #include BufferCatalog
 #include CaptureCatalog
+#include "Engine/Base/Manipulate.h"
 
 static int initCaptureIdVal = 1;
 static std::mutex captureIdLock;
@@ -27,6 +28,8 @@ static std::mutex captureIdLock;
 class Object;
 
 class CaptureObject;
+
+//class Manipulate;
 
 static int mallocCaptureId()
 {
@@ -37,9 +40,7 @@ static int mallocCaptureId()
 class Object {
 public:
     Object() = default;
-    virtual ~Object() {
-        release();
-    };
+    virtual ~Object();
     DefineUnCopy(Object);
 public:
     void init()
@@ -151,18 +152,20 @@ public:
         return "Object";
     };
 
+    virtual void copy(const glm::vec3& _position);
+
     virtual void show(){};
 
     virtual void hide(){};
 
-    ClassProtectedReferenceElement(m_plane, TargetPlane, TargetPlane);
-    ClassProtectedReferenceElement(m_center, glm::vec3, WorkCenter);
+    TargetPlane &getTargetPlane();
+    glm::vec3 &getWorkCenter();
+    glm::mat4 getRotate();
+    glm::mat4 getScale();
     ClassElement(m_draw_type, DrawObjectType, DrawType);
-    ClassProtectedReferenceElement(m_rotate, glm::mat4, Rotate);
-    ClassProtectedReferenceElement(m_scale, glm::mat4, Scale);
+    Manipulate& getManipulate();
 protected:
-    glm::mat4           m_world{};
-    glm::mat4           m_translation{};
+    std::unique_ptr<Manipulate> m_manipulate{nullptr};
     uint32_t            m_capture_id{};
     bool                m_memReleased = false;
 

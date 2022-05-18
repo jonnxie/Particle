@@ -24,6 +24,7 @@
 #include CameraCatalog
 #include AppCatalog
 #include DLineCatalog
+#include ManipulateCatalog
 
 namespace animation {
     void currentPosition(const Vertex &_vertex,Avec3 &_val,bool _inout,Animation *_animation) {

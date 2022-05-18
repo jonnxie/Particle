@@ -5,7 +5,6 @@
 
 #include "shaderpool.h"
 #include "Engine/Renderer/shatter_render_include.h"
-#include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_enum.h"
 #include "Engine/Object/device.h"
 #include <mutex>
@@ -39,6 +38,55 @@ void ShaderPool::createShaderStage(const Shader_id& _id,const std::string& _file
     shader_info.flags = 0;
     shader_info.pSpecializationInfo = VK_NULL_HANDLE;
     auto m_shader_module = createShaderModule(shader_code, *ShatterRender::getRender().getDevice());
+
+    {
+        SpvReflectShaderModule module = {};
+        SpvReflectResult result = spvReflectCreateShaderModule(shader_code.size(), shader_code.data(), &module);
+        assert(result == SPV_REFLECT_RESULT_SUCCESS);
+
+        uint32_t count = 0;
+        result = spvReflectEnumerateDescriptorSets(&module, &count, NULL);
+        assert(result == SPV_REFLECT_RESULT_SUCCESS);
+
+        std::vector<SpvReflectDescriptorSet*> sets(count);
+        result = spvReflectEnumerateDescriptorSets(&module, &count, sets.data());
+        assert(result == SPV_REFLECT_RESULT_SUCCESS);
+
+        std::vector<DescriptorSetLayoutData> set_layouts(sets.size(), DescriptorSetLayoutData{});
+        std::vector<VkDescriptorSetLayout> vk_layouts(sets.size());
+        VkDescriptorSetLayout vk_layout;
+        for (size_t i_set = 0; i_set < sets.size(); ++i_set) {
+            const SpvReflectDescriptorSet& refl_set = *(sets[i_set]);
+            DescriptorSetLayoutData& layout = set_layouts[i_set];
+            layout.bindings.resize(refl_set.binding_count);
+            for (uint32_t i_binding = 0; i_binding < refl_set.binding_count; ++i_binding) {
+                const SpvReflectDescriptorBinding& refl_binding = *(refl_set.bindings[i_binding]);
+                VkDescriptorSetLayoutBinding& layout_binding = layout.bindings[i_binding];
+                layout_binding.binding = refl_binding.binding;
+                layout_binding.descriptorType = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
+                layout_binding.descriptorCount = 1;
+                for (uint32_t i_dim = 0; i_dim < refl_binding.array.dims_count; ++i_dim) {
+                    layout_binding.descriptorCount *= refl_binding.array.dims[i_dim];
+                }
+                layout_binding.stageFlags = static_cast<VkShaderStageFlagBits>(module.shader_stage);
+            }
+            layout.set_number = refl_set.set;
+            layout.create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layout.create_info.bindingCount = refl_set.binding_count;
+            layout.create_info.pBindings = layout.bindings.data();
+
+            vkCreateDescriptorSetLayout(SingleDevice(),
+                            &layout.create_info,
+                                        nullptr,
+                                        &vk_layout
+            );
+            vk_layouts[i_set] = vk_layout;
+        }
+
+        reflectSlMap[_id] = vk_layouts;
+
+        spvReflectDestroyShaderModule(&module);
+    }
 
     shader_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     switch (_type) {
@@ -170,6 +218,16 @@ void ShaderPool::release() {
     for(auto & i: m_map){
         vkDestroyShaderModule(Device::getDevice()(), i.second.module, nullptr);
     }
+
+    for (auto & i : reflectSlMap) {
+        for (auto& l : i.second) {
+            vkDestroyDescriptorSetLayout(Device::getDevice()(), l, nullptr);
+        }
+    }
+}
+
+std::unordered_map<Shader_id, std::vector<VKSL>> &ShaderPool::getSLMap() {
+    return reflectSlMap;
 }
 
 

@@ -282,5 +282,10 @@ Class& operator = (Class&&) = delete
         return elementName;                                       \
     }
 
+#define UP(Object) std::unique_ptr<Object>
+
+#define SP(Object) std::shared_ptr<Object>
+
+#define GuardMutex(lock) std::lock_guard<std::mutex> lockGuard(lock);
 
 #endif //SHATTER_ENGINE_SHATTER_MACRO_H

@@ -16,6 +16,7 @@
 #include OffScreenCatalog
 #include RenderCatalog
 #include CaptureCatalog
+#include ManipulateCatalog
 
 ABasic::ABasic(const std::string& _files,
              glm::vec3 _pos,
@@ -34,11 +35,15 @@ ABasic::ABasic(const std::string& _files,
     setDrawType(_type);
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     m_model = new vkglTF::Model;
-    m_scale = glm::scale(glm::mat4(1.0f),_scale);
-    m_rotate = glm::rotate(glm::mat4(1.0f),_angle,_rotationAxis);
-    m_translation = glm::translate(glm::mat4(1.0f), _pos);
-    m_world = m_translation * m_scale * m_rotate;
-    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_world, 1.0f, _binary);
+
+    m_manipulate = std::make_unique<Manipulate>();
+    m_manipulate->setScale(_scale);
+    m_manipulate->_rotationAxis = _rotationAxis;
+    m_manipulate->_angle = _angle;
+    (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = _pos;
+    m_manipulate->setChanged(true);
+
+    m_model->loadFromFile(_files, &SingleDevice, VkQueue{}, glTFLoadingFlags, m_manipulate->getMatrix(), 1.0f, _binary);
     m_id = _id;
     init();
 }
@@ -53,7 +58,7 @@ void ABasic::constructD()
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
 
-    (*dpool)[d]->m_matrix = m_world;
+    (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->setData(m_model);
     (*dpool)[d]->setUpdate(true);

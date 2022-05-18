@@ -13,15 +13,36 @@
 
 class Manipulate {
 public:
+    Manipulate();
+    Manipulate(const Manipulate& _in);
+    Manipulate& operator=(const Manipulate& _in);
+    ~Manipulate();
+public:
+    void move(const glm::vec3& _deta);
+    void addElevation(float _deta);
+    void addRotation(float _deta);
+public:
     ClassElementInitial(m_rotation, float, Rotation, 0);
     ClassElementInitial(m_elevation, float, Elevation, 0);
+    ClassElementInitial(m_scale, glm::vec3, Scale, 1.0f);
+    ClassElementInitial(m_animationIndex, int, AnimationIndex, 0);
+    ClassElementInitial(m_localTime, float, Time, 0);
+    ClassElementInitial(changed, bool, Changed, false);
     ClassProtectedElement(m_localCoordiante, int, Coordinate);
-    ClassProtectedElement(m_animationIndex, int, AnimationIndex);
-    ClassProtectedElement(m_localTime, float, Time);
-    ClassReferenceElement(m_matrix, glm::mat4, Matrix);
+private:
+    glm::mat4 m_matrix{};
+public:
+    glm::vec3 _rotationAxis{0,0,1};
+    float _angle{0};
+    glm::mat4 &getMatrix() {
+        if (changed) updateMatrix();
+        return m_matrix;
+    }
     void generateAnimationMatrix();
 private:
-    vkglTF::Model* model;
+    void updateMatrix();
+private:
+    vkglTF::Model* model{nullptr};
 };
 
 #endif //MAIN_MANIPULATE_H

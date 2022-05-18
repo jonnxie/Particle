@@ -53,6 +53,7 @@ public:
     void constructC() override{};
     void hide() override;
     void show() override;
+    void copy(const glm::vec3& _pos) override;
     std::string getName() override {
         return "DLines";
     }

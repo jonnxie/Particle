@@ -28,7 +28,6 @@ class Window;
 namespace Shatter{
     class Listener;
 
-
     namespace App{
 
         class ShatterApp {
@@ -81,7 +80,6 @@ namespace Shatter{
         public:
             bool cameraChanged = true;
             bool viewportChanged = false;
-            bool presentReset = true;
         private:
             time_point m_start_time;
             time_point m_pre_time;

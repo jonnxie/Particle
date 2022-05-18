@@ -21,6 +21,7 @@
 #include "shatter_enum.h"
 #include <map>
 #include <chrono>
+#include "spirv_reflect.h"
 
 #define PARTICLE_SIZE 10.0f
 
@@ -601,7 +602,7 @@ struct Target {
     glm::vec3   center;
 };
 
-static struct Material {
+static struct PhysicalMaterial {
     float roughness;
     float metallic;
     float r;
@@ -609,13 +610,25 @@ static struct Material {
     float b;
 } material;
 
-Material& getMaterial();
+PhysicalMaterial& getMaterial();
 
 struct VolumeInfo{
     float       StepSize;
     float 	    Dumy;
     glm::vec2   ScreenSize;
 };
+
+struct DescriptorSetLayoutData {
+    uint32_t set_number;
+    VkDescriptorSetLayoutCreateInfo create_info;
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+};
+
+using ReflectShader = std::pair<SpvReflectShaderModule, std::vector<DescriptorSetLayoutData>>;
+
+using VKSL = VkDescriptorSetLayout;
+
+using VKPL = VkPipelineLayout;
 
 namespace std {
     template<>

@@ -1,6 +1,6 @@
 #version 450
 
-layout (set = 2,binding = 1) uniform samplerCube samplerCubeMap;
+layout (set = 3,binding = 0) uniform samplerCube samplerCubeMap;
 
 layout (location = 0) in vec3 inUVW;
 

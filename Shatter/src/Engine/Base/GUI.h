@@ -78,6 +78,8 @@ public:
 
     void updateUI();
 
+    void dockSpace();
+
     static void pushUI(Task_id _id,std::function<void()> _func);
 
     static void popUI(const Task_id& _id);

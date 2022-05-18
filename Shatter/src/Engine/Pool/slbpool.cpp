@@ -25,14 +25,16 @@ SlbPool &SlbPool::getPool() {
 
 
 void SlbPool::init(){
-
-    m_map["Texture"] = std::vector<VkDescriptorSetLayoutBinding>{
+    m_map["CameraCenter"] = std::vector<VkDescriptorSetLayoutBinding>{
             tool::descriptorSetLayoutBinding(
                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                     VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
-                    0),
+                    0)
+    };
+
+    m_map["CubeTexture"] = std::vector<VkDescriptorSetLayoutBinding>{
             VkDescriptorSetLayoutBinding{
-                    1,
+                    0,
                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                     1,
                     VK_SHADER_STAGE_FRAGMENT_BIT,
