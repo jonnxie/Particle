@@ -42,6 +42,7 @@ public:
 private:
     void updateMatrix();
 private:
+    int modelIndex;
     vkglTF::Model* model{nullptr};
 };
 

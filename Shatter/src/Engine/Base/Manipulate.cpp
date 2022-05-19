@@ -4,6 +4,7 @@
 
 #include "Manipulate.h"
 #include "Engine/Pool/mpool.h"
+#include ModelSetCatalog
 
 void Manipulate::updateMatrix() {
     Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
@@ -73,10 +74,12 @@ Manipulate& Manipulate::operator=(const Manipulate &_in) {
 
 Manipulate::Manipulate() {
     m_localCoordiante = MPool<Target>::getPool()->malloc();
+    modelIndex = ModelSetPool::getPool().malloc();
 }
 
 Manipulate::~Manipulate() {
     MPool<Target>::getPool()->free(m_localCoordiante);
+    ModelSetPool::getPool().free(modelIndex);
 }
 
 Manipulate::Manipulate(const Manipulate& _in) {

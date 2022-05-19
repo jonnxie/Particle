@@ -117,10 +117,6 @@ GeoPool<glm::vec3>(_instances)
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors;
     m_model = new vkglTF::Model;
-//    m_scale = glm::scale(glm::mat4(1.0f), _scale);
-//    m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
-//    m_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
-//    m_world = m_translation * m_scale * m_rotate;
     m_manipulate = std::make_unique<Manipulate>();
     m_manipulate->setScale(_scale);
     m_manipulate->_rotationAxis = _rotationAxis;
@@ -140,10 +136,6 @@ GeoPool<glm::vec3>(_instances)
     m_model = _skin->getModel();
     _skin->setModel(nullptr);
     m_manipulate = std::make_unique<Manipulate>(_skin->getManipulate());
-//    m_scale = _skin->getScale();
-//    m_rotate = _skin->getRotate();
-//    m_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
-//    m_world = m_translation * m_scale * m_rotate;
     m_id = mallocId();
     init();
 }
