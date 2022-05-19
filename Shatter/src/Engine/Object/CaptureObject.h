@@ -32,13 +32,13 @@ public:
 public:
     ClassElementInitial(color, glm::vec3, Color, CYAN_COLOR);
     ClassPointerElement(captureId, uint32_t, CaptureId);
+    ClassPointerElement(boxId, int, BoxId);
     ClassPointerElement(parent, Object* , Parent);
     void drawBox();
     void hide();
 private:
     std::unique_ptr<AABBLine>   line{nullptr};
     std::string                 bufferId;
-    int                         boxId;
 };
 
 
