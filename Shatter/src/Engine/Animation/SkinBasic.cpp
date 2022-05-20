@@ -94,9 +94,9 @@ void SkinBasic::constructD() {
     TaskPool::pushUpdateTask(tool::combine("SkinAnimation", m_id),[&, d](float _abs_time){
         if (m_update)
         {
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix, true);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, m_manipulate->getMatrix(), true);
         } else {
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix, true);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, m_manipulate->getMatrix(), true);
         }
     });
     insertRenderObject(d);
@@ -205,9 +205,9 @@ void SkinBasicInstance::constructD() {
     TaskPool::pushUpdateTask(tool::combine("SkinBasicInstance", m_id),[&, d](float _abs_time){
         if (m_update)
         {
-            m_model->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix, true);
+            m_model->updateAnimation(m_animation_index, _abs_time, m_manipulate->getMatrix(), true);
         } else {
-            m_model->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix, true);
+            m_model->updateAnimation(m_animation_index, m_localTime, m_manipulate->getMatrix(), true);
         }
     });
     insertRenderObject(d);

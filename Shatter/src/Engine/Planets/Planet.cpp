@@ -109,11 +109,11 @@ void Planet::constructG() {
 void Planet::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int ms_index = ModelSetPool::getPool().malloc();
+    int modelIndex = m_manipulate->getModelId();
 
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->prepare(glm::mat4(1.0f),
-                         ms_index,
+                         modelIndex,
                          DrawType::Index,
                          0,
                          tool::combine("Planet", m_id),
@@ -126,10 +126,10 @@ void Planet::constructD() {
                          m_pipeline,
                          m_sets);
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("Planet", m_id),[&,ms_index,d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
-    });
+//    TaskPool::pushUpdateTask(tool::combine("Planet", m_id),[&,modelIndex,d](float _abs_time){
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
+//    });
 //    SingleRender.pushNObjects(d);
     insertRenderObject(d);
 }

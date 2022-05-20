@@ -67,7 +67,7 @@ void TBasic::constructD()
 
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int modelIndex = ModelSetPool::getPool().malloc();
+    int modelIndex = m_manipulate->getModelId();
 
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
@@ -101,8 +101,8 @@ void TBasic::constructD()
     {
         SingleRender.pushTObjects(i);
     }
-    TaskPool::pushUpdateTask(tool::combine("TBasic",m_id),[&,modelIndex,d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
-    });
+//    TaskPool::pushUpdateTask(tool::combine("TBasic",m_id),[&,modelIndex,d](float _abs_time){
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
+//    });
 }

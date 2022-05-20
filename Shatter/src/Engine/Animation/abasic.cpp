@@ -97,9 +97,9 @@ void ABasic::constructD()
     TaskPool::pushUpdateTask(tool::combine("BasicAnimation", m_id),[&, d](float _abs_time){
         if(m_update)
         {
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, m_manipulate->getMatrix());
         }else{
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, m_manipulate->getMatrix());
         }
     });
     insertRenderObject(d);
