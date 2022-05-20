@@ -5,6 +5,7 @@
 #include "Manipulate.h"
 #include "Engine/Pool/mpool.h"
 #include ModelSetCatalog
+#include BPoolCatalog
 
 void Manipulate::updateMatrix() {
     Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
@@ -34,6 +35,9 @@ void Manipulate::updateMatrix() {
             glm::vec4{target->center, 1.0f}};
 
     new ((glm::mat4*)&m_matrix) glm::mat4(tran * rotate * glm::scale(glm::mat4(1.0f), m_scale));
+
+    glm::mat4* ptr = SingleBPool.getModels();
+    memcpy(ptr + modelIndex, &m_matrix, one_matrix);
 }
 
 void Manipulate::move(const glm::vec3 & _deta) {
@@ -84,5 +88,9 @@ Manipulate::~Manipulate() {
 
 Manipulate::Manipulate(const Manipulate& _in) {
     *this = _in;
+}
+
+void Manipulate::setMatrix(const glm::mat4& _mat) {
+    m_matrix = _mat;
 }
 

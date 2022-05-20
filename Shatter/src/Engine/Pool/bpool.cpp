@@ -284,7 +284,7 @@ void BPool::init() {
     models = new glm::mat4[m_model_count];
     model_size = m_model_count * sizeof(glm::mat4);
     TaskPool::pushUpdateTask("ModelUpdate",[&](float _absTime){
-        memcpy(m_uniform_map["Model"]->mapped,models,model_size);
+        memcpy(m_uniform_map["Model"]->mapped, models, model_size);
     });
 }
 
@@ -355,8 +355,10 @@ void BPool::reallocateModel() {
     for(auto i = 0; i < num; i++){
         m_idle_model.emplace_back(old_num++);
     }
-    delete models;
+    auto oldPtr = models;
     models = new glm::mat4[m_model_count];
+    memcpy(models, oldPtr, model_size / 2);
+    delete oldPtr;
 }
 
 size_t BPool::getSize(const B_id &_id) {

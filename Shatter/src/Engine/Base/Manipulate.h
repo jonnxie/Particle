@@ -29,13 +29,17 @@ public:
     ClassElementInitial(m_localTime, float, Time, 0);
     ClassElementInitial(changed, bool, Changed, false);
     ClassProtectedElement(m_localCoordiante, int, Coordinate);
+    void setMatrix(const glm::mat4& _mat);
+    [[nodiscard]] int getModelId() const {return modelIndex;};
 private:
     glm::mat4 m_matrix{};
 public:
     glm::vec3 _rotationAxis{0,0,1};
     float _angle{0};
     glm::mat4 &getMatrix() {
-        if (changed) updateMatrix();
+        if (changed) {
+            updateMatrix();
+        };
         return m_matrix;
     }
     void generateAnimationMatrix();
