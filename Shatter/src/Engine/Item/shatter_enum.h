@@ -69,6 +69,7 @@ enum class Input_Type{
     Basic,
     Point3d ,
     Point2d,
+    Point2dDouble,
     Point2dUV3d,
     Point2dColor,
     Point3dNormal,

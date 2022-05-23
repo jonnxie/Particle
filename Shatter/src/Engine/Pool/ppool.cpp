@@ -215,18 +215,6 @@ void PPool::init() {
                  RenderPassType::Color,
                  SubpassG);
 
-        createGP("EarthTex",
-                 std::vector<Input_Type>{Input_Type::Point2d},
-                 std::vector<Shader_id>{"earth_vs",
-                                        "earth_fs"},
-                 AssemState::Triangle_List,
-                 RasterState::TriangleFace,
-                 MultisampleState::Default,
-                 DepthStencilState::Default,
-                 BlendState::GPass,
-                 RenderPassType::Color,
-                 SubpassG);
-
         createGP("Composition",
                  std::vector<Input_Type>{Input_Type::NONE},
                  std::vector<Shader_id>{"composition_vs",
@@ -255,6 +243,18 @@ void PPool::init() {
                  std::vector<Input_Type>{Input_Type::TransparentGlass},
                  std::vector<Shader_id>{"transparent_vs",
                                                               "transparent_fs"},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 RenderPassType::Color,
+                 SubpassTransparency);
+
+        createGP("EarthTex",
+                 std::vector<Input_Type>{Input_Type::Point2dDouble},
+                 std::vector<Shader_id>{"earth_vs",
+                                        "earth_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,

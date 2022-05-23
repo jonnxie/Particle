@@ -365,6 +365,14 @@ struct Point2d{
     }
 };
 
+struct Point2dDouble{
+    glm::dvec2 pos;
+
+    bool operator==(const Point2dDouble &other) const {
+        return pos == other.pos;
+    }
+};
+
 struct Point2dUV3d{
     glm::vec2 pos;
     glm::vec3 uv;
