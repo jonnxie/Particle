@@ -33,7 +33,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::DepthWriteDisable,
                  BlendState::Default,
-                 std::vector<Sl_id>{"Default", "Camera", "CameraCenter", "CubeTexture"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -75,7 +74,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id>{"Default", "Camera", "AnimationUniform", "AnimationTexture"},
                  RenderPassType::Color,
                  SubpassTransparency);
     }
@@ -93,7 +91,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id>{"Default", "Camera"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -106,7 +103,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -119,7 +115,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -132,7 +127,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default","Camera", "BaseTexture"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -145,7 +139,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default", "Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -158,7 +151,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default", "Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -171,7 +163,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default", "Camera", "BaseTexture"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -184,7 +175,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default", "Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -197,7 +187,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default", "Camera", "BaseTexture"},
                  RenderPassType::Color,
                  SubpassG);
 
@@ -210,7 +199,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default","Camera", "Skin", "BaseTexture"},
                  RenderPassType::Color,
                  SubpassG
         );
@@ -224,7 +212,18 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::GPass,
-                 std::vector<Sl_id> {"Default","Camera", "Skin", "BaseTexture"},
+                 RenderPassType::Color,
+                 SubpassG);
+
+        createGP("EarthTex",
+                 std::vector<Input_Type>{Input_Type::Point2d},
+                 std::vector<Shader_id>{"earth_vs",
+                                        "earth_fs"},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::GPass,
                  RenderPassType::Color,
                  SubpassG);
 
@@ -237,7 +236,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::DepthWriteDisable,
                  BlendState::Default,
-                 std::vector<Sl_id>{"gBuffer", "MultiLight"},
                  RenderPassType::Color,
                  SubpassLight);
 
@@ -250,7 +248,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"BaseTexture"},
                  RenderPassType::Present,
                  SubpassG);
 
@@ -263,7 +260,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id>{"Default", "Camera", "TransparentInput"},
                  RenderPassType::Color,
                  SubpassTransparency);
 
@@ -276,7 +272,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera","ViewPort"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -290,7 +285,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default", "Camera", "ViewPort", "BaseTexture"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -304,7 +298,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -318,7 +311,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -332,7 +324,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera", "Planet"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -347,7 +338,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Capture,
-                 std::vector<Sl_id> {"Default","Camera", "CaptureVal"},
                  RenderPassType::Capture,
                  0
         );
@@ -362,7 +352,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
                  RenderPassType::Color,
                  SubpassTransparency
         );
@@ -376,7 +365,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
                  RenderPassType::Color,
                  SubpassTransparency);
 
@@ -389,7 +377,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id> {"Default","Camera"},
                  RenderPassType::Color,
                  SubpassTransparency);
 
@@ -402,7 +389,6 @@ void PPool::init() {
                  MultisampleState::Default,
                  DepthStencilState::Default,
                  BlendState::Default,
-                 std::vector<Sl_id>{"Default", "Cascade"},
                  RenderPassType::CascadeShadow,
                  0);
     }
@@ -423,14 +409,13 @@ void PPool::createGP(const P_id & _id,
               MultisampleState _multisampleState,
               DepthStencilState _depthStencilState,
               BlendState _blendState,
-              const std::vector<Sl_id>& _sl_id,
               RenderPassType _passType,
               uint32_t _pass
 ){
     std::lock_guard<std::mutex> g_mutex(m_mutex);
     checkMap(m_map);
     m_map[_id] = GP::createGP(_inputType,_shader,_assemState,_rasterState,
-                 _multisampleState,_depthStencilState,_blendState,_sl_id,_passType,_pass);
+                 _multisampleState,_depthStencilState,_blendState,_passType,_pass);
 }
 
 void PPool::createCP(const P_id &_id, const Shader_id &_shader) {

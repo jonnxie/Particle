@@ -479,7 +479,6 @@ GP* GP::createGP(const std::vector<Input_Type>& _inputType,
                     MultisampleState _multisampleState,
                     DepthStencilState _depthStencilState,
                     BlendState _blendState,
-                    const std::vector<Sl_id>& _sl_id,
                     RenderPassType _passType,
                     uint32_t _pass
 ){
@@ -491,7 +490,6 @@ GP* GP::createGP(const std::vector<Input_Type>& _inputType,
                _multisampleState,
                _depthStencilState,
                _blendState,
-               _sl_id,
                _pass,
                _passType);
     return gp;
@@ -504,7 +502,6 @@ void GP::initGP(const std::vector<Input_Type>& _inputType,
                 MultisampleState _multisampleState,
                 DepthStencilState _depthStencilState,
                 BlendState _blendState,
-                const std::vector<Sl_id>& _sl_id,
                 uint32_t _pass,
                 RenderPassType _passType)
 {

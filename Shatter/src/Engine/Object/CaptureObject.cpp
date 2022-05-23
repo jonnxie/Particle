@@ -56,10 +56,6 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, int _mode
     bufferId = tool::combine("Capture", captureId);
     auto pool = MPool<AABB>::getPool();
     int modelIndex = _modelId;
-//    TaskPool::pushUpdateTask(tool::combine("Capture", boxId),[&, modelIndex, _drawId](float _abs_time){
-//        glm::mat4* ptr = SingleBPool.getModels();
-//        memcpy(ptr + modelIndex, &(*SingleDPool)[_drawId]->m_matrix, one_matrix);
-//    });
     (*pool)[boxId]->m_model_index = modelIndex;
     SingleRender.aabb_map[captureId] = boxId;
     std::vector<glm::vec3> vertexBuffer{};
@@ -73,9 +69,6 @@ CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, int _mode
     memcpy(buffer->mapped, &captureId, 4);
     buffer->unmap();
     SingleSetPool.AllocateDescriptorSets({"CaptureVal"}, &(*pool)[boxId]->m_capture_set);
-
-//    std::cout << _name + "`s UniformBuffer: " << buffer->getBuffer() << std::endl;
-//    std::cout << _name + "`s DescriptorSet: " << (*pool)[boxId]->m_capture_set << std::endl;
 
     VkDescriptorBufferInfo descriptorBufferInfos{buffer->getBuffer(), 0, 4};
     VkWriteDescriptorSet writeDescriptorSets = tool::writeDescriptorSet((*pool)[boxId]->m_capture_set,

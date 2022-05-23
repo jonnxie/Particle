@@ -29,6 +29,7 @@ public:
 private:
     ShaderPool() = default;
     std::unordered_map<Shader_id, std::vector<VkDescriptorSetLayout>> reflectSlMap{};
+    std::unordered_map<Shader_id, std::vector<VkPipelineVertexInputStateCreateInfo>> vertexInputMap{};
 };
 
 #define SingleShaderPool ShaderPool::getPool()

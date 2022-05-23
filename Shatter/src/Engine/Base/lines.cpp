@@ -558,20 +558,22 @@ void CaptureObjectListener::pushUI() {
                 preCapture = captureObject;
                 glm::vec3 center = preCenter;
                 auto newTarget = captureObject->getParent()->copy(glm::vec3(0.0f));
-                captureObject = newTarget->getCapture();
-                TaskPool::pushUpdateTask("CopyUpdate", [this, center](float _time) {
-                    static bool fixed = false;
-                    if (checkKey(GLFW_KEY_SPACE)) fixed = true;
-                    if (checkMouse(GLFW_MOUSE_BUTTON_LEFT)) fixed = true;
-                    if (!fixed) {
-                        captureObject->getParent()->update(input::getCursor() - center);
-                    } else {
-                        captureObject->getParent()->move(input::getCursor() - center);
-                        TaskPool::pushTask([](){
-                            TaskPool::popUpdateTask("CopyUpdate");
-                        });
-                    }
-                });
+                if (newTarget != nullptr) {
+                    captureObject = newTarget->getCapture();
+                    TaskPool::pushUpdateTask("CopyUpdate", [this, center](float _time) {
+                        bool fixed = false;
+                        if (checkKey(GLFW_KEY_SPACE)) fixed = true;
+                        if (checkMouse(GLFW_MOUSE_BUTTON_LEFT)) fixed = true;
+                        if (!fixed) {
+                            captureObject->getParent()->update(input::getCursor() - center);
+                        } else {
+                            captureObject->getParent()->move(input::getCursor() - center);
+                            TaskPool::pushTask([](){
+                                TaskPool::popUpdateTask("CopyUpdate");
+                            });
+                        }
+                    });
+                }
             } else {
                 captureObject = preCapture;
                 TaskPool::popUpdateTask("CopyUpdate");
