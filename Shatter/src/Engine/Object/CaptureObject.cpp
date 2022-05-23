@@ -15,16 +15,13 @@ CaptureObject::mallocCapture(Object *_parent,
                              const glm::vec3 &_min,
                              const glm::vec3 &_max,
                              int _drawId,
+                             int _modelId,
                              const std::string& _name) {
     auto pool = MPool<AABB>::getPool();
     int boxIndex = pool->malloc();
     uint32_t captureId = boxIndex + 1;
-    int modelIndex = ModelSetPool::getPool().malloc();
+    int modelIndex = _modelId;
     auto bufferId = tool::combine("Capture", captureId);
-    TaskPool::pushUpdateTask(tool::combine("Capture", boxIndex),[&, modelIndex, _drawId](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex, &(*SingleDPool)[_drawId]->m_matrix, one_matrix);
-    });
     (*pool)[boxIndex]->addInternalPoint(_min);
     (*pool)[boxIndex]->addInternalPoint(_max);
     (*pool)[boxIndex]->m_model_index = modelIndex;
@@ -52,17 +49,17 @@ CaptureObject::mallocCapture(Object *_parent,
     return ptr;
 }
 
-CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, const std::string& _name):
+CaptureObject::CaptureObject(Object *_parent, int _boxId, int _drawId, int _modelId, const std::string& _name):
         parent(_parent),
         captureId(_boxId + 1),
         boxId(_boxId) {
     bufferId = tool::combine("Capture", captureId);
     auto pool = MPool<AABB>::getPool();
-    int modelIndex = ModelSetPool::getPool().malloc();
-    TaskPool::pushUpdateTask(tool::combine("Capture", boxId),[&, modelIndex, _drawId](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex, &(*SingleDPool)[_drawId]->m_matrix, one_matrix);
-    });
+    int modelIndex = _modelId;
+//    TaskPool::pushUpdateTask(tool::combine("Capture", boxId),[&, modelIndex, _drawId](float _abs_time){
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + modelIndex, &(*SingleDPool)[_drawId]->m_matrix, one_matrix);
+//    });
     (*pool)[boxId]->m_model_index = modelIndex;
     SingleRender.aabb_map[captureId] = boxId;
     std::vector<glm::vec3> vertexBuffer{};

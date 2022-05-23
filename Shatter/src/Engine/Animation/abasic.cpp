@@ -107,5 +107,6 @@ void ABasic::constructD()
                                                    m_model->dimensions.min,
                                                    m_model->dimensions.max,
                                                    d,
-                                                   "ABasic"));
+                                            m_manipulate->getModelId(),
+                                            "ABasic"));
 }

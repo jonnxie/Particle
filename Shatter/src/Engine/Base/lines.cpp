@@ -106,9 +106,10 @@ void DLines::constructD() {
     SingleRender.pushNObjects(d);
     if (capture) {
         setCapture(std::make_shared<CaptureObject>(this,
-                                                          m_boxIndex,
-                                                          d,
-                                                          "DLines"));
+                                                       m_boxIndex,
+                                                       d,
+                                                       model_index,
+                                                       "DLines"));
         SingleAPP.capturedPush(getCapture());
     }
 }

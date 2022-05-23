@@ -76,7 +76,7 @@ void GCoor::constructD() {
         memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
     SingleRender.pushNObjects(d);
-    setCapture(std::make_shared<CaptureObject>(this, m_boxIndex, d, "Coordinate"));
+    setCapture(std::make_shared<CaptureObject>(this, m_boxIndex, d, modelIndex, "Coordinate"));
     SingleAPP.capturedPush(getCapture());
 }
 

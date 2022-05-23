@@ -21,10 +21,11 @@ public:
                                                         const glm::vec3& _min,
                                                         const glm::vec3& _max,
                                                         int _drawId,
+                                                        int _modelId,
                                                         const std::string& _name = "default");
 
 
-    CaptureObject(Object* _parent, int _boxId, int _drawId, const std::string& _name);
+    CaptureObject(Object* _parent, int _boxId, int _drawId, int _modelId, const std::string& _name);
 
     CaptureObject(Object* _parent, uint32_t _captureId, int _boxId);
     ~CaptureObject();

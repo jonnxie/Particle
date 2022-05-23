@@ -34,13 +34,13 @@ void WorkPlane::constructG() {
 void WorkPlane::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int ms_index = ModelSetPool::getPool().malloc();
+    int modelIndex = ModelSetPool::getPool().malloc();
 
     std::vector<std::string> s_vec(1);
     s_vec[0]="Camera";
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->prepare(glm::mat4(1.0f),
-                         ms_index,
+                         modelIndex,
                          DrawType::Vertex,
                          0,
                          "WorkPlane",
@@ -51,13 +51,13 @@ void WorkPlane::constructD() {
                          "Polyline",
                          s_vec);
     insertDObject(d);
-    TaskPool::pushUpdateTask("WorkPlane", [&,ms_index,d](float _abs_time){
+    TaskPool::pushUpdateTask("WorkPlane", [&,modelIndex,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
+        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
         memcpy(SingleBPool.getBuffer("WorkPlane",Buffer_Type::Vertex_Host_Buffer)->mapped, m_axis.data(), TargetPlaneDoubleCoordinateSize);
     });
     SingleRender.pushNObjects(d);
-    setCapture(std::make_shared<CaptureObject>(this, m_boxIndex, d, "WorkPlane"));
+    setCapture(std::make_shared<CaptureObject>(this, m_boxIndex, d, modelIndex,"WorkPlane"));
     SingleAPP.capturedPush(getCapture());
 }
 
