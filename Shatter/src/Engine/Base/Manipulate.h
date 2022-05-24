@@ -30,6 +30,7 @@ public:
     ClassElementInitial(changed, bool, Changed, false);
     ClassProtectedElement(m_localCoordiante, int, Coordinate);
     void setMatrix(const glm::mat4& _mat);
+    void setPosition(const glm::vec3& _pos);
     [[nodiscard]] int getModelId() const {return modelIndex;};
 private:
     glm::mat4 m_matrix{};

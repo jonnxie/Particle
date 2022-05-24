@@ -318,7 +318,7 @@ void PPool::init() {
         createGP("ABasic",
                  std::vector<Input_Type>{Input_Type::GLTF},
                  std::vector<Shader_id>{"abasic_vs",
-                                                              "abasic_fs"},
+                                                "abasic_fs"},
                  AssemState::Triangle_List,
                  RasterState::TriangleFace,
                  MultisampleState::Default,

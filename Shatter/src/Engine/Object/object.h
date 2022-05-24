@@ -174,8 +174,6 @@ protected:
     std::unique_ptr<Manipulate> m_manipulate{nullptr};
     uint32_t            m_capture_id{};
     bool                m_memReleased = false;
-
-//    std::shared_ptr<CaptureObject>   m_captureObject{nullptr};
 };
 
 

@@ -2,7 +2,7 @@
 
 layout(set = 3,binding = 0) uniform sampler2D Texture;
 
-layout (location = 0) flat in dvec2 inUV;
+layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outColor;
 

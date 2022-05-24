@@ -18,21 +18,21 @@ public:
     Earth(glm::vec3 _pos,
           uint32_t _longitudeResolution,
           uint32_t _latitudeResolution,
-          float _radius = 5.0f,
-          std::string  _pipeline = "Earth_Face",
-          std::vector<std::string>  _sets = {"Camera", "Planet"},
-          DrawObjectType _type = DrawObjectType::Normal);
+          double _radius = 5.0f,
+          std::string  _pipeline = "EarthTex",
+          std::string _textureId = "default");
     ~Earth() override;
     DefineUnCopy(Earth);
     void constructG() override;
     void constructD() override;
-    void constructC() override;
 public:
-    uint32_t                m_id;
-    uint32_t                m_longitudeResolution{};
-    uint32_t                m_latitudeResolution{};
-    std::vector<glm::dvec2>  m_vertices;
-    float                   m_radius{};
+    uint32_t                    m_id;
+    uint32_t                    m_longitudeResolution{};
+    uint32_t                    m_latitudeResolution{};
+    std::vector<glm::dvec2>     m_vertices;
+    std::string                 m_pipeline;
+    std::string                 m_texture;
+    double                      m_radius{};
 };
 
 

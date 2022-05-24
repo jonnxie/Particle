@@ -45,6 +45,7 @@
 #include "Engine/Event/delayevent.h"
 #include "Engine/Planets/Planet.h"
 #include "Engine/Base/CrossTree.h"
+#include "Engine/Base/earth.h"
 #include "Engine/Animation/animation.h"
 
 void releasePool()
@@ -369,6 +370,13 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
+//    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,5.0f),
+    auto earth = new Earth(glm::vec3(0.0f,0.0f,0.0f),
+                           100,
+                           100,
+                           50.0
+                           );
+
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),
                                      tool::combineTexture("Skybox_left2.png"),
                                      tool::combineTexture("Skybox_top3.png"),
@@ -429,6 +437,7 @@ int main() {
         delete plane;
         delete line;
         delete planet;
+        delete earth;
         Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
         SingleDelaySystem.release();

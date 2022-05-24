@@ -405,11 +405,11 @@ const glm::vec3 RightDirection{1.0f, 0.0f, 0.0f};
 const glm::vec3 ForwardDirection{0.0f, 1.0f, 0.0f};
 const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 
-#define pai 3.141592f
-#define two_pai 6.283184f
-#define half_pai 1.57079f
+#define pai 3.1415926535897932384626433832795
+#define two_pai 6.283185307179586476925286766559
+#define half_pai 1.5707963267948966192313216916398
 //#define degree (pai/180.0f)
-#define degree 0.017453f
+#define degree 0.01745329251994329576923690768489
 #define float_limit 0.000001f
 
 #define one_byte 1

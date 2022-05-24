@@ -94,3 +94,9 @@ void Manipulate::setMatrix(const glm::mat4& _mat) {
     m_matrix = _mat;
 }
 
+void Manipulate::setPosition(const glm::vec3& _pos) {
+    Target* target = (*MPool<Target>::getPool())[m_localCoordiante];
+    target->center = _pos;
+}
+
+

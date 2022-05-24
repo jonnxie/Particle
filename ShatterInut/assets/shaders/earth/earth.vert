@@ -15,7 +15,7 @@ layout(set = 2,binding = 0) uniform UniformEarthObject{
 
 layout (location = 0) in dvec2 inCoor;
 
-layout (location = 0) out dvec2 outUV;
+layout (location = 0) out vec2 outUV;
 
 out gl_PerVertex
 {
@@ -24,10 +24,13 @@ out gl_PerVertex
 
 void main() 
 {
-	double length = earth.radius * cos(inCoor.x);
-	dvec3 position = {length * cos(inCoor.x), length * sin(inCoor.x), earth.radius * sin(inCoor.y)};
+	double length = earth.radius * cos(inCoor.y);
+	dvec3 position;
+	position.x = length * cos(inCoor.x);
+	position.y = length * sin(inCoor.x);
+	position.z = earth.radius * sin(inCoor.y);
 
-	outUV = inCoor / dvec2(180.0f, 90.0f);
+	outUV = vec2(inCoor) / vec2(3.141592f, 1.57079f);
 	outUV += 1.0f;
 	outUV /= 2.0f;
 
