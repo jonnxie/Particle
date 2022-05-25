@@ -20,7 +20,7 @@ public:
           uint32_t _latitudeResolution,
           double _radius = 5.0f,
           std::string  _pipeline = "EarthTex",
-          std::string _textureId = "default");
+          std::string _textureId = "test");
     ~Earth() override;
     DefineUnCopy(Earth);
     void constructG() override;

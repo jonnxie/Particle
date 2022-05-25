@@ -38,18 +38,18 @@ Earth::~Earth() {
 }
 
 void Earth::constructG() {
-    double reverseLongitudeResolution = two_pai / double(m_longitudeResolution);
-    double reverseLatitudeResolution = pai / double(m_latitudeResolution);
+    double reverseLongitudeResolution = 360.000000000000f / double(m_longitudeResolution);
+    double reverseLatitudeResolution = 180.000000000000f / double(m_latitudeResolution);
     uint32_t index = 0;
-    for (int i = 0; i < m_longitudeResolution - 1; ++i) {
-        for (int j = 0; j < m_latitudeResolution - 1; ++j) {
-            index = i * (m_latitudeResolution - 1) + j;
-            m_vertices[index * 6]     = glm::dvec2(-pai + double(i) * reverseLongitudeResolution, - half_pai +  double(j) * reverseLatitudeResolution);
-            m_vertices[index * 6 + 1] = glm::dvec2(-pai + double((i + 1)) * reverseLongitudeResolution, - half_pai +  double(j) * reverseLatitudeResolution);
-            m_vertices[index * 6 + 2] = glm::dvec2(-pai + double(i) * reverseLongitudeResolution, - half_pai +  double((j + 1)) * reverseLatitudeResolution);
-            m_vertices[index * 6 + 3] = glm::dvec2(-pai + double(i) * reverseLongitudeResolution, - half_pai +  double((j + 1)) * reverseLatitudeResolution);
-            m_vertices[index * 6 + 4] = glm::dvec2(-pai + double((i + 1)) * reverseLongitudeResolution, - half_pai +  double(j) * reverseLatitudeResolution);
-            m_vertices[index * 6 + 5] = glm::dvec2(-pai + double((i + 1)) * reverseLongitudeResolution, - half_pai +  double((j + 1)) * reverseLatitudeResolution);
+    for (int i = 0; i < m_longitudeResolution ; ++i) {
+        for (int j = 0; j < m_latitudeResolution ; ++j) {
+            index = i * (m_latitudeResolution ) + j;
+            m_vertices[index * 6]     = glm::dvec2(-180.000000000000f + double(i) * reverseLongitudeResolution, - 90.00000000000f +  double(j) * reverseLatitudeResolution);
+            m_vertices[index * 6 + 1] = glm::dvec2(-180.000000000000f + double((i + 1)) * reverseLongitudeResolution, - 90.00000000000f +  double(j) * reverseLatitudeResolution);
+            m_vertices[index * 6 + 2] = glm::dvec2(-180.000000000000f + double(i) * reverseLongitudeResolution, - 90.00000000000f +  double((j + 1)) * reverseLatitudeResolution);
+            m_vertices[index * 6 + 3] = glm::dvec2(-180.000000000000f + double(i) * reverseLongitudeResolution, - 90.00000000000f +  double((j + 1)) * reverseLatitudeResolution);
+            m_vertices[index * 6 + 4] = glm::dvec2(-180.000000000000f + double((i + 1)) * reverseLongitudeResolution, - 90.00000000000f +  double(j) * reverseLatitudeResolution);
+            m_vertices[index * 6 + 5] = glm::dvec2(-180.000000000000f + double((i + 1)) * reverseLongitudeResolution, - 90.00000000000f +  double((j + 1)) * reverseLatitudeResolution);
         }
     }
     SingleBPool.createVertexBuffer(tool::combine("Earth", m_id), sizeof(glm::dvec2) * m_vertices.size(), m_vertices.data());

@@ -370,11 +370,10 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
-//    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,5.0f),
-    auto earth = new Earth(glm::vec3(0.0f,0.0f,0.0f),
+    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,5.0f),
+//    auto earth = new Earth(glm::vec3(0.0f,0.0f,0.0f),
                            100,
-                           100,
-                           50.0
+                           100
                            );
 
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),

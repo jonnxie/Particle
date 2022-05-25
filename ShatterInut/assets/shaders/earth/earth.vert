@@ -24,13 +24,13 @@ out gl_PerVertex
 
 void main() 
 {
-	double length = earth.radius * cos(inCoor.y);
+	double length = earth.radius * cos(radians(float(inCoor.y)));
 	dvec3 position;
-	position.x = length * cos(inCoor.x);
-	position.y = length * sin(inCoor.x);
-	position.z = earth.radius * sin(inCoor.y);
+	position.x = length * cos(radians(float(inCoor.x)));
+	position.y = length * sin(radians(float(inCoor.x)));
+	position.z = earth.radius * sin(radians(float(inCoor.y)));
 
-	outUV = vec2(inCoor) / vec2(3.141592f, 1.57079f);
+	outUV = vec2(inCoor) / vec2(180.0f, 90.0f);
 	outUV += 1.0f;
 	outUV /= 2.0f;
 
