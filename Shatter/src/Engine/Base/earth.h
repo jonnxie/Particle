@@ -20,7 +20,9 @@ public:
           uint32_t _latitudeResolution,
           double _radius = 5.0f,
           std::string  _pipeline = "EarthTex",
-          std::string _textureId = "test");
+          bool _height = false,
+          std::string _textureId = "world_color_16k",
+          std::string _heightTextureId = "world_height");
     ~Earth() override;
     DefineUnCopy(Earth);
     void constructG() override;
@@ -32,7 +34,10 @@ public:
     std::vector<glm::dvec2>     m_vertices;
     std::string                 m_pipeline;
     std::string                 m_texture;
+    std::string                 m_heightTexture;
     double                      m_radius{};
+    double                      m_scale{};
+    bool                        m_height{false};
 };
 
 

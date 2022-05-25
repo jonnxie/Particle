@@ -230,6 +230,13 @@ int main() {
 //    delete model;
     texPool.addTexture("test", tool::combineTexture("Skybox_top3.png"), TextureType::Texture2DDefault);
 
+    texPool.addTexture("world_color_8k", tool::combineTexture("world_color_8k.jpg"), TextureType::Texture2DDefault);
+    texPool.addTexture("world_color_16k", tool::combineTexture("world_color_16k.jpg"), TextureType::Texture2DDefault);
+
+    texPool.addTexture("world_height",
+                       tool::combineTexture("world_height.png"),
+                       TextureType::Texture2DHeight);
+
     auto line_pool = MPool<Line3d>::getPool();
     {
         auto cPool = MPool<CObject>::getPool();
@@ -370,10 +377,12 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
-    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,5.0f),
-//    auto earth = new Earth(glm::vec3(0.0f,0.0f,0.0f),
-                           100,
-                           100
+    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,20.0f),
+                           50,
+                           50,
+                           10,
+                           "EarthHeight",
+                            true
                            );
 
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),

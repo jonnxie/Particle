@@ -263,6 +263,18 @@ void PPool::init() {
                  RenderPassType::Color,
                  SubpassTransparency);
 
+        createGP("EarthHeight",
+                 std::vector<Input_Type>{Input_Type::Point2dDouble},
+                 std::vector<Shader_id>{"earthHeight_vs",
+                                        "earthHeight_fs"},
+                 AssemState::Triangle_List,
+                 RasterState::TriangleFace,
+                 MultisampleState::Default,
+                 DepthStencilState::Default,
+                 BlendState::Default,
+                 RenderPassType::Color,
+                 SubpassTransparency);
+
         createGP("Point",
                  std::vector<Input_Type>{Input_Type::Point3dColorSize},
                  std::vector<Shader_id>{"particle_vs",

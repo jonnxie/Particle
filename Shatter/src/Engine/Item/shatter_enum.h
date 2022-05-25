@@ -376,6 +376,7 @@ enum class FeatureType{
 enum class TextureType {
     Texture1D,
     Texture2DDefault,
+    Texture2DHeight,
     Texture3D,
 };
 

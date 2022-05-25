@@ -389,6 +389,9 @@ void ShaderPool::init() {
     createShaderStage("earth_vs", tool::combineShader("earth/vert.spv"), VertexShader);
     createShaderStage("earth_fs", tool::combineShader("earth/frag.spv"), FragmentShader);
 
+    createShaderStage("earthHeight_vs", tool::combineShader("earthHeight/vert.spv"), VertexShader);
+    createShaderStage("earthHeight_fs", tool::combineShader("earthHeight/frag.spv"), FragmentShader);
+
     /*
      * Skybox
      */

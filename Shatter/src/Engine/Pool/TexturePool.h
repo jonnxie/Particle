@@ -36,6 +36,10 @@ public:
                          const std::string& _filename,
                          Texture& _tex);
 
+    void create2DHeightMap(const std::string& _key,
+                         const std::string& _filename,
+                         Texture& _tex);
+
 private:
     TexturePool() = default;
 };

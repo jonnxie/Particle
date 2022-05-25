@@ -58,6 +58,10 @@ void TexturePool::addTexture(const std::string& _key,
             create2DTexture( _key, _filename, texture);
             break;
         }
+        case TextureType::Texture2DHeight: {
+            create2DHeightMap( _key, _filename, texture);
+            break;
+        }
         case TextureType::Texture3D: {
             break;
         }
@@ -495,5 +499,87 @@ void TexturePool::create2DTexture(const std::string& _key,
                            nullptr);
 
 }
+
+void TexturePool::create2DHeightMap(const std::string& _key,
+                       const std::string& _filename,
+                       Texture& _tex) {
+    int texWidth, texHeight, texChannels;
+    if (!file::fileExists(_filename)) {
+        throwFile(_filename);
+    }
+    stbi_uc *pixels = stbi_load(_filename.c_str(),
+                                &texWidth,
+                                &texHeight,
+                                &texChannels,
+                                STBI_rgb_alpha);
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(imageSize,
+                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                 stagingBuffer,
+                 stagingBufferMemory);
+    void *data;
+    vkMapMemory(SingleDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+    memcpy(data, pixels, static_cast<size_t>(imageSize));
+    vkUnmapMemory(SingleDevice(), stagingBufferMemory);
+    stbi_image_free(pixels);
+
+    create2dImage(texWidth,
+                  texHeight,
+                  VK_FORMAT_R8G8B8A8_UINT,
+                  VK_IMAGE_TILING_OPTIMAL,
+                  VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                  _tex.image,
+                  _tex.memory);
+
+    setImageLayout(_tex.image,
+                   VK_IMAGE_ASPECT_COLOR_BIT,
+                   VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    copyBufferToImage(stagingBuffer,
+                      _tex.image,
+                      static_cast<uint32_t>(texWidth),
+                      static_cast<uint32_t>(texHeight));
+
+    setImageLayout(_tex.image,
+                   VK_IMAGE_ASPECT_COLOR_BIT,
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    create2dImageView(_tex.image,
+                      VK_FORMAT_R8G8B8A8_UINT,
+                      _tex.view,
+                      VK_IMAGE_ASPECT_COLOR_BIT
+    );
+
+    createDefaultSampler(_tex.sampler);
+
+    vkDestroyBuffer(SingleDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(SingleDevice(), stagingBufferMemory, nullptr);
+
+    SingleSetPool.AllocateDescriptorSets(_key,
+                                         {"BaseTexture"},
+                                         &_tex.set);
+
+    VkDescriptorImageInfo imageInfo{_tex.sampler,
+                                    _tex.view,
+                                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    VkWriteDescriptorSet writeSet = tool::writeDescriptorSet(_tex.set,
+                                                             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                             0,
+                                                             &imageInfo);
+    vkUpdateDescriptorSets(SingleDevice(),
+                           1,
+                           &writeSet,
+                           0,
+                           nullptr);
+}
+
+
+
 
 
