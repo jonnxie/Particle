@@ -32,6 +32,11 @@ Earth::Earth(glm::vec3 _pos, uint32_t _longitudeResolution, uint32_t _latitudeRe
     m_manipulate = std::make_unique<Manipulate>();
     m_manipulate->setPosition(_pos);
     m_manipulate->setChanged(true);
+
+    m_boxIndex = MPool<AABB>::getPool()->malloc();
+    (*SingleBoxPool)[m_boxIndex]->addInternalPoint(glm::vec3(-m_radius, - m_radius, -m_radius));
+    (*SingleBoxPool)[m_boxIndex]->addInternalPoint(glm::vec3(m_radius, m_radius, m_radius));
+
     init();
 }
 
@@ -146,4 +151,11 @@ void Earth::constructD() {
     (*dpool)[d]->m_newDraw = func;
     insertDObject(d);
     insertRenderObject(DrawObjectType::Normal, d);
+
+    setCapture(std::make_shared<CaptureObject>(this,
+                                               m_boxIndex,
+                                               d,
+                                               m_manipulate->getModelId(),
+                                               "Earth"));
+    SingleAPP.capturedPush(getCapture());
 }
