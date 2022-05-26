@@ -117,7 +117,8 @@ void DPlane::constructG() {
 void DPlane::constructD(){
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int ms_index = ModelSetPool::getPool().malloc();
+//    int ms_index = ModelSetPool::getPool().malloc();
+    int modelId = m_manipulate->getModelId();
 
     std::vector<std::string> s_vec(2);
     std::string pipeline;
@@ -139,8 +140,10 @@ void DPlane::constructD(){
     };
     (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->plane = SingleAPP.getWorkTargetPlane();
     (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = SingleAPP.getWorkTargetCenter();
-    (*dpool)[d]->prepare(matrix,
-                         ms_index,
+    m_manipulate->setMatrix(matrix);
+    m_manipulate->setChanged(true);
+    (*dpool)[d]->prepare(m_manipulate->getMatrix(),
+                         modelId,
                          DrawType::Index,
                          0,
                          tool::combine("DPlane", id),
@@ -153,10 +156,6 @@ void DPlane::constructD(){
                          pipeline,
                          s_vec);
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("DPlane",id),[&, ms_index, d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
-    });
     SingleRender.pushDObjects(d);
 };
 
@@ -253,7 +252,7 @@ void DCube::constructG() {
 void DCube::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int ms_index = ModelSetPool::getPool().malloc();
+    int modelIndex = m_manipulate->getModelId();
 
     std::vector<std::string> s_vec(2);
     std::string pipeline;
@@ -278,8 +277,10 @@ void DCube::constructD() {
     };
     (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->plane = SingleAPP.getWorkTargetPlane();
     (*MPool<Target>::getPool())[m_manipulate->getCoordinate()]->center = SingleAPP.getWorkTargetCenter();
-    (*dpool)[d]->prepare(matrix,
-                         ms_index,
+    m_manipulate->setMatrix(matrix);
+    m_manipulate->setChanged(true);
+    (*dpool)[d]->prepare(m_manipulate->getMatrix(),
+                         modelIndex,
                          DrawType::Index,
                          0,
                          tool::combine("DCube", id),
@@ -292,10 +293,10 @@ void DCube::constructD() {
                          pipeline,
                          s_vec);
     insertDObject(d);
-    TaskPool::pushUpdateTask(tool::combine("DCube",id),[&, ms_index, d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index, &(*SingleDPool)[d]->m_matrix, one_matrix);
-    });
+//    TaskPool::pushUpdateTask(tool::combine("DCube",id),[&, modelIndex, d](float _abs_time){
+//        glm::mat4* ptr = SingleBPool.getModels();
+//        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
+//    });
     SingleRender.pushDObjects(d);
 }
 

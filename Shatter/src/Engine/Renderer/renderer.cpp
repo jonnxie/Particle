@@ -454,13 +454,14 @@ namespace Shatter::render{
             queueFamilyIndices.emplace_back(set);
         }
 
-        if (indices.graphicsFamily != indices.presentFamily) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = queueFamilyIndices.size();
-            createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
-        } else {
+        std::array<uint32_t, 1> presentIndices{uint32_t(indices.graphicsFamily)};
+//        if (indices.graphicsFamily != indices.presentFamily) {
+//            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+//            createInfo.queueFamilyIndexCount = presentIndices.size();
+//            createInfo.pQueueFamilyIndices = presentIndices.data();
+//        } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        }
+//        }
 
         createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;

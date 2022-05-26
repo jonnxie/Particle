@@ -45,6 +45,7 @@
 #include "Engine/Event/delayevent.h"
 #include "Engine/Planets/Planet.h"
 #include "Engine/Base/CrossTree.h"
+#include "Engine/Base/earth.h"
 #include "Engine/Animation/animation.h"
 
 void releasePool()
@@ -229,6 +230,13 @@ int main() {
 //    delete model;
     texPool.addTexture("test", tool::combineTexture("Skybox_top3.png"), TextureType::Texture2DDefault);
 
+    texPool.addTexture("world_color_8k", tool::combineTexture("world_color_8k.jpg"), TextureType::Texture2DDefault);
+    texPool.addTexture("world_color_16k", tool::combineTexture("world_color_16k.jpg"), TextureType::Texture2DDefault);
+
+    texPool.addTexture("world_height",
+                       tool::combineTexture("world_height.png"),
+                       TextureType::Texture2DHeight);
+
     auto line_pool = MPool<Line3d>::getPool();
     {
         auto cPool = MPool<CObject>::getPool();
@@ -369,6 +377,14 @@ int main() {
                              {"Camera", "Planet"},
                              DrawObjectType::Default);
 
+    auto earth = new Earth(glm::vec3(-10.0f,-10.0f,20.0f),
+                           50,
+                           50,
+                           10,
+                           "EarthHeight",
+                            true
+                           );
+
     std::vector<std::string> sky_vec{tool::combineTexture("Skybox_right1.png"),
                                      tool::combineTexture("Skybox_left2.png"),
                                      tool::combineTexture("Skybox_top3.png"),
@@ -429,6 +445,7 @@ int main() {
         delete plane;
         delete line;
         delete planet;
+        delete earth;
         Shatter::render::ShatterRender::getRender().cleanup();
         SingleThreadPool->release();
         SingleDelaySystem.release();

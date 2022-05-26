@@ -53,7 +53,9 @@ public:
     void constructC() override{};
     void hide() override;
     void show() override;
-    void copy(const glm::vec3& _pos) override;
+    SP(Object) copy(const glm::vec3& _pos) override;
+    void move(const glm::vec3& _movement) override;
+    void update(const glm::vec3& _movement) override;
     std::string getName() override {
         return "DLines";
     }

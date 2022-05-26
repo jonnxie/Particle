@@ -152,7 +152,13 @@ public:
         return "Object";
     };
 
-    virtual void copy(const glm::vec3& _position);
+    virtual SP(Object) copy(const glm::vec3& _position);
+
+    virtual void move(const glm::vec3& _movement);
+
+    virtual void update(const glm::vec3& _movement);
+
+    virtual void gui();
 
     virtual void show(){};
 
@@ -164,12 +170,12 @@ public:
     glm::mat4 getScale();
     ClassElement(m_draw_type, DrawObjectType, DrawType);
     Manipulate& getManipulate();
+
+    ClassPointerElementInitial(m_captureObject, SP(CaptureObject), Capture, nullptr);
 protected:
     std::unique_ptr<Manipulate> m_manipulate{nullptr};
     uint32_t            m_capture_id{};
     bool                m_memReleased = false;
-
-    std::shared_ptr<CaptureObject>   m_captureObject{nullptr};
 };
 
 

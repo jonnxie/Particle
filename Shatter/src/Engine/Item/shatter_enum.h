@@ -69,6 +69,7 @@ enum class Input_Type{
     Basic,
     Point3d ,
     Point2d,
+    Point2dDouble,
     Point2dUV3d,
     Point2dColor,
     Point3dNormal,
@@ -375,6 +376,7 @@ enum class FeatureType{
 enum class TextureType {
     Texture1D,
     Texture2DDefault,
+    Texture2DHeight,
     Texture3D,
 };
 
@@ -404,11 +406,11 @@ const glm::vec3 RightDirection{1.0f, 0.0f, 0.0f};
 const glm::vec3 ForwardDirection{0.0f, 1.0f, 0.0f};
 const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 
-#define pai 3.141592f
-#define two_pai 6.283184f
-#define half_pai 1.57079f
+#define pai 3.1415926535897932384626433832795
+#define two_pai 6.283185307179586476925286766559
+#define half_pai 1.5707963267948966192313216916398
 //#define degree (pai/180.0f)
-#define degree 0.017453f
+#define degree 0.01745329251994329576923690768489
 #define float_limit 0.000001f
 
 #define one_byte 1
@@ -445,6 +447,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define CObjectCatalog     "Engine/Object/cobject.h"
 #define DObjectCatalog     "Engine/Object/dobject.h"
 #define GObjectCatalog     "Engine/Object/gobject.h"
+#define SceneCatalog       "Engine/Object/scene.h"
 #define MPoolCatalog       "Engine/Pool/mpool.h"
 #define BPoolCatalog       "Engine/Pool/bpool.h"
 #define PPoolCatalog       "Engine/Pool/ppool.h"
@@ -483,6 +486,7 @@ const glm::vec3 BackDirection{0.0f, -1.0f, 0.0f};
 #define DPointCatalog      "Engine/Base/points.h"
 #define DLineCatalog       "Engine/Base/lines.h"
 #define HandleCatalog      "Engine/Base/handle.h"
+#define OperatorCatalog    "Engine/Base/operator.h"
 //#define RayCatalog       "Engine/Base/Raytracing.h"
 
 //#define ShaderFilePath      "C:/Users/AnWell/Desktop/Particle/ShatterInut/assets/shaders/"

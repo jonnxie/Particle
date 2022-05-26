@@ -94,17 +94,18 @@ void SkinBasic::constructD() {
     TaskPool::pushUpdateTask(tool::combine("SkinAnimation", m_id),[&, d](float _abs_time){
         if (m_update)
         {
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix, true);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, _abs_time, m_manipulate->getMatrix(), true);
         } else {
-            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix, true);
+            ((vkglTF::Model*)(*SingleDPool)[d]->getData())->updateAnimation(m_animation_index, m_localTime, m_manipulate->getMatrix(), true);
         }
     });
     insertRenderObject(d);
-    m_captureObject = CaptureObject::mallocCapture(this,
-                                                   m_model->dimensions.min,
-                                                   m_model->dimensions.max,
-                                                   d,
-                                                   "SkinBasic");
+    setCapture(CaptureObject::mallocCapture(this,
+                                                m_model->dimensions.min,
+                                                m_model->dimensions.max,
+                                                d,
+                                                m_manipulate->getModelId(),
+                                                "SkinBasic"));
 }
 
 SkinBasicInstance::SkinBasicInstance(const std::string &_files, const std::vector<glm::vec3> &_instances,
@@ -117,10 +118,6 @@ GeoPool<glm::vec3>(_instances)
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreMultiplyVertexColors;
     m_model = new vkglTF::Model;
-//    m_scale = glm::scale(glm::mat4(1.0f), _scale);
-//    m_rotate = glm::rotate(glm::mat4(1.0f), _angle, _rotationAxis);
-//    m_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
-//    m_world = m_translation * m_scale * m_rotate;
     m_manipulate = std::make_unique<Manipulate>();
     m_manipulate->setScale(_scale);
     m_manipulate->_rotationAxis = _rotationAxis;
@@ -140,10 +137,6 @@ GeoPool<glm::vec3>(_instances)
     m_model = _skin->getModel();
     _skin->setModel(nullptr);
     m_manipulate = std::make_unique<Manipulate>(_skin->getManipulate());
-//    m_scale = _skin->getScale();
-//    m_rotate = _skin->getRotate();
-//    m_translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
-//    m_world = m_translation * m_scale * m_rotate;
     m_id = mallocId();
     init();
 }
@@ -213,9 +206,9 @@ void SkinBasicInstance::constructD() {
     TaskPool::pushUpdateTask(tool::combine("SkinBasicInstance", m_id),[&, d](float _abs_time){
         if (m_update)
         {
-            m_model->updateAnimation(m_animation_index, _abs_time, (*SingleDPool)[d]->m_matrix, true);
+            m_model->updateAnimation(m_animation_index, _abs_time, m_manipulate->getMatrix(), true);
         } else {
-            m_model->updateAnimation(m_animation_index, m_localTime, (*SingleDPool)[d]->m_matrix, true);
+            m_model->updateAnimation(m_animation_index, m_localTime, m_manipulate->getMatrix(), true);
         }
     });
     insertRenderObject(d);

@@ -14,7 +14,7 @@
 
 class Object;
 
-class Scene{
+class Scene {
 public:
     Scene() = default;
     ~Scene();
@@ -28,9 +28,9 @@ public:
     SyncContainerOperation(default);
     SyncContainerOperation(normal);
     SyncContainerOperation(transparency);
-    void addAABB(int _captureId, int _aabbIndex){
+    void addAABB(int _captureId, int _boxId){
         std::lock_guard<std::mutex> lockGuard(aabb_lock);
-        aabb_map[_captureId] = _aabbIndex;
+        aabb_map[_captureId] = _boxId;
     };
     void releaseAABB(int _captureId, int _aabbIndex){
         std::lock_guard<std::mutex> lockGuard(aabb_lock);

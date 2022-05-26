@@ -56,28 +56,28 @@ void GCoor::constructD() {
     int d = dpool->malloc();
 
     std::vector<std::string> s_vec{std::string("Camera")};
-    auto ms_index = ModelSetPool::getPool().malloc();
+    auto modelIndex = ModelSetPool::getPool().malloc();
     (*dpool)[d]->m_type = DType::Normal;
 
     (*dpool)[d]->prepare(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)),
-                         ms_index,
-                          DrawType::Vertex,
-                          0,
-                          "coordinate",
-                          6,
-                          "",
-                          0,
-                          0,
-                          "Polyline",
-                          s_vec);
+                         modelIndex,
+                         DrawType::Vertex,
+                         0,
+                         "coordinate",
+                         6,
+                         "",
+                         0,
+                         0,
+                         "Polyline",
+                         s_vec);
     insertDObject(d);
-    TaskPool::pushUpdateTask("GCoor",[&,ms_index,d](float _abs_time){
+    TaskPool::pushUpdateTask("GCoor",[&,modelIndex,d](float _abs_time){
         glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + ms_index,&(*SingleDPool)[d]->m_matrix,one_matrix);
+        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
     });
     SingleRender.pushNObjects(d);
-    m_captureObject = std::make_shared<CaptureObject>(this, m_boxIndex, d, "Coordinate");
-    SingleAPP.capturedPush(m_captureObject);
+    setCapture(std::make_shared<CaptureObject>(this, m_boxIndex, d, modelIndex, "Coordinate"));
+    SingleAPP.capturedPush(getCapture());
 }
 
 GCoor::GCoor(const std::vector<glm::vec3>& _in):

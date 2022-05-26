@@ -136,7 +136,7 @@ B3DMBasic::B3DMBasic(vkglTF::Model* _model, glm::vec3 _pos, glm::vec3 _rotationA
 void B3DMBasic::constructD() {
     auto dpool = MPool<DObject>::getPool();
     auto d = dpool->malloc();
-    int modelIndex = ModelSetPool::getPool().malloc();
+    int modelIndex = m_manipulate->getModelId();
 
     (*dpool)[d]->m_model_index = modelIndex;
     (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
@@ -171,10 +171,6 @@ void B3DMBasic::constructD() {
     {
         SingleRender.pushDObjects(i);
     }
-    TaskPool::pushUpdateTask(tool::combine("B3DMBasic", m_id),[&, modelIndex, d](float _abs_time){
-        glm::mat4* ptr = SingleBPool.getModels();
-        memcpy(ptr + modelIndex, &(*SingleDPool)[d]->m_matrix, one_matrix);
-    });
 }
 
 B3DMBasic::~B3DMBasic() {

@@ -22,6 +22,10 @@ VkVertexInputBindingDescription getBindingDescription(Input_Type _type){
             bindingDescription.stride = sizeof(Point2d);
             break;
         }
+        case Input_Type::Point2dDouble:{
+            bindingDescription.stride = sizeof(Point2dDouble);
+            break;
+        }
         case Input_Type::Point2dColor:{
             bindingDescription.stride = sizeof(Point_UNDER_PC);
             break;
@@ -117,6 +121,10 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions(Input_Ty
         }
         case Input_Type::Point2d:{
             attributeDescriptions.push_back(    VkVertexInputAttributeDescription{0,0,VK_FORMAT_R32G32_SFLOAT,offsetof(Point2d, pos)});
+            break;
+        }
+        case Input_Type::Point2dDouble:{
+            attributeDescriptions.push_back(    VkVertexInputAttributeDescription{0,0,VK_FORMAT_R64G64_SFLOAT,offsetof(Point2dDouble, pos)});
             break;
         }
         case Input_Type::Point2dColor:{

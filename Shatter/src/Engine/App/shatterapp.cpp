@@ -21,6 +21,7 @@
 #include "Engine/Base/lines.h"
 #include "Engine/Base/points.h"
 #include "Engine/Renderer/window.h"
+#include SceneCatalog
 
 namespace Shatter::App{
     bool app_created = false;
@@ -35,6 +36,7 @@ namespace Shatter::App{
     ShatterApp::ShatterApp()
     {
         m_listener = new Shatter::Listener;
+        mainScene = new Scene;
     }
 
     ShatterApp::~ShatterApp(){
@@ -82,13 +84,7 @@ namespace Shatter::App{
             render::ShatterRender::getRender().loop();
         }
         vkDeviceWaitIdle(*render::ShatterRender::getRender().getDevice());
-        delete m_listener;
-        for(auto& [name,listener] : m_otherListener)
-        {
-            delete listener;
-        }
-
-        delete m_work_plane;
+        release();
     }
 
     void ShatterApp::key_event_callback(int key, int action){
@@ -378,6 +374,16 @@ namespace Shatter::App{
     UnionViewPort &ShatterApp::getPresentViewPort() {
         std::lock_guard<std::mutex> lockGuard(presentMutex);
         return presentViewPort;
+    }
+
+    void ShatterApp::release() {
+        delete m_listener;
+        for(auto& [name,listener] : m_otherListener)
+        {
+            delete listener;
+        }
+        delete mainScene;
+        delete m_work_plane;
     }
 
 }

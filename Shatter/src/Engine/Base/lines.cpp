@@ -22,6 +22,7 @@
 #include GLTFCatalog
 #include AABBCatalog
 #include CaptureCatalog
+#include OperatorCatalog
 
 static int initIdVal = 0;
 static std::mutex idLock;
@@ -104,11 +105,12 @@ void DLines::constructD() {
     }
     SingleRender.pushNObjects(d);
     if (capture) {
-        m_captureObject = std::make_shared<CaptureObject>(this,
-                                                          m_boxIndex,
-                                                          d,
-                                                          "DLines");
-        SingleAPP.capturedPush(m_captureObject);
+        setCapture(std::make_shared<CaptureObject>(this,
+                                                       m_boxIndex,
+                                                       d,
+                                                       model_index,
+                                                       "DLines"));
+        SingleAPP.capturedPush(getCapture());
     }
 }
 
@@ -143,14 +145,38 @@ void DLines::show() {
     }
 }
 
-void DLines::copy(const glm::vec3 &_pos) {
+SP(Object) DLines::copy(const glm::vec3 &_pos) {
     std::vector<Line> tmp_lines;
     tmp_lines.resize(lines.size());
     for (int i = 0; i < lines.size(); ++i) {
         tmp_lines[i].begin.pos = lines[i].begin.pos + _pos;
         tmp_lines[i].end.pos = lines[i].end.pos + _pos;
     }
-    auto result = DLines(tmp_lines);
+    auto result = std::make_shared<DLines>(tmp_lines);
+    pushObject2MainScene(int(result->getCapture()->getCaptureId()), result);
+    return result;
+}
+
+void DLines::move(const glm::vec3 &_movement) {
+    for (auto & line : lines) {
+        line.begin.pos += _movement;
+        line.end.pos += _movement;
+    }
+    memcpy(SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->mapped,
+           lines.data(),
+           lines.size() * sizeof(Line));
+}
+
+void DLines::update(const glm::vec3 &_movement) {
+    std::vector<Line> tmp_lines;
+    tmp_lines.resize(lines.size());
+    for (int i = 0; i < lines.size(); ++i) {
+        tmp_lines[i].begin.pos = lines[i].begin.pos + _movement;
+        tmp_lines[i].end.pos = lines[i].end.pos + _movement;
+    }
+    memcpy(SingleBPool.getBuffer(tool::combine("DLines",id), Buffer_Type::Vertex_Host_Buffer)->mapped,
+           tmp_lines.data(),
+           lines.size() * sizeof(Line));
 }
 
 DLinePool::DLinePool(const std::vector<Line>& _lines,
@@ -510,6 +536,7 @@ CaptureObjectListener::CaptureObjectListener() {
 CaptureObjectListener::~CaptureObjectListener() {
     if (captureObject) captureObject->hide();
     GUI::popUI("CapturedObject");
+    TaskPool::popUpdateTask("CopyUpdate");
     SingleRender.guiChanged = true;
 }
 
@@ -520,6 +547,40 @@ void CaptureObjectListener::pushUI() {
 
         static char buf[32] = "default";
         ImGui::Text("Captured object Name: %s", captureObject->getParent()->getName().c_str());
+
+        captureObject->getParent()->gui();
+
+        if(ImGui::Button("copy"))
+        {
+            static bool copyState = false;
+            static glm::vec3 preCenter;
+            static SP(CaptureObject) preCapture;
+            if (!copyState) {
+                preCenter = (*MPool<AABB>::getPool())[captureObject->getBoxId()]->getCenter();
+                preCapture = captureObject;
+                glm::vec3 center = preCenter;
+                auto newTarget = captureObject->getParent()->copy(glm::vec3(0.0f));
+                if (newTarget != nullptr) {
+                    captureObject = newTarget->getCapture();
+                    TaskPool::pushUpdateTask("CopyUpdate", [this, center](float _time) {
+                        bool fixed = false;
+                        if (checkKey(GLFW_KEY_SPACE)) fixed = true;
+                        if (checkMouse(GLFW_MOUSE_BUTTON_LEFT)) fixed = true;
+                        if (!fixed) {
+                            captureObject->getParent()->update(input::getCursor() - center);
+                        } else {
+                            captureObject->getParent()->move(input::getCursor() - center);
+                            TaskPool::pushTask([](){
+                                TaskPool::popUpdateTask("CopyUpdate");
+                            });
+                        }
+                    });
+                }
+            } else {
+                captureObject = preCapture;
+                TaskPool::popUpdateTask("CopyUpdate");
+            }
+        }
 
         ImGui::End();// End setting
     });

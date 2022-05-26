@@ -46,6 +46,21 @@ Object::~Object() {
     release();
 }
 
-void Object::copy(const glm::vec3& _position) {
+SP(Object) Object::copy(const glm::vec3& _position) {
     std::cout << "Target has not realize copy function" << std::endl;
+    return nullptr;
 }
+
+void Object::move(const glm::vec3 &_move) {
+    std::cout << "Target has not realize move function" << std::endl;
+}
+
+void Object::update(const glm::vec3& _movement) {
+    std::cout << "Target has not realize update function" << std::endl;
+}
+
+void Object::gui() {
+    std::cout << "Target has not realize gui function" << std::endl;
+}
+
+

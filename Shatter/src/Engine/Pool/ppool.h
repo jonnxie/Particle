@@ -36,7 +36,6 @@ public:
                   MultisampleState _multisampleState,
                   DepthStencilState _depthStencilState,
                   BlendState _blendState,
-                  const std::vector<Sl_id>& _sl_id,
                   RenderPassType _passType= RenderPassType::Color,
                   uint32_t _pass = SubpassG
                   );

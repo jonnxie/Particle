@@ -25,6 +25,8 @@ class WorkPlane;
 
 class Window;
 
+class Scene;
+
 namespace Shatter{
     class Listener;
 
@@ -38,7 +40,6 @@ namespace Shatter{
         public:
             std::pair<int, int> getWindowSize() const;
         public:
-            void updateTimer();
             void update();
             void key_event_callback(int key, int action);
             void mouse_event_callback(int button, int action, double xpos, double ypos);
@@ -50,8 +51,9 @@ namespace Shatter{
             glm::vec3&   getWorkTargetCenter();
             TargetPlane& getCameraTargetPlane();
             WorkPlane* generateWorkPlane(TargetPlane& _coordinate, const glm::vec3& _center);
-            ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
-            ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
+        private:
+            void updateTimer();
+            void release();
         public:
             void capturedPush(const std::shared_ptr<CaptureObject>& _id);
             void capturedRelease(const std::shared_ptr<CaptureObject>& _id);
@@ -61,22 +63,25 @@ namespace Shatter{
             void setMainWindow();
             void setMainWindow(int _width, int _height, std::string _title);
             Window* getMainWindow();
+        private:
+            Window* m_mainWindow {nullptr};
+        public:
             void setPresentViewPort(const UnionViewPort& _viewport);
             UnionViewPort& getPresentViewPort();
         private:
-            Window* m_mainWindow {nullptr};
+            ClassPointerElement(m_swapChainImageCount, int, SwapChainCount);
+            ClassPointerElement(m_workImageIndex, int, WorkImageIndex);
             std::mutex presentMutex;
             UnionViewPort presentViewPort;
             ClassPointerElementInitial(viewTouched, bool, ViewPortTouched, false);
         public:
             MouseState mouseState;
+            Scene* mainScene;
         private:
             std::mutex m_captured_lock;
             ShatterApp();
             ClassElementInitial(m_work, bool, Work, false);
             WorkPlane* m_work_plane{nullptr};
-        private:
-            std::vector<Event> m_events;
         public:
             bool cameraChanged = true;
             bool viewportChanged = false;
@@ -85,6 +90,7 @@ namespace Shatter{
             time_point m_pre_time;
             Listener* m_listener;
             std::unordered_map<std::string,Listener*> m_otherListener;
+            std::vector<Event> m_events;
         };
     }
 }
