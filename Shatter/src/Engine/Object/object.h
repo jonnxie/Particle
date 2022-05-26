@@ -158,6 +158,8 @@ public:
 
     virtual void update(const glm::vec3& _movement);
 
+    virtual void gui();
+
     virtual void show(){};
 
     virtual void hide(){};

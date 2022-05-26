@@ -58,3 +58,9 @@ void Object::move(const glm::vec3 &_move) {
 void Object::update(const glm::vec3& _movement) {
     std::cout << "Target has not realize update function" << std::endl;
 }
+
+void Object::gui() {
+    std::cout << "Target has not realize gui function" << std::endl;
+}
+
+

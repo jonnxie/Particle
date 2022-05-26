@@ -27,6 +27,7 @@ public:
     DefineUnCopy(Earth);
     void constructG() override;
     void constructD() override;
+    void gui() override;
 public:
     uint32_t                    m_id;
     uint32_t                    m_longitudeResolution{};
@@ -35,7 +36,7 @@ public:
     std::string                 m_pipeline;
     std::string                 m_texture;
     std::string                 m_heightTexture;
-    double                      m_radius{};
+    float                       m_radius{};
     double                      m_scale{};
     bool                        m_height{false};
 };

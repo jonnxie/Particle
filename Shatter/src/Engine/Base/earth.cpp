@@ -8,6 +8,7 @@
 #include ShaderCatalog
 #include <utility>
 #include TexturePoolCatalog
+#include GuiCatalog
 
 static int mallocId()
 {
@@ -21,7 +22,7 @@ Earth::Earth(glm::vec3 _pos, uint32_t _longitudeResolution, uint32_t _latitudeRe
              std::string _pipeline, bool _height, std::string _textureId, std::string _heightTextureId) :
         m_longitudeResolution(_longitudeResolution),
         m_latitudeResolution(_latitudeResolution),
-        m_radius(_radius),
+        m_radius(float(_radius)),
         m_pipeline(std::move(_pipeline)),
         m_texture(std::move(_textureId)),
         m_height(_height),
@@ -71,7 +72,6 @@ void Earth::constructG() {
     EarthInfo info{};
     info.radius = m_radius;
     info.scale = (m_radius / double(12756000.0f));
-    std::cout << std::fixed << "earth scale:" << info.scale << std::endl;
     auto buffer = SingleBPool.getBuffer(tool::combine("Earth", m_id), Buffer_Type::Uniform_Buffer);
     buffer->map();
     memcpy(buffer->mapped, &info, sizeof(EarthInfo));
@@ -158,4 +158,23 @@ void Earth::constructD() {
                                                m_manipulate->getModelId(),
                                                "Earth"));
     SingleAPP.capturedPush(getCapture());
+
+    TaskPool::pushUpdateTask(tool::combine("Earth", m_id),[&](float _time){
+        EarthInfo info{};
+        info.radius = m_radius;
+        info.scale = (m_radius / double(12756000.0f));
+        auto buffer = SingleBPool.getBuffer(tool::combine("Earth", m_id), Buffer_Type::Uniform_Buffer);
+        buffer->map();
+        memcpy(buffer->mapped, &info, sizeof(EarthInfo));
+        buffer->unmap();
+    });
+}
+
+void Earth::gui() {
+    ImGui::SliderFloat("Radius",
+                        reinterpret_cast<float *>(&m_radius),
+                        0.0f,
+                        100.0f);
+    ImGui::Text("Longitude resolution %u", m_longitudeResolution);
+    ImGui::Text("Latitude resolution %u", m_latitudeResolution);
 }

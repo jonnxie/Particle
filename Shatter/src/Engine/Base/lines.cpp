@@ -548,6 +548,8 @@ void CaptureObjectListener::pushUI() {
         static char buf[32] = "default";
         ImGui::Text("Captured object Name: %s", captureObject->getParent()->getName().c_str());
 
+        captureObject->getParent()->gui();
+
         if(ImGui::Button("copy"))
         {
             static bool copyState = false;
