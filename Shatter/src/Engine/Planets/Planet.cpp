@@ -40,9 +40,7 @@ Planet::Planet(uint32_t _resolution, glm::vec3 _pos, glm::vec3 _rotationAxis, fl
     init();
 }
 
-Planet::~Planet() {
-
-}
+Planet::~Planet() = default;
 
 void Planet::generateMesh() {
     m_points.clear();
