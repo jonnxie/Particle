@@ -22,7 +22,7 @@ public:
     void init(size_t _size);
     void initLight();
     void addLight(const PassLight& _light);
-    void reallocated();
+    void reallocated(size_t _count);
 private:
     std::vector<PassLight> lights;
     size_t size{};

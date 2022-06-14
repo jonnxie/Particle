@@ -56,8 +56,8 @@ Index of this file:
 // [SECTION] About Window / ShowAboutWindow()
 // [SECTION] Style Editor / ShowStyleEditor()
 // [SECTION] Example App: Main Menu Bar / ShowExampleAppMainMenuBar()
-// [SECTION] Example App: Debug Console / ShowExampleAppConsole()
-// [SECTION] Example App: Debug Log / ShowExampleAppLog()
+// [SECTION] Example App: DebugGeo Console / ShowExampleAppConsole()
+// [SECTION] Example App: DebugGeo Log / ShowExampleAppLog()
 // [SECTION] Example App: Simple Layout / ShowExampleAppLayout()
 // [SECTION] Example App: Property Editor / ShowExampleAppPropertyEditor()
 // [SECTION] Example App: Long Text / ShowExampleAppLongText()
@@ -5482,7 +5482,7 @@ static void ShowDemoWindowTables()
             ImGui::EndTable();
         }
         static bool show_debug_details = false;
-        ImGui::Checkbox("Debug details", &show_debug_details);
+        ImGui::Checkbox("DebugGeo details", &show_debug_details);
         if (show_debug_details && table_draw_list)
         {
             ImGui::SameLine(0.0f, 0.0f);
@@ -6552,7 +6552,7 @@ static void ShowExampleMenuFile()
 }
 
 //-----------------------------------------------------------------------------
-// [SECTION] Example App: Debug Console / ShowExampleAppConsole()
+// [SECTION] Example App: DebugGeo Console / ShowExampleAppConsole()
 //-----------------------------------------------------------------------------
 
 // Demonstrate creating a simple console window, with scrolling, filtering, completion and history.
@@ -6642,9 +6642,9 @@ struct ExampleAppConsole
 
         // TODO: display items starting from the bottom
 
-        if (ImGui::SmallButton("Add Debug Text"))  { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); }
+        if (ImGui::SmallButton("Add DebugGeo Text"))  { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); }
         ImGui::SameLine();
-        if (ImGui::SmallButton("Add Debug Error")) { AddLog("[error] something went wrong"); }
+        if (ImGui::SmallButton("Add DebugGeo Error")) { AddLog("[error] something went wrong"); }
         ImGui::SameLine();
         if (ImGui::SmallButton("Clear"))           { ClearLog(); }
         ImGui::SameLine();
@@ -6911,7 +6911,7 @@ static void ShowExampleAppConsole(bool* p_open)
 }
 
 //-----------------------------------------------------------------------------
-// [SECTION] Example App: Debug Log / ShowExampleAppLog()
+// [SECTION] Example App: DebugGeo Log / ShowExampleAppLog()
 //-----------------------------------------------------------------------------
 
 // Usage:
@@ -7049,7 +7049,7 @@ static void ShowExampleAppLog(bool* p_open)
     ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
     ImGui::Begin("Example: Log", p_open);
     IMGUI_DEMO_MARKER("Examples/Log");
-    if (ImGui::SmallButton("[Debug] Add 5 entries"))
+    if (ImGui::SmallButton("[DebugGeo] Add 5 entries"))
     {
         static int counter = 0;
         const char* categories[3] = { "info", "warn", "error" };
@@ -7743,9 +7743,9 @@ static void ShowExampleAppCustomRendering(bool* p_open)
 // - Important: Dockspaces need to be submitted _before_ any window they can host. Submit it early in your frame! (*)
 // - Important: Dockspaces need to be kept alive if hidden, otherwise windows docked into it will be undocked.
 //   e.g. if you have multiple tabs with a dockspace inside each tab: submit the non-visible dockspaces with ImGuiDockNodeFlags_KeepAliveOnly.
-// (*) because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node,
+// (*) because of this constraint, the implicit \"DebugGeo\" window can not be docked into an explicit DockSpace() node,
 // because that window is submitted as part of the part of the NewFrame() call. An easy workaround is that you can create
-// your own implicit "Debug##2" window after calling DockSpace() and leave it in the window stack for anyone to use.
+// your own implicit "DebugGeo##2" window after calling DockSpace() and leave it in the window stack for anyone to use.
 void ShowExampleAppDockSpace(bool* p_open)
 {
     // If you strip some features of, this demo is pretty much equivalent to calling DockSpaceOverViewport()!
@@ -8004,7 +8004,7 @@ void ShowExampleAppDocuments(bool* p_open)
         ImGui::EndMenuBar();
     }
 
-    // [Debug] List documents with one checkbox for each
+    // [DebugGeo] List documents with one checkbox for each
     for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
     {
         MyDocument* doc = &app.Documents[doc_n];
