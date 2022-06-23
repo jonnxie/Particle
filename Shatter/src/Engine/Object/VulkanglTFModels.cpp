@@ -2588,6 +2588,39 @@ std::pair<glm::vec4,glm::vec4> getExtremeVec4(void * _data,size_t _count)
     return std::pair<glm::vec4,glm::vec4>{min, max};
 }
 
+template <class T>
+std::pair<T, T> getExtreme(void * _data, size_t _count){
+    auto ptr = static_cast<T*>(_data);
+    auto ptr_3 = static_cast<glm::vec3*>(_data);
+    auto ptr_4 = static_cast<glm::vec4*>(_data);
+    float max_x = std::numeric_limits<float>::min(), min_x = std::numeric_limits<float>::max(),
+    max_y = std::numeric_limits<float>::min(), min_y = std::numeric_limits<float>::max(),
+    max_z = std::numeric_limits<float>::min(), min_z = std::numeric_limits<float>::max(),
+    max_w = std::numeric_limits<float>::min(), min_w = std::numeric_limits<float>::max();
+
+    for(size_t index = 0; index < _count; index++)
+    {
+        min_x = glm::min(min_x, ptr[index].x);
+        max_x = glm::max(max_x, ptr[index].x);
+
+        min_y = glm::min(min_y, ptr[index].y);
+        max_y = glm::max(max_y, ptr[index].y);
+
+        if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            min_z = glm::min(min_z, ptr_4[index].z);
+            max_z = glm::max(max_z, ptr_4[index].z);
+            min_w = glm::min(min_w, ptr_4[index].w);
+            max_w = glm::max(max_w, ptr_4[index].w);
+        }else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            min_z = glm::min(min_z, ptr_3[index].z);
+            max_z = glm::max(max_z, ptr_3[index].z);
+        }
+    }
+    return std::pair<T, T>{T{glm::vec4(min_x, min_y, min_z, min_w)}, T{glm::vec4(max_x, max_y, max_z, max_w)}};
+}
+
 
 void vkglTF::Model::writeMeshToFile(const std::string& _filename,
                                     size_t _count,
@@ -2639,7 +2672,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["POSITION"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
-                auto pair = getExtremeVec3(_points[index], _count);
+//                auto pair = getExtremeVec3(_points[index], _count);
+                auto pair = getExtreme<glm::vec3>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2659,7 +2693,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["NORMAL"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
-                auto pair = getExtremeVec3(_points[index], _count);
+//                auto pair = getExtremeVec3(_points[index], _count);
+                auto pair = getExtreme<glm::vec3>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2680,7 +2715,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["TEXCOORD_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec2);
-                auto pair = getExtremeVec2(_points[index], _count);
+                auto pair = getExtreme<glm::vec2>(_points[index], _count);
+//                auto pair = getExtremeVec2(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec2);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2701,7 +2737,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["COLOR_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2722,7 +2759,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["TANGENT"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2743,7 +2781,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["JOINTS_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2764,7 +2803,8 @@ void vkglTF::Model::writeMeshToFile(const std::string& _filename,
             {
                 primitive.attributes["WEIGHTS_0"] = index + 1;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index + 1;
                 view.byteOffset = 0;
@@ -2852,7 +2892,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["POSITION"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
-                auto pair = getExtremeVec3(_points[index], _count);
+//                auto pair = getExtremeVec3(_points[index], _count);
+                auto pair = getExtreme<glm::vec3>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2872,7 +2913,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["NORMAL"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec3);
-                auto pair = getExtremeVec3(_points[index], _count);
+                auto pair = getExtreme<glm::vec3>(_points[index], _count);
+//                auto pair = getExtremeVec3(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec3);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2893,7 +2935,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["TEXCOORD_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec2);
-                auto pair = getExtremeVec2(_points[index], _count);
+                auto pair = getExtreme<glm::vec2>(_points[index], _count);
+//                auto pair = getExtremeVec2(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec2);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2914,7 +2957,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["COLOR_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2935,7 +2979,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["TANGENT"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2956,7 +3001,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["JOINTS_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index;
                 view.byteOffset = 0;
@@ -2977,7 +3023,8 @@ void vkglTF::Model::writeGeometryListToFile(const std::string& _filename,
             {
                 primitive.attributes["WEIGHTS_0"] = index;  // The index of the accessor for positions
                 buffer.data.resize(_count * one_vec4);
-                auto pair = getExtremeVec4(_points[index], _count);
+//                auto pair = getExtremeVec4(_points[index], _count);
+                auto pair = getExtreme<glm::vec4>(_points[index], _count);
                 memcpy(buffer.data.data(), _points[index], _count * one_vec4);
                 view.buffer = index;
                 view.byteOffset = 0;
