@@ -264,7 +264,7 @@ int main() {
                             {25, 25, 25});
 
     auto ah = new AnimationHandle();
-    ah->setPos(glm::vec3(-10.0f,-10.0f,0.0f));
+    ah->setPos(glm::vec3(-10.0f,-10.0f,4.0f));
     ah->setRotationAxis(glm::vec3(1.0f,0.0f,0.0f));
     ah->setAngle(-half_pai);
     ah->setScale(glm::vec3(1.0f));
@@ -273,7 +273,8 @@ int main() {
     ah->setSets(std::vector<std::string>{"Camera", "Planet"});
     ah->setDrawType(DrawObjectType::Default);
 //    ah->loadAnimation(tool::combineModel("BoxAnimated.gltf"));
-    ah->loadAnimation(tool::combineModel("InterpolationTest.glb"), true);
+//    ah->loadAnimation(tool::combineModel("InterpolationTest.glb"), true);
+    ah->loadAnimation(tool::combineModel("Cesium_Air.glb"), true);
 //    ABasic(tool::combineModel("BoxAnimated.gltf"),
 //           glm::vec3(-10.0f,-10.0f,0.0f),
 //           glm::vec3(1.0f,0.0f,0.0f),

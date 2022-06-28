@@ -338,6 +338,9 @@ void ShaderPool::init() {
     createShaderStage("agbasic_vs",tool::combineShader("agbasic/vert.spv"), VertexShader);
     createShaderStage("agbasic_fs",tool::combineShader("agbasic/frag.spv"), FragmentShader);
 
+    createShaderStage("agTexture_vs",tool::combineShader("agTexture/vert.spv"), VertexShader);
+    createShaderStage("agTexture_fs",tool::combineShader("agTexture/frag.spv"), FragmentShader);
+
     createShaderStage("aginstance_vs",tool::combineShader("aginstance/vert.spv"), VertexShader);
     createShaderStage("aginstance_fs",tool::combineShader("aginstance/frag.spv"), FragmentShader);
     createShaderStage("aginstanceTex_fs",tool::combineShader("aginstance/tex_frag.spv"), FragmentShader);
