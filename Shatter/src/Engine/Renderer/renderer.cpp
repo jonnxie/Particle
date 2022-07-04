@@ -1967,47 +1967,35 @@ namespace Shatter::render{
 
         int i = 0;
         for (const auto &queueFamily : queueFamilies) {
-            if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                if(indices.graphicsFamily == -1) {
-                    indices.graphicsFamily = i;
-                }
+            if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && indices.graphicsFamily == -1) {
+                indices.graphicsFamily = i;
             }
 
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
             if (queueFamily.queueCount > 0 && presentSupport && i != indices.graphicsFamily) {
-                    indices.presentFamily = i;
-            }else if(queueFamily.queueCount > 0 && presentSupport){
-                if(indices.presentFamily == -1){
-                    indices.presentFamily = i;
-                }
+                indices.presentFamily = i;
+            }else if(queueFamily.queueCount > 0 && presentSupport && indices.presentFamily == -1){
+                indices.presentFamily = i;
             }
 
             if(queueFamily.queueCount > 0 && queueFamily.queueFlags &
             VK_QUEUE_COMPUTE_BIT && (i != indices.presentFamily || i != indices.graphicsFamily)){
                 indices.computeFamily = i;
             }
-            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags &VK_QUEUE_COMPUTE_BIT)
+            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags &VK_QUEUE_COMPUTE_BIT && indices.computeFamily == -1)
             {
-                if(indices.computeFamily == -1)
-                {
-                    indices.computeFamily = i;
-                }
+                indices.computeFamily = i;
             }
 
             if(queueFamily.queueCount > 0 && queueFamily.queueFlags &
             VK_QUEUE_TRANSFER_BIT && (i != indices.graphicsFamily || i != indices.computeFamily)){
                 indices.transferFamily = i;
             }
-            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT && indices.computeFamily == -1)
             {
-                if(indices.computeFamily == -1)
-                {
-                    indices.computeFamily = i;
-//                    i++;
-//                    continue;
-                }
+                indices.computeFamily = i;
             }
             i++;
         }
