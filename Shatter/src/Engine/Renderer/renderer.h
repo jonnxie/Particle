@@ -92,6 +92,7 @@ namespace Shatter{
             void createColorRenderPass();
             void createColorFramebuffers();
 
+            uint32_t m_presentImageCount{};
             VkRenderPass m_presentRenderPass{VK_NULL_HANDLE};
             struct VkPresent {
                 VkImage image;

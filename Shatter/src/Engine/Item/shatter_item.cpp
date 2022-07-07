@@ -1652,7 +1652,6 @@ namespace tool {
         vkUnmapMemory(Device::getDevice().logicalDevice, dstImageMemory);
         vkFreeMemory(Device::getDevice().logicalDevice, dstImageMemory, nullptr);
         vkDestroyImage(Device::getDevice().logicalDevice, dstImage, nullptr);
-
 //        screenshotSaved = true;
     }
 

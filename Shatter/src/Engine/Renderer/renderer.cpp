@@ -440,21 +440,6 @@ namespace Shatter::render{
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         createInfo.oldSwapchain = oldSwapchain;
-
-        QueueFamilyIndices indices = getIndices();
-
-        std::set<uint32_t> queueFamilyIndicesSets = {(uint32_t) indices.graphicsFamily,
-                                                     (uint32_t) indices.presentFamily,
-                                                     (uint32_t) indices.transferFamily,
-                                                     (uint32_t) indices.computeFamily};
-
-        std::vector<uint32_t> queueFamilyIndices{};
-        for(auto& set : queueFamilyIndicesSets)
-        {
-            queueFamilyIndices.emplace_back(set);
-        }
-
-        std::array<uint32_t, 1> presentIndices{uint32_t(indices.graphicsFamily)};
 //        if (indices.graphicsFamily != indices.presentFamily) {
 //            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 //            createInfo.queueFamilyIndexCount = presentIndices.size();
@@ -482,17 +467,16 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain));
 
         if (oldSwapchain != VK_NULL_HANDLE) {
-            std::cout << "old swapchain destroy" << std::endl;
             vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
         }
 
         min_image_count = createInfo.minImageCount;
 
-        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(device, swapchain, &m_presentImageCount, nullptr);
 
-        pre_offscreen_buffer.resize(imageCount);
-        pre_shadow_buffer.resize(imageCount);
-        pre_capture_buffers.resize(imageCount);
+        pre_offscreen_buffer.resize(m_presentImageCount);
+        pre_shadow_buffer.resize(m_presentImageCount);
+        pre_capture_buffers.resize(m_presentImageCount);
 
         m_presentFormat = surfaceFormat.format;
         presentExtent = extent;
@@ -817,7 +801,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createPresentFramebuffers() {
-        uint32_t imageCount;
+        uint32_t imageCount = m_presentImageCount;
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
         m_presents.resize(imageCount);
         m_swapChainImageCount = imageCount;
