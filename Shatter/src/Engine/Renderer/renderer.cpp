@@ -1457,7 +1457,7 @@ namespace Shatter::render{
         clearPresentValue[1].depthStencil = { 1.0f, 0 };
         if(Config::getConfig("enableScreenGui"))
         {
-            imGui->newFrame(false);
+            imGui->newFrame();
             imGui->updateBuffers();
         }
         for (size_t i = 0; i < presentCB.size(); i++) {
@@ -1782,7 +1782,7 @@ namespace Shatter::render{
         } else if (Config::getConfig("enableScreenGui")) {
             if (Config::getConfig("enableScreenGui"))
             {
-                imGui->newFrame(false);
+                imGui->newFrame();
                 imGui->updateBuffers();
             }
 //            if (GUI::getGUI()->getItemState() || SingleAPP.presentReset) {

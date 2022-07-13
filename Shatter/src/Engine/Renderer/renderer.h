@@ -100,7 +100,6 @@ namespace Shatter{
                 VkSampler sampler;
                 VkFramebuffer framebuffer;
             };
-            std::vector<VkPresent> m_presents{};
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
@@ -226,7 +225,8 @@ namespace Shatter{
             * 图像代表交换链中的项
             */
             VkFormat m_presentFormat;
-            std::vector<VkImage> m_presentImages;
+//            std::vector<VkImage> m_presentImages;
+            std::vector<VkPresent> m_presents{};
             VkExtent2D presentExtent{};
             VkFormat m_depthFormat;
 
