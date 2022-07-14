@@ -36,11 +36,7 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
-        std::vector<VkDescriptorSet> set_vec;
+    tool::cmdDynamicState(_cb);        std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         set_vec.push_back(*(*set_pool)[m_model_index]);
         for(auto & i: m_depthDescriptorSet)
@@ -122,11 +118,7 @@ public:
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
-        std::vector<VkDescriptorSet> set_vec;
+    tool::cmdDynamicState(_cb);        std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         set_vec.push_back(*(*set_pool)[m_model_index]);
         for(auto & i: m_gDescriptorSet)

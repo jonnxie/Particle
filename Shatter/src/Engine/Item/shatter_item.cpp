@@ -1668,6 +1668,13 @@ namespace tool {
         printf("[%f,%f,%f,%f]\n",_in[2][0],_in[2][1],_in[2][2],_in[2][3]);
         printf("[%f,%f,%f,%f]\n",_in[3][0],_in[3][1],_in[3][2],_in[3][3]);
     }
+
+    void cmdDynamicState(VkCommandBuffer _cb) {
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
+        VkRect2D& scissor = tmp.scissor;
+        vkCmdSetScissor(_cb,0,1,&scissor);
+    }
 }
 
 void transitionImageLayout(

@@ -48,10 +48,7 @@ void DObject::draw(VkCommandBuffer _cb) {
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
+        tool::cmdDynamicState(_cb);
         std::vector<VkDescriptorSet> set_vec;
         set_vec.resize(0);
         auto set_pool = MPool<VkDescriptorSet>::getPool();
@@ -98,10 +95,7 @@ void DObject::newDraw(VkCommandBuffer _cb)
                 vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
             }
         }
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
+        tool::cmdDynamicState(_cb);
         std::vector<VkDescriptorSet> set_vec;
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         set_vec.push_back(*(*set_pool)[m_model_index]);
@@ -224,10 +218,7 @@ void DObject::drawDepth(VkCommandBuffer _cb){
             vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
         }
     }
-    UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-    vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-    VkRect2D& scissor = tmp.scissor;
-    vkCmdSetScissor(_cb,0,1,&scissor);
+    tool::cmdDynamicState(_cb);
     std::vector<VkDescriptorSet> set_vec;
     auto set_pool = MPool<VkDescriptorSet>::getPool();
     set_vec.push_back(*(*set_pool)[m_model_index]);
@@ -261,14 +252,11 @@ void DObject::g(VkCommandBuffer _cb){
             vkCmdBindIndexBuffer(_cb,bf,m_index_offsets,VK_INDEX_TYPE_UINT32);
         }
     }
-    UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-    vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-    VkRect2D& scissor = tmp.scissor;
-    vkCmdSetScissor(_cb,0,1,&scissor);
+    tool::cmdDynamicState(_cb);
     std::vector<VkDescriptorSet> set_vec;
     auto set_pool = MPool<VkDescriptorSet>::getPool();
     set_vec.push_back(*(*set_pool)[m_model_index]);
-    for(auto & i: m_gDescriptorSet)
+    for(auto& i: m_gDescriptorSet)
     {
         set_vec.emplace_back(SetPool::getPool()[i]);
     }

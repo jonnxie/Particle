@@ -188,11 +188,7 @@ void I3DMBasic::constructD() {
     (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_gGraphics = [&, modelIndex](VkCommandBuffer _cb){
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
-        auto set_pool = MPool<VkDescriptorSet>::getPool();
+    tool::cmdDynamicState(_cb);        auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
         for(auto & s: m_sets)
         {
@@ -274,11 +270,7 @@ void I3DMBasicInstance::constructD() {
     auto instanceBuffer = SingleBPool.getBuffer(tool::combine("I3DMInstanceBasic", m_id),
                                                 Buffer_Type::Vertex_Buffer)->getBuffer();
     (*dpool)[d]->m_gGraphics = [&, modelIndex, instanceBuffer](VkCommandBuffer _cb){
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
-
+    tool::cmdDynamicState(_cb);
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex])};
         for(auto & s: m_sets)

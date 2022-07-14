@@ -1142,6 +1142,8 @@ namespace tool{
 
     void saveScreenshot(std::basic_string<char> filename);
 
+    void cmdDynamicState(VkCommandBuffer _cb);
+
     inline std::string strBool(bool _val){
         return _val? "True":"False";
     }
