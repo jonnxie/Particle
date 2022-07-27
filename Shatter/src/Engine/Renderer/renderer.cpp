@@ -930,7 +930,6 @@ namespace Shatter::render{
         cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         cmdPoolInfo.pNext = VK_NULL_HANDLE;
         cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        cmdPoolInfo.queueFamilyIndex = getIndices().graphicsFamily;
         /*
          * Init compute multiple thread data
          */
@@ -955,8 +954,6 @@ namespace Shatter::render{
         if(!offdrawid_vec.empty())
         {
             vkCmdExecuteCommands(_cb, offdrawid_vec.size(), pre_offscreen_buffer[_imageIndex].data());
-
-//            vkCmdExecuteCommands(_cb,offdrawid_vec.size(),&pre_offscreen_buffers[offdrawid_vec.size() * _imageIndex]);
         }
         SingleOffScreen.endRenderPass(_cb);
     }
@@ -1745,7 +1742,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::newDraw() {
-
         uint32_t imageIndex;
         auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
         if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
@@ -1771,7 +1767,9 @@ namespace Shatter::render{
         VkResult fenceRes;
         fenceRes = vkWaitForFences(SingleDevice(), 1, &renderFence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
         fenceRes = vkResetFences(SingleDevice(), 1, &renderFence);
-        VK_CHECK_RESULT(fenceRes);
+        #ifndef NDEBUG
+            VK_CHECK_RESULT(fenceRes);
+        #endif
 //        vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
 
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged || SingleRender.resized)
@@ -1790,8 +1788,11 @@ namespace Shatter::render{
 //                SingleAPP.presentReset = false;
 //            }
         }
-
-        VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+        #ifdef NDEBUG
+                    vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence);
+        #else
+                VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+        #endif
 
         presentInfo = {
                 VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,

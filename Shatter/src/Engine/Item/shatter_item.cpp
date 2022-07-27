@@ -1447,7 +1447,6 @@ namespace tool {
     }
 
     void saveScreenshot(std::basic_string<char> filename) {
-//        screenshotSaved = false;
         bool supportsBlit = true;
 
         // Check blit support for source and destination
@@ -1653,7 +1652,6 @@ namespace tool {
         vkUnmapMemory(Device::getDevice().logicalDevice, dstImageMemory);
         vkFreeMemory(Device::getDevice().logicalDevice, dstImageMemory, nullptr);
         vkDestroyImage(Device::getDevice().logicalDevice, dstImage, nullptr);
-//        screenshotSaved = true;
     }
 
     VkRenderPassBeginInfo renderPassBeginInfo() {

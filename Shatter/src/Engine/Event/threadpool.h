@@ -17,7 +17,6 @@
 #include "Engine/Item/shatter_item.h"
 #include "Engine/Item/shatter_macro.h"
 
-
 class Thread
 {
 public:
