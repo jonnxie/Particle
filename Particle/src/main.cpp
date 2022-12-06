@@ -290,14 +290,14 @@ int main() {
                               glm::vec3(1.0f));
 
     auto skinInstance = new SkinBasicInstance(tool::combineModel("CesiumMan.gltf"),
-                                               std::vector<glm::vec3>{
-        glm::vec3(-10,-4,0),
-        glm::vec3(-10,-6,0),
-        glm::vec3(-10,-8,0)
-        },
+                                              std::vector<glm::vec3>{
+                                                      glm::vec3(-10,-4,0),
+                                                      glm::vec3(-10,-6,0),
+                                                      glm::vec3(-10,-8,0)
+                                              },
                                               glm::vec3(0.0f,1.0f,0.0f),
                                               -half_pai,
-                                                glm::vec3(1.0f)
+                                              glm::vec3(1.0f)
     );
 
     std::vector<int> coor_line;

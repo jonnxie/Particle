@@ -566,7 +566,7 @@ void GUI::init(float width, float height) {
             PushDelayAction([=]() {
                 tool::saveScreenshot(std::string(buf) + ".ppm");
             }, []() {
-                std::cout << "action!" << std::endl;
+                std::cout << "Done!" << std::endl;
             });
         }
 
