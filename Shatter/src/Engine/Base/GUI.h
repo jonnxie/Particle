@@ -74,7 +74,7 @@ public:
 
     void init(float width, float height);
 
-    void newFrame(bool updateFrameGraph);
+    void newFrame();
 
     void updateUI();
 

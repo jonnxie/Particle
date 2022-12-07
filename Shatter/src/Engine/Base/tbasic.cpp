@@ -73,11 +73,7 @@ void TBasic::constructD()
     (*dpool)[d]->m_matrix = m_manipulate->getMatrix();
     (*dpool)[d]->m_type = DType::Normal;
     (*dpool)[d]->m_newDraw = [&,modelIndex](VkCommandBuffer _cb){
-        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
-        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
-        VkRect2D& scissor = tmp.scissor;
-        vkCmdSetScissor(_cb,0,1,&scissor);
-
+    tool::cmdDynamicState(_cb);
         auto set_pool = MPool<VkDescriptorSet>::getPool();
         std::vector<VkDescriptorSet> sets{(*(*set_pool)[modelIndex]),
                                           SingleSetPool["Camera"],

@@ -440,21 +440,6 @@ namespace Shatter::render{
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         createInfo.oldSwapchain = oldSwapchain;
-
-        QueueFamilyIndices indices = getIndices();
-
-        std::set<uint32_t> queueFamilyIndicesSets = {(uint32_t) indices.graphicsFamily,
-                                                     (uint32_t) indices.presentFamily,
-                                                     (uint32_t) indices.transferFamily,
-                                                     (uint32_t) indices.computeFamily};
-
-        std::vector<uint32_t> queueFamilyIndices{};
-        for(auto& set : queueFamilyIndicesSets)
-        {
-            queueFamilyIndices.emplace_back(set);
-        }
-
-        std::array<uint32_t, 1> presentIndices{uint32_t(indices.graphicsFamily)};
 //        if (indices.graphicsFamily != indices.presentFamily) {
 //            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 //            createInfo.queueFamilyIndexCount = presentIndices.size();
@@ -482,17 +467,16 @@ namespace Shatter::render{
         VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain));
 
         if (oldSwapchain != VK_NULL_HANDLE) {
-            std::cout << "old swapchain destroy" << std::endl;
             vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
         }
 
         min_image_count = createInfo.minImageCount;
 
-        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(device, swapchain, &m_presentImageCount, nullptr);
 
-        pre_offscreen_buffer.resize(imageCount);
-        pre_shadow_buffer.resize(imageCount);
-        pre_capture_buffers.resize(imageCount);
+        pre_offscreen_buffer.resize(m_presentImageCount);
+        pre_shadow_buffer.resize(m_presentImageCount);
+        pre_capture_buffers.resize(m_presentImageCount);
 
         m_presentFormat = surfaceFormat.format;
         presentExtent = extent;
@@ -817,7 +801,7 @@ namespace Shatter::render{
     }
 
     void ShatterRender::createPresentFramebuffers() {
-        uint32_t imageCount;
+        uint32_t imageCount = m_presentImageCount;
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
         m_presents.resize(imageCount);
         m_swapChainImageCount = imageCount;
@@ -946,7 +930,6 @@ namespace Shatter::render{
         cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         cmdPoolInfo.pNext = VK_NULL_HANDLE;
         cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        cmdPoolInfo.queueFamilyIndex = getIndices().graphicsFamily;
         /*
          * Init compute multiple thread data
          */
@@ -971,8 +954,6 @@ namespace Shatter::render{
         if(!offdrawid_vec.empty())
         {
             vkCmdExecuteCommands(_cb, offdrawid_vec.size(), pre_offscreen_buffer[_imageIndex].data());
-
-//            vkCmdExecuteCommands(_cb,offdrawid_vec.size(),&pre_offscreen_buffers[offdrawid_vec.size() * _imageIndex]);
         }
         SingleOffScreen.endRenderPass(_cb);
     }
@@ -1473,7 +1454,7 @@ namespace Shatter::render{
         clearPresentValue[1].depthStencil = { 1.0f, 0 };
         if(Config::getConfig("enableScreenGui"))
         {
-            imGui->newFrame(false);
+            imGui->newFrame();
             imGui->updateBuffers();
         }
         for (size_t i = 0; i < presentCB.size(); i++) {
@@ -1761,7 +1742,6 @@ namespace Shatter::render{
     }
 
     void ShatterRender::newDraw() {
-
         uint32_t imageIndex;
         auto requireImageResult = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
         if((requireImageResult == VK_ERROR_OUT_OF_DATE_KHR) || (requireImageResult == VK_SUBOPTIMAL_KHR)){
@@ -1787,7 +1767,9 @@ namespace Shatter::render{
         VkResult fenceRes;
         fenceRes = vkWaitForFences(SingleDevice(), 1, &renderFence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
         fenceRes = vkResetFences(SingleDevice(), 1, &renderFence);
-        VK_CHECK_RESULT(fenceRes);
+        #ifndef NDEBUG
+            VK_CHECK_RESULT(fenceRes);
+        #endif
 //        vkResetFences(SingleDevice(), 1, &SingleRender.renderFence);
 
         if (guiChanged || offChanged || drawChanged || normalChanged || transChanged || aabbChanged || SingleAPP.viewportChanged || SingleRender.resized)
@@ -1798,7 +1780,7 @@ namespace Shatter::render{
         } else if (Config::getConfig("enableScreenGui")) {
             if (Config::getConfig("enableScreenGui"))
             {
-                imGui->newFrame(false);
+                imGui->newFrame();
                 imGui->updateBuffers();
             }
 //            if (GUI::getGUI()->getItemState() || SingleAPP.presentReset) {
@@ -1806,8 +1788,11 @@ namespace Shatter::render{
 //                SingleAPP.presentReset = false;
 //            }
         }
-
-        VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+        #ifdef NDEBUG
+                    vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence);
+        #else
+                VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &graphicsSubmitInfo, renderFence));
+        #endif
 
         presentInfo = {
                 VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -1967,47 +1952,35 @@ namespace Shatter::render{
 
         int i = 0;
         for (const auto &queueFamily : queueFamilies) {
-            if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                if(indices.graphicsFamily == -1) {
-                    indices.graphicsFamily = i;
-                }
+            if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && indices.graphicsFamily == -1) {
+                indices.graphicsFamily = i;
             }
 
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
             if (queueFamily.queueCount > 0 && presentSupport && i != indices.graphicsFamily) {
-                    indices.presentFamily = i;
-            }else if(queueFamily.queueCount > 0 && presentSupport){
-                if(indices.presentFamily == -1){
-                    indices.presentFamily = i;
-                }
+                indices.presentFamily = i;
+            }else if(queueFamily.queueCount > 0 && presentSupport && indices.presentFamily == -1){
+                indices.presentFamily = i;
             }
 
             if(queueFamily.queueCount > 0 && queueFamily.queueFlags &
             VK_QUEUE_COMPUTE_BIT && (i != indices.presentFamily || i != indices.graphicsFamily)){
                 indices.computeFamily = i;
             }
-            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags &VK_QUEUE_COMPUTE_BIT)
+            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags &VK_QUEUE_COMPUTE_BIT && indices.computeFamily == -1)
             {
-                if(indices.computeFamily == -1)
-                {
-                    indices.computeFamily = i;
-                }
+                indices.computeFamily = i;
             }
 
             if(queueFamily.queueCount > 0 && queueFamily.queueFlags &
             VK_QUEUE_TRANSFER_BIT && (i != indices.graphicsFamily || i != indices.computeFamily)){
                 indices.transferFamily = i;
             }
-            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+            else if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT && indices.computeFamily == -1)
             {
-                if(indices.computeFamily == -1)
-                {
-                    indices.computeFamily = i;
-//                    i++;
-//                    continue;
-                }
+                indices.computeFamily = i;
             }
             i++;
         }

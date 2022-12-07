@@ -392,12 +392,9 @@ void GUI::updateBuffers() {
         idxDst += cmd_list->IdxBuffer.Size;
     }
 
-    // Flush to make writes visible to GPU
-    vertexBuffer.flush();
-    indexBuffer.flush();
 }
 
-void GUI::newFrame(bool updateFrameGraph) {
+void GUI::newFrame() {
     ImGui::NewFrame();
 
     // Init imGui windows and elements

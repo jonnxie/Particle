@@ -871,7 +871,7 @@ std::vector<UnionCommandPool>* getThreadCommandPool();
 
 void releaseThreadCommandPool();
 
-typedef  std::chrono::time_point<std::chrono::system_clock> time_point;
+typedef std::chrono::time_point<std::chrono::system_clock> time_point;
 
 //static std::chrono::time_point<std::chrono::steady_clock,std::chrono::nanoseconds > shatter_time;
 namespace timer{
@@ -1141,6 +1141,8 @@ namespace tool{
     VkRenderPassBeginInfo renderPassBeginInfo();
 
     void saveScreenshot(std::basic_string<char> filename);
+
+    void cmdDynamicState(VkCommandBuffer _cb);
 
     inline std::string strBool(bool _val){
         return _val? "True":"False";

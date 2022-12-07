@@ -1447,7 +1447,6 @@ namespace tool {
     }
 
     void saveScreenshot(std::basic_string<char> filename) {
-//        screenshotSaved = false;
         bool supportsBlit = true;
 
         // Check blit support for source and destination
@@ -1468,6 +1467,7 @@ namespace tool {
         }
 
         // Source for the copy is the last rendered swapchain image
+
         VkImage srcImage = ShatterRender::getRender().m_presents[currentSwapChainIndex].image;
 
         // Create the linear tiled destination image to copy to and to read the memory from
@@ -1652,8 +1652,6 @@ namespace tool {
         vkUnmapMemory(Device::getDevice().logicalDevice, dstImageMemory);
         vkFreeMemory(Device::getDevice().logicalDevice, dstImageMemory, nullptr);
         vkDestroyImage(Device::getDevice().logicalDevice, dstImage, nullptr);
-
-//        screenshotSaved = true;
     }
 
     VkRenderPassBeginInfo renderPassBeginInfo() {
@@ -1667,6 +1665,13 @@ namespace tool {
         printf("[%f,%f,%f,%f]\n",_in[1][0],_in[1][1],_in[1][2],_in[1][3]);
         printf("[%f,%f,%f,%f]\n",_in[2][0],_in[2][1],_in[2][2],_in[2][3]);
         printf("[%f,%f,%f,%f]\n",_in[3][0],_in[3][1],_in[3][2],_in[3][3]);
+    }
+
+    void cmdDynamicState(VkCommandBuffer _cb) {
+        UnionViewPort& tmp = SingleAPP.getPresentViewPort();
+        vkCmdSetViewport(_cb, 0, 1, &tmp.view);
+        VkRect2D& scissor = tmp.scissor;
+        vkCmdSetScissor(_cb,0,1,&scissor);
     }
 }
 

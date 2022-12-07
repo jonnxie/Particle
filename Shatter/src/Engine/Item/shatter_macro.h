@@ -7,6 +7,7 @@
 
 #include <string>
 #include <map>
+#include <string>
 
 #define mapGet(id_type,val_type,type) \
 val_type get_##type(id_type _id){       \
@@ -102,6 +103,7 @@ static std::map<int,std::string> vkresultMap = {
         {1000297000,std::string("VK_PIPELINE_COMPILE_REQUIRED_EXT")},
         {0x7FFFFFFF,std::string("VK_RESULT_MAX_ENUM")}
 };
+
 
 #define VK_CHECK_RESULT(f)																				\
 {                                                                                                       \

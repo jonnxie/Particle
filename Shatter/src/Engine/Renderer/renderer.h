@@ -92,7 +92,16 @@ namespace Shatter{
             void createColorRenderPass();
             void createColorFramebuffers();
 
+            uint32_t m_presentImageCount{};
             VkRenderPass m_presentRenderPass{VK_NULL_HANDLE};
+
+            struct VkPresent {
+                VkImage image;
+                VkImageView imageView;
+                VkSampler sampler;
+                VkFramebuffer framebuffer;
+            };
+
             void createPresentRenderPass();
             void createPresentFramebuffers();
 
@@ -218,6 +227,9 @@ namespace Shatter{
             * 图像代表交换链中的项
             */
             VkFormat m_presentFormat;
+
+            std::vector<VkPresent> m_presents{};
+
             VkExtent2D presentExtent{};
             struct VkPresent {
                 VkImage image;
