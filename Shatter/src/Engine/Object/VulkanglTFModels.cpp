@@ -1875,12 +1875,12 @@ void vkglTF::Model::loadFromFile(const std::string& filename,
 			}
 			// Initial pose
 			if (node->mesh) {
-//                if (node->skin)
-//                {
-//                    node->updateSkin(world_matrix);
-//                } else {
-//                    node->update(world_matrix);
-//                }
+                if (node->skin)
+                {
+                    node->updateSkin(world_matrix);
+                } else {
+                    node->update(world_matrix);
+                }
 			}
 		}
 	}

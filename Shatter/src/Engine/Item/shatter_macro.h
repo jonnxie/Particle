@@ -5,6 +5,7 @@
 #ifndef SHATTER_ENGINE_SHATTER_MACRO_H
 #define SHATTER_ENGINE_SHATTER_MACRO_H
 
+#include <string>
 #include <map>
 #include <string>
 
